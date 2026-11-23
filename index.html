@@ -99,96 +99,21 @@ input:focus{border-color:#FF4D8D}
 .estrela{font-size:32px;cursor:pointer;background:none;border:none;filter:grayscale(1);opacity:.4}
 .estrela.sel{filter:grayscale(0);opacity:1}
 .check{display:flex;gap:8px;align-items:flex-start;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:10px;margin-bottom:8px;font-size:13px}
+.syncBadge{position:fixed;top:60px;right:10px;background:#16A34A;color:#fff;font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;z-index:99;display:none}
+.syncBadge.show{display:block}
 </style>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script>
-const firebaseConfig={apiKey:"AIzaSyDcZa03lSVUMAYgJzWfJZI3XSC-Jm0V-Uc",authDomain:"bolopro-697a7.firebaseapp.com",projectId:"bolopro-697a7",storageBucket:"bolopro-697a7.firebasestorage.app",messagingSenderId:"746282781210",appId:"1:746282781210:web:3e3aa0d5655281d869dfa3",measurementId:"G-8ES4DX7MEC"};
-let db=null;try{firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){}
-function slugify(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
-function lerLS(chave,padrao){try{let v=localStorage.getItem(chave);return v?JSON.parse(v):padrao;}catch(e){return padrao;}}
-function salvarLS(chave,valor){try{localStorage.setItem(chave,JSON.stringify(valor));}catch(e){}}
-async function salvarNoFirebase(c,d){try{salvarLS('bolopro_fb_'+c,lerLS('bolopro_fb_'+c,[]).concat([d]));}catch(e){} if(!db)return null;try{let doc=await db.collection(c).add(Object.assign({},d,{criadoEm:new Date()}));return doc.id;}catch(e){return null;}}
-function mostrarToast(msg){let t=document.getElementById('copyToast');t.innerText=msg;t.style.display='block';setTimeout(function(){t.style.display='none';},2500);}
-async function copiarTextoSeguro(texto,msgOk){
-  texto=String(texto||'');if(!texto){alert('Nada para copiar!');return false;}
-  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(texto); mostrarToast(msgOk||'Copiado!'); return true; } }catch(e){}
-  try{let ta=document.createElement('textarea'); ta.value=texto; ta.style.position='fixed'; ta.style.top='0'; ta.style.left='0'; ta.style.opacity='0'; ta.setAttribute('readonly','');document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0,99999);let ok=document.execCommand('copy'); document.body.removeChild(ta);if(ok){ mostrarToast(msgOk||'Copiado!'); return true; }}catch(e){}
-  let caixa=document.createElement('div'); caixa.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
-  caixa.innerHTML='<div style="background:#fff;border-radius:18px;padding:18px;width:100%;max-width:380px;text-align:center"><h3 style="margin-bottom:8px">Segure e copie:</h3><textarea readonly style="width:100%;height:90px;padding:10px;border:1.5px solid #FF4D8D;border-radius:12px;font-size:14px" onclick="this.select()">'+texto+'</textarea><p style="font-size:12px;color:#666;margin:8px 0">Toque no texto, segure e clique em Copiar</p><button onclick="this.parentElement.parentElement.remove()" style="width:100%;background:#FF4D8D;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:800">FECHAR</button></div>';
-  document.body.appendChild(caixa); caixa.querySelector('textarea').select();return true;
-}
-let planos={
-  gratis:{nome:'GRATIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para comecar a testar',recursos:'Ate 3 bolos no catalogo\nAte 10 pedidos por mes\nLink da loja\nCalendario\nSem BoloPro IA\nSem Kit Festa\nCom marca dagua BoloPro'},
-  mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mes',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'Bolos ilimitados\nPedidos ilimitados\nBoloPro IA\nKit Festa liberado\nLembrete automatico\nSEM marca dagua\nSuporte prioritario'},
-  anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses gratis! Economize R$ 39,80',recursos:'TUDO do Mensal\nKit Festa liberado\n2 meses GRATIS\nSelo Loja Destaque\nSEM marca dagua\nPrioridade maxima'}
-};
-let kitGlobal=lerLS('bolopro_kit',{nome:'Kit Festa 20 pessoas',itens:'Bolo 2kg + 100 brigadeiros + 50 beijinhos',preco:299});
-let usuarioAtual={loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:'',senha:''};
-function planoPago(){return (usuarioAtual && usuarioAtual.plano && usuarioAtual.plano!=='GRATIS');}
-function persistirTudo(){
-  if(!usuarioAtual.email) return;
-  let chave='bolopro_loja_'+slugify(usuarioAtual.email);
-  salvarLS(chave,{usuario:usuarioAtual,catalogo:catalogo,pedidos:pedidos,kit:kitGlobal,notificacoes:notificacoes});
-  salvarLS('bolopro_boleiras',boleiras);
-  salvarLS('bolopro_kit',kitGlobal);
-  salvarLS('bolopro_planos',planos);
-}
-function carregarTudo(){
-  boleiras=lerLS('bolopro_boleiras',[]);
-  let salvos=lerLS('bolopro_planos',null); if(salvos) planos=salvos;
-  if(usuarioAtual.email){
-    let d=lerLS('bolopro_loja_'+slugify(usuarioAtual.email),null);
-    if(d){ catalogo=d.catalogo||[]; pedidos=d.pedidos||[]; kitGlobal=d.kit||kitGlobal; notificacoes=d.notificacoes||[]; }
-  }
-}
-async function carregarDoFirebase(){
-  if(!db) return;
-  try{
-    let snap=await db.collection('boleiras').get();
-    if(!snap.empty){ let lista=[]; snap.forEach(function(doc){let x=doc.data(); lista.push({id:doc.id,nome:x.loja||x.nome,email:x.email,zap:x.zap,cidade:x.cidade,plano:x.plano||'GRATIS',status:x.status||'ATIVA',pedidos:x.pedidos||0,fatura:x.fatura||0,img:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',cadastro:x.dataCadastro||'',sobre:x.sobre||'',senha:x.senha||''});}); if(lista.length){ boleiras=lista; salvarLS('bolopro_boleiras',boleiras); } }
-  }catch(e){}
-  try{
-    if(usuarioAtual.email){
-      let snap=await db.collection('catalogo').where('loja','==',usuarioAtual.loja).get();
-      if(!snap.empty){ let lista=[]; snap.forEach(function(doc){let x=doc.data(); lista.push(Object.assign({id:doc.id},x));}); if(lista.length){ catalogo=lista; } }
-      let snap2=await db.collection('pedidos').where('loja','==',usuarioAtual.loja).get();
-      if(!snap2.empty){ let lista=[]; snap2.forEach(function(doc){let x=doc.data(); lista.push(Object.assign({id:doc.id},x));}); if(lista.length){ pedidos=lista; } }
-      let snapKit=await db.collection('kits').where('loja','==',usuarioAtual.loja).get();
-      if(!snapKit.empty){ snapKit.forEach(function(doc){ let x=doc.data(); kitGlobal={nome:x.nome,itens:x.itens,preco:x.preco}; }); }
-      persistirTudo(); renderCatalogo(); renderPedidos(); renderHome(); atualizarKitUI(); atualizarVisibilidadeKit();
-    }
-  }catch(e){}
-}
-function atualizarKitUI(){
-  let n1=document.getElementById('kitNome'); if(n1) n1.value=kitGlobal.nome;
-  let n2=document.getElementById('kitItens'); if(n2) n2.value=kitGlobal.itens;
-  let n3=document.getElementById('kitPreco'); if(n3) n3.value=kitGlobal.preco;
-  let a=document.getElementById('kitClienteNome'); if(a) a.innerText=kitGlobal.nome+' - R$ '+kitGlobal.preco;
-  let b=document.getElementById('kitClienteItens'); if(b) b.innerText=kitGlobal.itens;
-  let h=document.getElementById('homeKitTxt'); if(h) h.innerText=kitGlobal.nome;
-}
-function atualizarVisibilidadeKit(){
-  let pago=planoPago();
-  let card=document.getElementById('cardKitCliente'); if(card) card.style.display=pago?'block':'none';
-  let btnHome=document.getElementById('btnKitHome'); if(btnHome) btnHome.style.display=pago?'block':'none';
-  let aviso=document.getElementById('avisoKitGratis'); if(aviso) aviso.style.display=pago?'none':'block';
-}
-let notaFeedback=5;
-function selecionarNota(n){notaFeedback=n;document.querySelectorAll('.estrela').forEach(function(el,i){el.classList.toggle('sel',i<n);});document.getElementById('notaTexto').innerText=n+'/5 - '+['','Pessimo','Ruim','Ok','Bom','Perfeito!'][n];}
-</script>
 </head>
 <body>
-<div id="copyToast" class="copyToast">Copiado!</div>
-<div id="marcaAgua" class="marcaAgua">BoloPro</div>
-<div id="marcaAguaCliente" class="marcaAguaCliente">Feito com BoloPro</div>
-<div id="topBar" class="topBar hidden"><b><span id="topNome">BoloPro</span></b><div><button class="iconBtn" id="sinoNoti" onclick="abrirTela('notificacoes');abrirNotificacoes()">🔔</button> <button class="iconBtn" onclick="verComoCliente()">Loja</button> <button class="iconBtn primary" onclick="toggleMenuTop()">Menu</button></div></div>
+<div id="copyToast" class="copyToast">✅ Copiado!</div>
+<div id="syncBadge" class="syncBadge">☁️ Firebase bolopro-2949f</div>
+<div id="marcaAgua" class="marcaAgua">🎂 BoloPro</div>
+<div id="marcaAguaCliente" class="marcaAguaCliente">🎂 Feito com BoloPro</div>
+<div id="topBar" class="topBar hidden"><b>🎂 <span id="topNome">BoloPro</span></b><div><button class="iconBtn" id="sinoNoti" onclick="abrirTela('notificacoes')">🔔</button> <button class="iconBtn" onclick="verComoCliente()">👀 Loja</button> <button class="iconBtn primary" onclick="toggleMenuTop()">☰ Menu</button></div></div>
 <div id="menuTop" class="menuTop">
-  <div class="head"><div class="avatar" id="avatarLetra">A</div><div><b id="menuNome">Minha Loja</b><br><span id="menuEmail" style="font-size:12px;color:#888"></span><br><span id="menuPlanoBadge" style="font-size:11px;background:#FF4D8D;color:#fff;padding:2px 8px;border-radius:999px">PLANO GRATIS</span></div></div>
+  <div class="head"><div class="avatar" id="avatarLetra">A</div><div><b id="menuNome">Minha Loja</b><br><span id="menuEmail" style="font-size:12px;color:#888"></span><br><span id="menuPlanoBadge" style="font-size:11px;background:#FF4D8D;color:#fff;padding:2px 8px;border-radius:999px">PLANO GRÁTIS</span></div></div>
   <div class="menuList">
-    <a href="#" onclick="abrirTela('perfil');return false"><span>👤</span><div>Perfil<small>Ver e editar suas informacoes</small></div></a>
-    <a href="#" onclick="abrirTela('plano');return false"><span>💎</span><div>Planos<small>Gratis - Mensal R$ 19,90 - Anual R$ 199</small></div></a>
+    <a href="#" onclick="abrirTela('perfil');return false"><span>👤</span><div>Perfil<small>Ver e editar suas informações</small></div></a>
+    <a href="#" onclick="abrirTela('plano');return false"><span>💎</span><div>Planos<small>Grátis • Mensal R$ 19,90 • Anual R$ 199</small></div></a>
     <a href="#" onclick="abrirTela('feedback');return false"><span>⭐</span><div>Feedback<small>Avaliar o app e sugerir melhorias</small></div></a>
     <a href="#" onclick="abrirTela('ia');return false"><span>🤖</span><div>BoloPro IA<small>Sua assistente inteligente</small></div></a>
     <a href="#" onclick="abrirTela('comoUsar');return false"><span>📖</span><div>Como Usar<small>Guia completo passo a passo</small></div></a>
@@ -200,45 +125,47 @@ function selecionarNota(n){notaFeedback=n;document.querySelectorAll('.estrela').
 <div id="authPage" class="center">
   <div class="loginWrap card">
     <button class="lockBtn" onclick="abrirLoginADM()">🔒</button>
-    <h1>BoloPro</h1><p style="text-align:center;color:#666;font-size:14px">Login da Boleira</p>
+    <h1>🎂 BoloPro</h1><p style="text-align:center;color:#666;font-size:14px">Login da Boleira - Firebase bolopro-2949f</p>
     <div class="tabs"><button id="tabLogin" class="active" onclick="mudaAba('login')">ENTRAR</button><button id="tabCad" onclick="mudaAba('cad')">CADASTRAR</button></div>
     <div id="formLogin">
       <label>Email</label><input id="loginEmail" type="email" placeholder="Ex: ana@gmail.com">
       <label>Senha</label><div class="passWrap"><input id="loginSenha" type="password" placeholder="Sua senha"><button class="eyeBtn" onclick="toggleOlho('loginSenha',this)">👁️</button></div>
-      <button class="btn" onclick="fazerLogin()">ENTRAR NO PAINEL</button>
+      <button class="btn" onclick="fazerLogin()">ENTRAR NO PAINEL →</button>
+      <p style="text-align:center;font-size:12px;margin-top:8px"><a href="#" onclick="recuperarSenha();return false" style="color:#FF4D8D;font-weight:700">Esqueci minha senha - recuperar por e-mail</a></p>
     </div>
     <div id="formCad" class="hidden">
       <label>Nome da Loja</label><input id="cadLoja" placeholder="Ex: Doces da Ana">
       <label>Email</label><input id="cadEmail" type="email" placeholder="Ex: ana@gmail.com">
-      <label>Senha</label><div class="passWrap"><input id="cadSenha" type="password" placeholder="Minimo 6 letras"><button class="eyeBtn" onclick="toggleOlho('cadSenha',this)">👁️</button></div>
+      <label>Senha</label><div class="passWrap"><input id="cadSenha" type="password" placeholder="Mínimo 6 letras"><button class="eyeBtn" onclick="toggleOlho('cadSenha',this)">👁️</button></div>
       <label>Confirmar Senha</label><div class="passWrap"><input id="cadSenha2" type="password" placeholder="Repita a senha"><button class="eyeBtn" onclick="toggleOlho('cadSenha2',this)">👁️</button></div>
       <label>WhatsApp</label><input id="cadZap" placeholder="11999999999">
-      <label>Cidade</label><input id="cadCidade" placeholder="Sao Paulo - SP">
-      <button class="btn" onclick="fazerCadastro()">CRIAR CONTA GRATIS</button>
+      <label>Cidade</label><input id="cadCidade" placeholder="São Paulo - SP">
+      <button class="btn" onclick="fazerCadastro()">CRIAR CONTA GRÁTIS 🎉</button>
+      <p style="font-size:11px;color:#888;text-align:center;margin-top:8px">Conta criada no Firebase Auth + Firestore bolopro-2949f</p>
     </div>
-  </div><p class="small">Feito para boleiras que querem vender mais no WhatsApp</p>
+  </div><p class="small">Tudo salvo no Firebase - se trocar de celular, seus dados continuam lá</p>
 </div>
 <div id="admLoginPage" class="center hidden">
-  <div class="card" style="border:2px solid #111"><h1 style="color:#111">ADM</h1>
+  <div class="card" style="border:2px solid #111"><h1 style="color:#111">🔐 ADM</h1>
   <label>Email do ADM</label><input id="admEmail" type="email" placeholder="adm@bolopro.com.br">
   <label>Senha do ADM</label><div class="passWrap"><input id="admSenha" type="password" placeholder="Senha ADM"><button class="eyeBtn" onclick="toggleOlho('admSenha',this)">👁️</button></div>
-  <button class="btn btn-dark" onclick="fazerLoginADM()">ENTRAR COMO ADM</button>
-  <button class="btn btn-outline" onclick="voltarLoginBoleira()">Voltar</button></div>
+  <button class="btn btn-dark" onclick="fazerLoginADM()">ENTRAR COMO ADM →</button>
+  <button class="btn btn-outline" onclick="voltarLoginBoleira()">← Voltar</button><p style="font-size:11px;color:#888;text-align:center;margin-top:8px">ADM precisa ter isAdmin=true no Firestore em boleiras/{uid}</p></div>
 </div>
 <div id="admPage" class="hidden"><div class="wrap">
-  <div class="admHeader"><p>PAINEL DO DONO</p><h2>BoloPro - ADM</h2><p>Controle de boleiras, codigos PRO e planos.</p></div>
+  <div class="admHeader"><p>👑 PAINEL DO DONO - DADOS REAIS DO FIREBASE</p><h2>BoloPro - ADM</h2><p>Controle de boleiras, códigos PRO e planos.</p></div>
   <div class="kpi"><div class="box"><b id="admTotal">0</b><span>BOLEIRAS</span></div><div class="box"><b id="admFatura">R$ 0</b><span>FATURAMENTO</span></div><div class="box"><b id="admPro">0</b><span>PRO ATIVO</span></div></div>
-  <div class="card" style="margin-top:12px;border:2px solid #FFB800"><h3>Gerenciar Planos</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="tag tag-free">GRATIS R$ 0</span><span class="tag tag-mensal" id="tagMensalADM">MENSAL R$ 19,90</span><span class="tag tag-anual" id="tagAnualADM">ANUAL R$ 199,00</span></div>
-  <button class="btn btn-gold" onclick="abrirPlanosADM()">ABRIR PAGINA DOS PLANOS</button></div>
-  <div class="card" style="border:2px solid #FF4D8D"><h3>Gerar Codigo PRO</h3>
-  <label>Para qual boleira?</label><select id="codigoBoleira"><option>Qualquer boleira - Codigo generico</option></select>
+  <div class="card" style="margin-top:12px;border:2px solid #FFB800"><h3>💎 Gerenciar Planos</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="tag tag-free">GRÁTIS R$ 0</span><span class="tag tag-mensal" id="tagMensalADM">MENSAL R$ 19,90</span><span class="tag tag-anual" id="tagAnualADM">ANUAL R$ 199,00</span></div>
+  <button class="btn btn-gold" onclick="abrirPlanosADM()">💎 ABRIR PÁGINA DOS PLANOS →</button></div>
+  <div class="card" style="border:2px solid #FF4D8D"><h3>🔑 Gerar Código PRO - Salva no Firebase</h3>
+  <label>Para qual boleira?</label><select id="codigoBoleira"><option value="">Qualquer boleira - Código genérico</option></select>
   <label>Qual plano liberar?</label><select id="codigoPlanoTipo"><option value="MENSAL">MENSAL - 30 dias</option><option value="ANUAL">ANUAL - 365 dias</option></select>
   <label>Validade</label><select id="codigoValidade"><option value="30">30 dias - R$ 19,90</option><option value="365">365 dias - R$ 199,00</option></select>
   <div id="codigoGerado" class="codeBox hidden">BOLOPRO-XXXX</div>
-  <button class="btn btn-dark" onclick="gerarCodigo()">GERAR CODIGO ALEATORIO</button>
-  <button class="btn btn-green hidden" id="btnCopiarCodigo" onclick="copiarCodigo()">COPIAR CODIGO</button><div id="listaCodigos"></div></div>
-  <div class="card"><h3>Buscar Boleira</h3><input id="buscaBoleira" placeholder="Buscar por nome, email ou cidade..." oninput="renderBoleirasADM()">
-  <div class="filterRow" style="margin-top:10px"><button class="active" onclick="filtroADM('todas',this)">Todas</button><button onclick="filtroADM('PRO',this)">PRO</button><button onclick="filtroADM('MENSAL',this)">Mensal</button><button onclick="filtroADM('ANUAL',this)">Anual</button><button onclick="filtroADM('GRATIS',this)">Gratis</button><button onclick="filtroADM('BLOQUEADA',this)">Bloqueadas</button></div>
+  <button class="btn btn-dark" onclick="gerarCodigo()">🎲 GERAR CÓDIGO ALEATÓRIO</button>
+  <button class="btn btn-green hidden" id="btnCopiarCodigo" onclick="copiarCodigo()">📋 COPIAR CÓDIGO</button><div id="listaCodigos"></div></div>
+  <div class="card"><h3>🔍 Buscar Boleira</h3><input id="buscaBoleira" placeholder="Buscar por nome, email ou cidade..." oninput="renderBoleirasADM()">
+  <div class="filterRow" style="margin-top:10px"><button class="active" onclick="filtroADM('todas',this)">Todas</button><button onclick="filtroADM('PRO',this)">💎 PRO</button><button onclick="filtroADM('MENSAL',this)">📅 Mensal</button><button onclick="filtroADM('ANUAL',this)">🏆 Anual</button><button onclick="filtroADM('GRATIS',this)">🆓 Grátis</button><button onclick="filtroADM('BLOQUEADA',this)">🚫 Bloqueadas</button></div>
   <p style="font-size:12px;color:#888">Mostrando <b id="qtdMostra">0</b> boleiras</p></div>
   <div id="listaBoleirasADM"></div>
   <button class="btn btn-outline" onclick="sairADM()">Sair do ADM</button>
@@ -246,422 +173,465 @@ function selecionarNota(n){notaFeedback=n;document.querySelectorAll('.estrela').
 <div id="painelPage" class="hidden">
   <div class="homeBg">
     <div class="wrap" style="padding:0">
-      <div class="homeLogo">
-        <div class="marca">Bolo<i>Pro</i></div>
-        <h1 id="nomeLojaPainel">Minha Loja</h1>
-        <p id="emailPainel">Plano Gratis</p>
-      </div>
-      <div id="faixaGratis" class="faixaGratis hidden">Voce esta no <b>Plano Gratis</b> - com marca dagua BoloPro<br><a href="#" onclick="abrirTela('plano');return false" style="color:#E91E7F;font-weight:800">Remover marca dagua - Assinar R$ 19,90</a></div>
-      <div id="avisoKitGratis" class="faixaKitPago hidden"><b>Kit Festa e exclusivo do Plano Pago!</b><br>Assine Mensal ou Anual para liberar o Kit na sua loja.<br><a href="#" onclick="abrirTela('plano');return false" style="color:#92400E;font-weight:800">LIBERAR KIT FESTA</a></div>
+      <div class="homeLogo"><div class="marca">Bolo<i>Pro</i></div><h1 id="nomeLojaPainel">Minha Loja</h1><p id="emailPainel">Plano Grátis</p></div>
+      <div id="faixaGratis" class="faixaGratis hidden">💧 Você está no <b>Plano Grátis</b> - com marca d'água BoloPro<br><a href="#" onclick="abrirTela('plano');return false" style="color:#E91E7F;font-weight:800">💎 Remover marca d'água - Assinar R$ 19,90</a></div>
+      <div id="avisoKitGratis" class="faixaKitPago hidden">🎉 <b>Kit Festa é exclusivo do Plano Pago!</b><br>Assine Mensal ou Anual para liberar o Kit na sua loja.<br><a href="#" onclick="abrirTela('plano');return false" style="color:#92400E;font-weight:800">LIBERAR KIT FESTA →</a></div>
       <div class="homeCard">
-        <div class="kpi" style="margin-bottom:12px">
-          <div class="box"><b id="statHoje">R$ 0</b><span>HOJE</span></div>
-          <div class="box"><b id="statMes">R$ 0</b><span>MES</span></div>
-          <div class="box"><b id="statPedidos">0</b><span>PEDIDOS</span></div>
-        </div>
+        <div class="kpi" style="margin-bottom:12px"><div class="box"><b id="statHoje">R$ 0</b><span>HOJE</span></div><div class="box"><b id="statMes">R$ 0</b><span>MÊS</span></div><div class="box"><b id="statPedidos">0</b><span>PEDIDOS</span></div></div>
         <div class="homeGrid">
           <button class="homeBtn" onclick="abrirTela('catalogoEdit')"><span>➕</span><b>Add Bolo</b><small id="homeQtdCatalogo">0 bolos</small></button>
           <button class="homeBtn" id="btnKitHome" style="background:#FFB800;color:#111" onclick="abrirTela('kitEdit')"><span>🎉</span><b>Editar Kit</b><small id="homeKitTxt">Kit Festa</small></button>
           <button class="homeBtn" onclick="abrirTela('pedidos')"><span>📦</span><b>Pedidos</b><small id="homeQtdPedidos">Ver todos</small></button>
           <button class="homeBtn" onclick="abrirTela('clientes')"><span>👥</span><b>Clientes</b><small id="homeQtdClientes">Ver todos</small></button>
-          <button class="homeBtn" onclick="abrirTela('calendario')"><span>📅</span><b>Calendario</b><small>Entregas</small></button>
+          <button class="homeBtn" onclick="abrirTela('calendario')"><span>📅</span><b>Calendário</b><small>Entregas</small></button>
           <button class="homeBtn full" onclick="abrirTela('linkVendas')"><span>🔗</span><b>Link de Vendas</b><small id="meuLinkResumo">Copiar link da loja</small></button>
         </div>
-        <div class="ultPedTitle">Ultimos Pedidos</div>
+        <div class="ultPedTitle">📦 Últimos Pedidos</div>
         <div id="ultimosPedidosHome"></div>
         <div id="listaPedidosResumo"></div>
-        <div class="card" style="margin:12px 0 0;box-shadow:none;border:1.5px solid #EFEFEF">
-          <h3>Calendario - <span id="mesCal"></span></h3>
-          <div class="calGrid" id="calGrid"></div>
-          <p class="small">Dias em rosa = tem entrega!</p>
-        </div>
+        <div class="card" style="margin:12px 0 0;box-shadow:none;border:1.5px solid #EFEFEF"><h3>📅 Calendário - <span id="mesCal"></span></h3><div class="calGrid" id="calGrid"></div><p class="small">Dias em rosa = tem entrega!</p></div>
       </div>
-      <button class="ctaWhats" onclick="copiarLink()">COPIAR LINK DA LOJA</button>
+      <button class="ctaWhats" onclick="copiarLink()">💬 COPIAR LINK DA LOJA</button>
       <p style="text-align:center;color:#fff;font-size:12px;font-weight:700;margin-top:8px">Manda o link pra cliente e ela monta o bolo sozinha!</p>
     </div>
   </div>
 </div>
 <div id="clientePage" class="hidden"><div class="wrap">
-  <div class="card" style="background:#FF4D8D;color:#fff;border:none;text-align:center"><p style="color:#FFE4EF;font-size:12px">BEM-VINDA</p><h2 id="tituloLoja">Minha Loja</h2><p id="cidadeLoja" style="color:#FFE4EF"></p></div>
-  <div class="card" id="cardKitCliente"><h3>Kit Aniversario</h3><div class="kit"><b id="kitClienteNome">Kit Festa 20 pessoas - R$ 299</b><p id="kitClienteItens">Bolo 2kg + 100 brigadeiros + 50 beijinhos</p><button class="btn btn-gold" onclick="selKitAtual()">ESCOLHER ESSE KIT</button></div></div>
-  <div class="card"><label>1. Bolo</label><div class="bolos" id="bolosCliente"><p>Essa boleira ainda nao cadastrou bolos.</p></div>
-  <label>2. Tamanho</label><div class="opt" id="tamanhos"><button onclick="selTam(this,1)">1kg</button><button class="sel" onclick="selTam(this,2)">2kg</button><button onclick="selTam(this,3)">3kg</button><button onclick="selTam(this,5)">5kg</button></div>
-  <label>3. Recheio</label><div class="opt" id="recheios"><button class="sel" onclick="selRec(this)">Ninho</button><button onclick="selRec(this)">Brigadeiro</button><button onclick="selRec(this)">Morango</button><button onclick="selRec(this)">Doce de Leite</button></div>
+  <div class="card" style="background:#FF4D8D;color:#fff;border:none;text-align:center"><p style="color:#FFE4EF;font-size:12px">✨ BEM-VINDA</p><h2 id="tituloLoja">Minha Loja</h2><p id="cidadeLoja" style="color:#FFE4EF"></p></div>
+  <div class="card" id="cardKitCliente"><h3>🎉 Kit Aniversário</h3><div class="kit"><b id="kitClienteNome">Kit Festa 20 pessoas - R$ 299</b><p id="kitClienteItens">Bolo 2kg + 100 brigadeiros + 50 beijinhos</p><button class="btn btn-gold" onclick="selKitAtual()">ESCOLHER ESSE KIT</button></div></div>
+  <div class="card"><label>1. Bolo *</label><div class="bolos" id="bolosCliente"><p>Essa boleira ainda não cadastrou bolos.</p></div>
+  <label>2. Tamanho *</label><div class="opt" id="tamanhos"><button onclick="selTam(this,1)">1kg</button><button class="sel" onclick="selTam(this,2)">2kg</button><button onclick="selTam(this,3)">3kg</button><button onclick="selTam(this,5)">5kg</button></div>
+  <label>3. Recheio *</label><div class="opt" id="recheios"><button class="sel" onclick="selRec(this)">Ninho</button><button onclick="selRec(this)">Brigadeiro</button><button onclick="selRec(this)">Morango</button><button onclick="selRec(this)">Doce de Leite</button></div>
   <label>4. Cobertura</label><div class="opt" id="coberturas"><button class="sel" onclick="selCob(this)">Chantilly</button><button onclick="selCob(this)">Chocolate</button><button onclick="selCob(this)">Pasta Americana</button></div>
-  <label>5. Formato</label><div class="opt" id="formatos"><button class="sel" onclick="selForm(this)">Redondo</button><button onclick="selForm(this)">Quadrado</button><button onclick="selForm(this)">Coracao</button></div>
+  <label>5. Formato</label><div class="opt" id="formatos"><button class="sel" onclick="selForm(this)">Redondo</button><button onclick="selForm(this)">Quadrado</button><button onclick="selForm(this)">Coração</button></div>
   <label>6. Tema</label><input id="tema" placeholder="Ex: Princesa, Futebol">
-  <label>7. Frase no bolo</label><input id="frase" placeholder="Ex: Feliz Aniversario Maria!">
-  <label>8. Data e Hora</label><input type="date" id="dataEntrega"><input type="time" id="horaEntrega" style="margin-top:8px">
-  <label>9. Entrega ou Retirada?</label><div class="opt" id="entregas"><button class="sel" onclick="selEnt(this,'Retirada')">Retirada</button><button onclick="selEnt(this,'Entrega')">Entrega - R$ 15</button></div>
-  <label>10. Endereco</label><textarea id="endereco" rows="2" placeholder="Rua, numero, bairro"></textarea>
-  <label>11. Nome da Cliente</label><input id="nomeCliente" placeholder="Seu nome">
-  <label>12. WhatsApp</label><input id="zapCliente" placeholder="11999999999">
-  <label>13. Para quem e o bolo?</label><input id="paraQuem" placeholder="Ex: Maria, 10 anos">
-  <label>14. Pagamento</label><div class="opt" id="pagamentos"><button class="sel" onclick="selPag(this)">Pix</button><button onclick="selPag(this)">Cartao</button><button onclick="selPag(this)">Dinheiro</button></div>
-  <label>15. Sinal 50%?</label><div class="opt" id="sinais"><button class="sel" onclick="selSinal(this)">Sim, vou pixar sinal</button><button onclick="selSinal(this)">Nao, pago na retirada</button></div>
+  <label>7. Frase no bolo</label><input id="frase" placeholder="Ex: Feliz Aniversário Maria!">
+  <label>8. Data e Hora *</label><input type="date" id="dataEntrega"><input type="time" id="horaEntrega" style="margin-top:8px">
+  <label>9. Entrega ou Retirada? *</label><div class="opt" id="entregas"><button class="sel" onclick="selEnt(this,'Retirada')">🏠 Retirada</button><button onclick="selEnt(this,'Entrega')">🛵 Entrega - R$ 15</button></div>
+  <label>10. Endereço</label><textarea id="endereco" rows="2" placeholder="Rua, número, bairro"></textarea>
+  <label>11. Nome da Cliente *</label><input id="nomeCliente" placeholder="Seu nome">
+  <label>12. WhatsApp *</label><input id="zapCliente" placeholder="11999999999">
+  <label>13. Para quem é o bolo?</label><input id="paraQuem" placeholder="Ex: Maria, 10 anos">
+  <label>14. Pagamento *</label><div class="opt" id="pagamentos"><button class="sel" onclick="selPag(this)">💚 Pix</button><button onclick="selPag(this)">💳 Cartão</button><button onclick="selPag(this)">💵 Dinheiro</button></div>
+  <label>15. Sinal 50%?</label><div class="opt" id="sinais"><button class="sel" onclick="selSinal(this)">Sim, vou pixar sinal</button><button onclick="selSinal(this)">Não, pago na retirada</button></div>
   <label>16. Alergia / Obs</label><textarea id="obs" rows="2" placeholder="Ex: Sem lactose"></textarea>
-  <label>17. Como conheceu?</label><select id="comoConheceu"><option>Instagram</option><option>WhatsApp / Indicacao</option><option>Facebook</option><option>Ja sou cliente</option><option>Google</option></select>
+  <label>17. Como conheceu?</label><select id="comoConheceu"><option>Instagram</option><option>WhatsApp / Indicação</option><option>Facebook</option><option>Já sou cliente</option><option>Google</option></select>
   <div class="total"><div id="resumo">Escolha um bolo</div><b id="totalVal">R$ 0,00</b><div id="sinalVal" style="font-size:13px">Sinal: R$ 0,00</div></div>
-  <button class="btn btn-green" onclick="pedir()">PEDIR NO WHATSAPP</button>
-  <button class="btn btn-outline" onclick="voltarPainel()">Voltar pro Painel</button>
+  <button class="btn btn-green" onclick="pedir()">📲 PEDIR NO WHATSAPP</button>
+  <button class="btn btn-outline" onclick="voltarPainel()">← Voltar pro Painel</button>
   </div></div>
 </div>
 <div id="overlay" class="overlay" onclick="fecharTudo()"></div>
-<div id="tela-perfil" class="fullPage"><div class="fullHeader"><b>Meu Perfil</b></div><div class="wrap"><div class="card">
+<div id="tela-perfil" class="fullPage"><div class="fullHeader"><b>👤 Meu Perfil</b></div><div class="wrap"><div class="card">
   <p style="text-align:center;font-size:40px">👩‍🍳</p><h3 style="text-align:center" id="perfilTitulo">Minha Loja</h3>
-  <div id="perfilView">
-    <p><b>Loja:</b> <span id="viewLoja"></span><br><b>E-mail:</b> <span id="viewEmail"></span> <small>(nao pode mudar)</small><br><b>WhatsApp:</b> <span id="viewZap"></span><br><b>Cidade:</b> <span id="viewCidade"></span><br><b>Sobre:</b> <span id="viewSobre"></span><br><b>Plano:</b> <span id="viewPlano"></span><br><b>Cadastro:</b> <span id="viewData"></span><br><b>Link:</b> <span id="viewLink"></span></p>
-    <button class="btn" onclick="editarPerfil()">EDITAR PERFIL</button>
-  </div>
-  <div id="perfilEdit" class="hidden">
-    <label>Nome da Loja</label><input id="perfilLoja">
-    <label>E-mail - NAO PODE MUDAR</label><input id="perfilEmail" disabled>
-    <label>WhatsApp</label><input id="perfilZap">
-    <label>Cidade</label><input id="perfilCidade">
-    <label>Sobre a loja</label><textarea rows="3" id="perfilSobre">Bolos artesanais feitos com amor!</textarea>
-    <button class="btn btn-green" onclick="salvarPerfil()">SALVAR ALTERACOES</button>
-    <button class="btn btn-outline" onclick="cancelarEditPerfil()">Cancelar</button>
-  </div>
-  <button class="btn-back" onclick="fecharTela()">VOLTAR</button>
+  <div id="perfilView"><p><b>🏪 Loja:</b> <span id="viewLoja"></span><br><b>📧 E-mail:</b> <span id="viewEmail"></span> <small>(não pode mudar)</small><br><b>📱 WhatsApp:</b> <span id="viewZap"></span><br><b>📍 Cidade:</b> <span id="viewCidade"></span><br><b>📝 Sobre:</b> <span id="viewSobre"></span><br><b>💎 Plano:</b> <span id="viewPlano"></span><br><b>📅 Cadastro:</b> <span id="viewData"></span><br><b>🔗 Link:</b> <span id="viewLink"></span></p><button class="btn" onclick="editarPerfil()">✏️ EDITAR PERFIL</button></div>
+  <div id="perfilEdit" class="hidden"><label>Nome da Loja</label><input id="perfilLoja"><label>E-mail - NÃO PODE MUDAR 🔒</label><input id="perfilEmail" disabled><label>WhatsApp</label><input id="perfilZap"><label>Cidade</label><input id="perfilCidade"><label>Sobre a loja</label><textarea rows="3" id="perfilSobre">Bolos artesanais feitos com amor!</textarea><button class="btn btn-green" onclick="salvarPerfil()">✅ SALVAR NO FIREBASE</button><button class="btn btn-outline" onclick="cancelarEditPerfil()">Cancelar</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
 </div></div></div>
-<div id="tela-pedidos" class="fullPage"><div class="fullHeader"><b>Pedidos</b></div><div class="wrap"><div class="card"><h3>Todos os pedidos</h3><p>Clique em um pedido para ver TODAS as informacoes.</p></div><div id="listaPedidosCompleta"></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-clientes" class="fullPage"><div class="fullHeader"><b>Clientes</b></div><div class="wrap"><div class="card"><h3>Seus Clientes</h3><input id="buscaCliente" placeholder="Buscar cliente..." oninput="renderClientes()"></div><div id="listaClientes"></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-calendario" class="fullPage"><div class="fullHeader"><b>Calendario</b></div><div class="wrap"><div class="card"><h3>Calendario de Entregas</h3><p id="mesCal2" style="font-weight:800"></p><div class="calGrid" id="calGrid2"></div><p class="small">Dias em rosa = tem entrega!</p></div><div id="listaCalendario"></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-linkVendas" class="fullPage"><div class="fullHeader"><b>Link de Vendas</b></div><div class="wrap"><div class="card"><h3>Seu link de vendas</h3><p>Mande esse link pra cliente. Ela abre e faz o pedido sozinha!</p><div class="linkBox" id="meuLink">https://bolopro.com.br/loja</div><button class="btn btn-green" onclick="copiarLink()">COPIAR LINK DA MINHA LOJA</button><button class="btn btn-outline" onclick="verComoCliente()">VER COMO A CLIENTE VE</button><button class="btn btn-dark" onclick="compartilharWhats()">MANDAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-notificacoes" class="fullPage"><div class="fullHeader"><b>Notificacoes</b></div><div class="wrap"><div id="listaNotificacoes"></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-ia" class="fullPage"><div class="fullHeader"><b>BoloPro IA</b></div><div class="wrap"><div class="card"><h3>Sua assistente inteligente</h3><label>O que voce quer que a IA faca?</label><select id="iaTipo"><option value="preco">Calcular preco ideal do bolo</option><option value="descricao">Criar descricao pro bolo</option><option value="legenda">Criar legenda pro Instagram</option><option value="nome">Inventar nome de bolo novo</option><option value="kit">Montar um Kit Aniversario</option></select><label>Descreva seu bolo</label><input id="iaPergunta" placeholder="Ex: Bolo de chocolate 2kg com Ninho"><button class="btn btn-dark" onclick="perguntarIA()">PERGUNTAR PRA IA</button><div id="iaResposta"></div></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-feedback" class="fullPage"><div class="fullHeader"><b>Feedback - Sua opiniao importa</b></div><div class="wrap">
-<div class="card" style="text-align:center;border:2px solid #FF4D8D"><h2>O que voce achou do BoloPro?</h2><p>Sua avaliacao ajuda a gente a melhorar o app pra voce vender mais!</p><p style="font-size:12px;color:#888">Leva menos de 1 minuto - Sua resposta e anonima para outras boleiras</p></div>
+<div id="tela-pedidos" class="fullPage"><div class="fullHeader"><b>📦 Pedidos</b></div><div class="wrap"><div class="card"><h3>Todos os pedidos - do Firebase</h3><p>Clique em um pedido para ver TODAS as informações.</p></div><div id="listaPedidosCompleta"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-clientes" class="fullPage"><div class="fullHeader"><b>👥 Clientes</b></div><div class="wrap"><div class="card"><h3>👥 Seus Clientes</h3><input id="buscaCliente" placeholder="🔍 Buscar cliente..." oninput="renderClientes()"></div><div id="listaClientes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-calendario" class="fullPage"><div class="fullHeader"><b>📅 Calendário</b></div><div class="wrap"><div class="card"><h3>📅 Calendário de Entregas</h3><p id="mesCal2" style="font-weight:800"></p><div class="calGrid" id="calGrid2"></div><p class="small">Dias em rosa = tem entrega!</p></div><div id="listaCalendario"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-linkVendas" class="fullPage"><div class="fullHeader"><b>🔗 Link de Vendas</b></div><div class="wrap"><div class="card"><h3>🔗 Seu link de vendas</h3><p>Mande esse link pra cliente. Ela abre e faz o pedido sozinha!</p><div class="linkBox" id="meuLink">https://bolopro.com.br/loja</div><button class="btn btn-green" onclick="copiarLink()">📋 COPIAR LINK DA MINHA LOJA</button><button class="btn btn-outline" onclick="verComoCliente()">👀 VER COMO A CLIENTE VÊ</button><button class="btn btn-dark" onclick="compartilharWhats()">💬 MANDAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-notificacoes" class="fullPage"><div class="fullHeader"><b>🔔 Notificações</b></div><div class="wrap"><div id="listaNotificacoes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-ia" class="fullPage"><div class="fullHeader"><b>🤖 BoloPro IA</b></div><div class="wrap"><div class="card"><h3>🤖 Sua assistente inteligente</h3><label>O que você quer que a IA faça?</label><select id="iaTipo"><option value="preco">💰 Calcular preço ideal do bolo</option><option value="descricao">📝 Criar descrição pro bolo</option><option value="legenda">📸 Criar legenda pro Instagram</option><option value="nome">🎂 Inventar nome de bolo novo</option><option value="kit">🎉 Montar um Kit Aniversário</option></select><label>Descreva seu bolo</label><input id="iaPergunta" placeholder="Ex: Bolo de chocolate 2kg com Ninho"><button class="btn btn-dark" onclick="perguntarIA()">🤖 PERGUNTAR PRA IA</button><div id="iaResposta"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-feedback" class="fullPage"><div class="fullHeader"><b>⭐ Feedback</b></div><div class="wrap">
+<div class="card" style="text-align:center;border:2px solid #FF4D8D"><h2>O que você achou do BoloPro?</h2><p>Sua avaliação ajuda a gente a melhorar o app pra você vender mais!</p><p style="font-size:12px;color:#888">Salvo no Firebase bolopro-2949f</p></div>
 <div class="card"><h3>1. Qual sua nota geral?</h3><div style="text-align:center"><button class="estrela sel" onclick="selecionarNota(1)">⭐</button><button class="estrela sel" onclick="selecionarNota(2)">⭐</button><button class="estrela sel" onclick="selecionarNota(3)">⭐</button><button class="estrela sel" onclick="selecionarNota(4)">⭐</button><button class="estrela sel" onclick="selecionarNota(5)">⭐</button><p id="notaTexto" style="font-weight:800;color:#FF4D8D">5/5 - Perfeito!</p></div></div>
-<div class="card"><h3>2. O que voce mais gostou?</h3><label>Categoria</label><select id="feedCategoria"><option>Facilidade de usar</option><option>Link de vendas</option><option>Pedidos organizados</option><option>Calendario</option><option>Kit Festa</option><option>BoloPro IA</option><option>Outro</option></select></div>
-<div class="card"><h3>3. O que podemos melhorar?</h3><div class="opt"><button onclick="this.classList.toggle('sel')">Mais fotos</button><button onclick="this.classList.toggle('sel')">Pagamento pelo app</button><button onclick="this.classList.toggle('sel')">Lembrete automatico</button><button onclick="this.classList.toggle('sel')">Relatorio mensal</button></div><label>Seu comentario detalhado</label><textarea rows="4" id="feedText" placeholder="Ex: Amei o app! Queria que tivesse..."></textarea><label>Voce indicaria o BoloPro para outra boleira?</label><select id="feedIndica"><option>Sim, com certeza!</option><option>Sim, talvez</option><option>Nao por enquanto</option></select><button class="btn" onclick="enviarFeedback()">ENVIAR FEEDBACK</button><p style="font-size:12px;color:#888;text-align:center;margin-top:8px">Obrigada! Cada feedback e lido pela equipe CodeWay.</p></div>
-<button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-plano" class="fullPage"><div class="fullHeader"><b>Planos</b></div><div class="wrap"><div class="card" style="text-align:center"><h3>Seu Plano Atual</h3><p id="planoAtualTexto">Voce esta no <b>Plano Gratis</b></p><p id="textoMarcaAgua" style="font-size:12px;color:#E91E7F">No Gratis aparece marca dagua BoloPro. No Pago, some!</p><p id="textoKitPlano" style="font-size:12px;color:#92400E">Kit Festa: so no Plano Pago</p></div><div id="listaPlanosBoleira"></div><div class="card"><h3>Tem um codigo?</h3><label>Codigo PRO</label><input id="codigoPlano" placeholder="Ex: BOLOPRO-A1B2C3"><button class="btn" onclick="usarCodigo()">DESBLOQUEAR COM CODIGO</button></div><div class="card"><h3>Como pagar?</h3><p>1. Escolha Mensal ou Anual<br>2. Chama no WhatsApp e paga via Pix<br>3. Recebe o codigo na hora!</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro!','_blank')">QUERO ASSINAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-planosADM" class="fullPage"><div class="fullHeader"><b>Planos - ADM</b></div><div class="wrap"><div class="card" style="border:2px solid #111"><h3>Gerenciar Planos</h3><p>Edite preco, limites e descricao.</p></div><div id="listaPlanosADM"></div><div class="card"><button class="btn btn-outline" onclick="abrirTela('plano');renderPlanosBoleira()">VER PREVIA COMO BOLEIRA</button></div><button class="btn-back" onclick="fecharTelaADMPlanos()">VOLTAR PRO ADM</button></div></div>
-<div id="tela-comoUsar" class="fullPage"><div class="fullHeader"><b>Como Usar - Guia Completo</b></div><div class="wrap">
-<div class="card" style="text-align:center;border:2px solid #FF4D8D"><h2>Bem-vinda ao BoloPro!</h2><p>Aprenda em 5 minutos a vender bolo no automatico, sem ficar horas no WhatsApp.</p><p style="font-size:12px">Tempo de leitura: 4 min - Nivel: Iniciante - Atualizado: Nov/2026</p></div>
-<div class="card"><h3>Checklist rapido - Comece por aqui</h3><div class="check">✔️ <span><b>Passo 1:</b> Complete seu Perfil (nome da loja + WhatsApp)</span></div><div class="check">✔️ <span><b>Passo 2:</b> Cadastre 3 bolos com foto bonita</span></div><div class="check">✔️ <span><b>Passo 3:</b> Copie seu Link de Vendas</span></div><div class="check">✔️ <span><b>Passo 4:</b> Poste o link no Status + Bio do Instagram</span></div><div class="check">✔️ <span><b>Passo 5:</b> Receba o pedido pronto no WhatsApp</span></div></div>
-<div class="passo"><b>PASSO 1 - Cadastre sua loja (2 min)</b><p><b>Onde:</b> Menu - Perfil - Editar Perfil</p><p>Coloque nome da loja, WhatsApp que recebe os pedidos e cidade. E com esse WhatsApp que voce vai receber todos os pedidos!</p><p><b>Dica profissional:</b> Use o mesmo numero que voce ja usa com as clientes. Nao troque no meio do mes.</p></div>
-<div class="passo"><b>PASSO 2 - Cadastre seus bolos (5 min)</b><p><b>Onde:</b> Home - Add Bolo</p><p>Coloque nome, preco por kg, categoria, recheios e descricao. Quanto mais completo, mais a cliente confia e compra.</p><p><b>Dica de ouro:</b> Foto com luz natural, de dia, sem filtro, fundo limpo. Bolo bonito vende 3x mais!</p><p><b>Erro comum:</b> Nao colocar preco. Cliente que nao ve preco, desiste.</p></div>
-<div class="passo"><b>PASSO 3 - Libere seu Kit Festa (so Plano Pago)</b><p><b>Onde:</b> Home - Editar Kit</p><p>Monte seu kit (ex: Bolo 2kg + 100 brigadeiros + 50 beijinhos por R$ 299). Kit vende mais porque a cliente ja leva tudo resolvido!</p><p><b>No Plano Gratis:</b> o Kit fica invisivel. Assine para liberar.</p></div>
-<div class="passo"><b>PASSO 4 - Copie seu Link de Vendas (30 seg)</b><p><b>Onde:</b> Home - Link de Vendas - Copiar Link</p><p>Esse e o seu site de vendas! E esse link que voce vai mandar para todo mundo.</p></div>
-<div class="passo"><b>PASSO 5 - Divulgue todos os dias!</b><p>Cole o link no: Status do WhatsApp, Bio do Instagram, Grupos, Stories, Facebook.</p><p><b>Modelo pronto - copie e cole:</b></p><p style="background:#F6F7FB;padding:10px;border-radius:10px">Oi! Agora voce pode montar seu bolo sozinha! E so clicar aqui [seu link] e fazer o pedido em 1 minuto!</p><p><b>Rotina que funciona:</b> Todo dia de manha, posta 1 foto + link. Domingo a noite, posta o cardapio da semana.</p></div>
-<div class="passo"><b>PASSO 6 - Receba e organize o pedido</b><p>A cliente monta o bolo sozinha - Voce recebe no WhatsApp com Nome, Data, Resumo e Total - O pedido ja cai no Calendario e em Ultimos Pedidos.</p><p><b>Depois do pedido:</b> Marque como PAGO quando receber, use o botao COBRAR para lembrar a cliente, e veja tudo em Pedidos.</p></div>
-<div class="card"><h3>Duvidas Frequentes</h3><div class="faq"><b>Preciso pagar pra usar?</b><p>Nao! O Gratis ja funciona. O Pago tira a marca dagua, libera IA e Kit Festa e deixa tudo ilimitado.</p></div><div class="faq"><b>Como a cliente paga?</b><p>Direto pra voce! Pix, cartao ou dinheiro. O app so organiza, nao fica com seu dinheiro.</p></div><div class="faq"><b>Posso mudar o preco depois?</b><p>Sim! Vai em Add Bolo, exclui o antigo e cadastra de novo com o preco novo.</p></div><div class="faq"><b>Meu link nao abre, o que faco?</b><p>Confere se copiou o link inteiro. Se nao abrir, chama no Suporte.</p></div></div>
-<div class="card"><h3>Precisa de ajuda?</h3><p>Nossa equipe te ajuda passo a passo, sem custo.</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Preciso de ajuda pra usar o BoloPro!','_blank')">PEDIR AJUDA NO WHATSAPP</button></div>
-<button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-suporte" class="fullPage"><div class="fullHeader"><b>Suporte - Central de Ajuda</b></div><div class="wrap">
-<div class="card" style="text-align:center"><p style="font-size:40px">💬</p><h2>Central de Ajuda BoloPro</h2><p>Estamos aqui pra te ajudar a vender mais!</p><p style="font-size:12px;color:#16A34A">Online agora - Respondemos em ate 2h em horario comercial</p><p style="font-size:12px;color:#888">Protocolo medio: 15 min no WhatsApp - Satisfacao: 4.9/5</p></div>
-<div class="card"><h3>Nossos Canais Oficiais</h3><p><b>WhatsApp (mais rapido):</b> 15 99764-3116<br><b>E-mail:</b> suportecodewayapp@gmail.com<br><b>Atendimento:</b> Segunda a Sabado - 8h as 20h<br><b>Empresa:</b> CodeWay - Cotia / SP<br><b>Tempo medio:</b> 15 min no WhatsApp - 24h por e-mail</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Preciso de ajuda no BoloPro!','_blank')">CHAMAR NO WHATSAPP AGORA</button><p style="font-size:12px;color:#888;text-align:center">Nunca passe sua senha para ninguem. Nosso suporte nunca pede sua senha.</p></div>
-<div class="card"><h3>Perguntas Frequentes - Respostas Rapidas</h3><div class="faq"><b>Esqueci minha senha, e agora?</b><p>Na tela de login, confira seu e-mail e senha cadastrados. Se nao lembrar, chama no WhatsApp com seu e-mail que a gente te ajuda a recuperar.</p></div><div class="faq"><b>Meu link nao abre, o que faco?</b><p>1. Confere se copiou o link inteiro. 2. Tenta abrir em aba anonima. 3. Se nao abrir, manda print no WhatsApp.</p></div><div class="faq"><b>Como tiro a marca dagua BoloPro?</b><p>Assine o Mensal R$ 19,90 ou Anual R$ 199 em Planos. Some na hora, junto com o texto do WhatsApp.</p></div><div class="faq"><b>Como peco meu codigo PRO?</b><p>Chama no WhatsApp, escolhe Mensal ou Anual, paga via Pix e recebe o codigo na hora!</p></div><div class="faq"><b>Como libero o Kit Festa?</b><p>O Kit e exclusivo do Plano Pago. Assine Mensal ou Anual e ele aparece na hora na sua Home e na loja da cliente.</p></div><div class="faq"><b>Posso cancelar quando quiser?</b><p>Sim! Sem multa, sem fidelidade. Seu plano continua ate acabar o periodo pago.</p></div></div>
-<div class="card"><h3>Enviar Duvida / Chamado</h3><label>Categoria da duvida</label><select id="suporteCategoria"><option>Problema no login</option><option>Link nao abre</option><option>Pedido nao chegou</option><option>Plano / Pagamento / Codigo</option><option>Kit Festa</option><option>Sugestao de melhoria</option><option>Outro</option></select><label>Descreva com detalhes</label><textarea rows="4" id="duvidaSuporte" placeholder="Ex: Tentei cadastrar um bolo e deu erro... O que aparece na tela?"></textarea><button class="btn" onclick="enviarSuporte()">ENVIAR DUVIDA / CHAMADO</button><p style="font-size:12px;color:#888">Ao enviar, seu chamado vai para a equipe CodeWay e voce recebe resposta no WhatsApp cadastrado.</p></div>
-<button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-termos" class="fullPage"><div class="fullHeader"><b>Termos de Uso e Privacidade</b></div><div class="wrap">
-<div class="card"><h2>Termos de Uso e Privacidade - BoloPro</h2><p style="font-size:12px;color:#888">Ultima atualizacao: 23/11/2026 - Versao 2.0 - Empresa: CodeWay - Cotia / SP</p><p>Ao usar o BoloPro, voce concorda com os termos abaixo. Leia com atencao. Se nao concordar, nao utilize o app.</p></div>
-<div class="card"><h3>1. O que e o BoloPro?</h3><p>O BoloPro e uma plataforma digital da CodeWay para boleiras organizarem pedidos, catalogo, clientes e calendario, e para clientes montarem seu bolo e enviarem o pedido via WhatsApp. O BoloPro nao produz, vende ou entrega bolos.</p></div>
-<div class="card"><h3>2. Cadastro e Conta</h3><p><b>2.1</b> Voce deve ter 18 anos ou mais ou usar com autorizacao de um responsavel.<br><b>2.2</b> Voce e responsavel por manter seu e-mail, senha e WhatsApp atualizados.<br><b>2.3</b> Nao compartilhe sua senha. O suporte nunca pede sua senha.<br><b>2.4</b> Cada conta e pessoal e intransferivel.</p></div>
-<div class="card"><h3>3. Responsabilidades</h3><p><b>Da boleira:</b> Qualidade dos bolos, precos, prazos, entregas, atendimento, higiene e cumprimento das promessas feitas a cliente.<br><b>Do BoloPro:</b> Manter o app funcionando, proteger seus dados e dar suporte.<br><b>Pagamento:</b> Feito direto entre cliente e boleira (Pix, cartao ou dinheiro). O BoloPro nao intermedia, nao retem e nao se responsabiliza por pagamentos.</p></div>
-<div class="card"><h3>4. Planos, Kit Festa e Marca dagua</h3><p><b>4.1 Plano Gratis (R$ 0):</b> Com marca dagua BoloPro na tela + texto "Feito com BoloPro" na mensagem do WhatsApp. Kit Festa invisivel. Limite de 3 bolos e 10 pedidos/mes.<br><b>4.2 Plano Mensal (R$ 19,90/mes) e Anual (R$ 199/ano):</b> SEM marca dagua, SEM texto BoloPro, Kit Festa liberado, bolos e pedidos ilimitados + BoloPro IA.<br><b>4.3</b> O desbloqueio e feito por codigo PRO enviado apos pagamento via Pix.<br><b>4.4</b> Ao voltar para o Gratis, o Kit volta a ficar invisivel e a marca dagua volta a aparecer.</p></div>
-<div class="card"><h3>5. Privacidade - LGPD (Lei 13.709/2018)</h3><p><b>5.1</b> Coletamos apenas o necessario: nome da loja, e-mail, WhatsApp, cidade e dados dos pedidos para o app funcionar.<br><b>5.2</b> Seus dados nao sao vendidos, alugados ou compartilhados com terceiros para marketing.<br><b>5.3</b> Voce pode pedir a qualquer momento: ver seus dados, corrigir ou excluir tudo, pelo suporte.<br><b>5.4</b> Usamos Firebase (Google) para armazenamento seguro.</p></div>
-<div class="card"><h3>6. Uso Proibido</h3><p>E proibido usar o BoloPro para: aplicar golpes, vender produtos ilegais, ofender clientes, tentar invadir o sistema, copiar o app ou revender acesso sem autorizacao.</p></div>
-<div class="card"><h3>7. Cancelamento e Reembolso</h3><p><b>7.1</b> Voce pode cancelar quando quiser, sem multa e sem fidelidade.<br><b>7.2</b> Seu plano continua ativo ate o fim do periodo pago.<br><b>7.3</b> Reembolso: em caso de falha tecnica comprovada que impeca o uso, fale com o suporte em ate 7 dias apos o pagamento.</p></div>
-<div class="card"><h3>8. Disponibilidade</h3><p>Fazemos o melhor para o app estar sempre no ar, mas podem ocorrer manutencoes e instabilidades temporarias. Nao nos responsabilizamos por lucros cessantes.</p></div>
-<div class="card"><h3>9. Alteracoes nos Termos</h3><p>Podemos atualizar estes termos. A versao atual sempre estara nesta tela, com data de atualizacao.</p></div>
-<div class="card"><h3>10. Contato e Foro</h3><p><b>Empresa:</b> CodeWay<br><b>E-mail:</b> suportecodewayapp@gmail.com<br><b>WhatsApp:</b> 15 99764-3116<br><b>Foro:</b> Comarca de Cotia / SP</p><button class="btn" onclick="fecharTela()">LI E CONCORDO COM OS TERMOS</button></div>
-<button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-catalogoEdit" class="fullPage"><div class="fullHeader"><b>Add Bolo</b></div><div class="wrap"><div class="card"><p style="text-align:center;font-size:40px">🍰</p><h3 style="text-align:center">Novo Bolo no Catalogo</h3><label>Foto do Bolo</label><input id="catFoto" placeholder="Cole o link da foto"><label>Nome do Bolo</label><input id="catNome" placeholder="Ex: Bolo de Chocolate com Ninho"><label>Categoria</label><select id="catCategoria"><option>Aniversario</option><option>Casamento</option><option>Festa</option><option>Chocolate</option><option>Frutas</option><option>Cha de Bebe</option><option>Corporativo</option><option>Personalizado</option></select><label>Preco por KG</label><input id="catPreco" type="number" placeholder="Ex: 80"><label>Tamanhos</label><div class="opt" id="catTamanhos"><button class="sel" onclick="this.classList.toggle('sel')">1kg</button><button class="sel" onclick="this.classList.toggle('sel')">2kg</button><button class="sel" onclick="this.classList.toggle('sel')">3kg</button><button class="sel" onclick="this.classList.toggle('sel')">5kg</button><button onclick="this.classList.toggle('sel')">10kg</button></div><label>Recheios</label><div class="opt" id="catRecheios"><button class="sel" onclick="this.classList.toggle('sel')">Ninho</button><button class="sel" onclick="this.classList.toggle('sel')">Brigadeiro</button><button onclick="this.classList.toggle('sel')">Morango</button><button onclick="this.classList.toggle('sel')">Doce de Leite</button><button onclick="this.classList.toggle('sel')">Prestigio</button><button onclick="this.classList.toggle('sel')">Oreo</button></div><label>Coberturas</label><div class="opt" id="catCoberturas"><button class="sel" onclick="this.classList.toggle('sel')">Chantilly</button><button onclick="this.classList.toggle('sel')">Chocolate</button><button onclick="this.classList.toggle('sel')">Pasta Americana</button><button onclick="this.classList.toggle('sel')">Glace</button></div><label>Prazo</label><select id="catPrazo"><option>1 dia antes</option><option>2 dias antes</option><option>3 dias antes</option><option>1 semana antes</option></select><label>Descricao</label><textarea id="catDesc" rows="3" placeholder="Ex: Massa de chocolate fofinha..."></textarea><label>Alergenicos</label><input id="catAlerg" placeholder="Ex: Contem gluten, leite e ovo"><label>Disponivel?</label><select id="catAtivo"><option value="SIM">SIM</option><option value="NAO">NAO - Pausado</option></select><button class="btn" onclick="salvarCatalogoCompleto()">SALVAR BOLO NO CATALOGO</button><div id="listaCatalogoEdit" style="margin-top:12px"></div><h3 style="margin-top:16px">Seus Bolos - <span id="qtdCatalogo">0 bolos</span></h3><p id="catalogoVazio">Voce ainda nao tem bolos.</p><div id="catalogoPainel"></div></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-kitEdit" class="fullPage"><div class="fullHeader"><b>Kit Aniversario - Plano Pago</b></div><div class="wrap"><div class="card"><label>Nome do Kit</label><input id="kitNome" placeholder="Ex: Kit Festa 20 pessoas"><label>O que vem?</label><textarea id="kitItens" rows="2"></textarea><label>Preco</label><input id="kitPreco" type="number" placeholder="299"><button class="btn btn-gold" onclick="salvarKit()">SALVAR KIT</button><p id="kitSalvoMsg" style="font-size:13px;color:#16A34A;font-weight:700;margin-top:8px"></p></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-verBoleira" class="fullPage"><div class="fullHeader"><b id="verBoleiraTitulo">Boleira</b></div><div class="wrap"><div class="card"><div id="verBoleiraConteudo"></div><p style="font-size:11px;color:#999">Senha nunca e mostrada.</p></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<div id="tela-verPedido" class="fullPage"><div class="fullHeader"><b>Detalhes do Pedido</b></div><div class="wrap"><div class="card"><div id="verPedidoConteudo"></div></div><button class="btn-back" onclick="fecharTela()">VOLTAR</button></div></div>
-<script>
-let catalogo=[]; let pedidos=[]; let boleiras=lerLS('bolopro_boleiras',[]); let codigosGerados=lerLS('bolopro_codigos',[]); let notificacoes=[];
+<div class="card"><h3>2. O que você mais gostou?</h3><label>Categoria</label><select id="feedCategoria"><option>Facilidade de usar</option><option>Link de vendas</option><option>Pedidos organizados</option><option>Calendário</option><option>Kit Festa</option><option>BoloPro IA</option><option>Outro</option></select></div>
+<div class="card"><h3>3. O que podemos melhorar?</h3><label>Seu comentário</label><textarea rows="4" id="feedText" placeholder="Ex: Amei o app! Queria que tivesse..."></textarea><label>Você indicaria o BoloPro?</label><select id="feedIndica"><option>Sim, com certeza!</option><option>Sim, talvez</option><option>Não por enquanto</option></select><button class="btn" onclick="enviarFeedback()">ENVIAR FEEDBACK 💖</button></div>
+<button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-plano" class="fullPage"><div class="fullHeader"><b>💎 Planos</b></div><div class="wrap"><div class="card" style="text-align:center"><h3>Seu Plano Atual - do Firebase</h3><p id="planoAtualTexto">Você está no <b>Plano Grátis</b></p><p id="textoMarcaAgua" style="font-size:12px;color:#E91E7F">💧 No Grátis aparece marca d'água BoloPro. No Pago, some!</p><p id="textoKitPlano" style="font-size:12px;color:#92400E">🎉 Kit Festa: só no Plano Pago</p></div><div id="listaPlanosBoleira"></div><div class="card"><h3>🔑 Tem um código?</h3><label>Código PRO - validado no Firebase</label><input id="codigoPlano" placeholder="Ex: BOLOPRO-A1B2C3"><button class="btn" onclick="usarCodigo()">🔓 DESBLOQUEAR COM CÓDIGO</button></div><div class="card"><h3>Como pagar?</h3><p>1. Escolha Mensal ou Anual<br>2. Chama no WhatsApp e paga via Pix<br>3. Recebe o código na hora!</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro!','_blank')">💬 QUERO ASSINAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-planosADM" class="fullPage"><div class="fullHeader"><b>💎 Planos - ADM</b></div><div class="wrap"><div class="card" style="border:2px solid #111"><h3>👑 Gerenciar Planos - Salva no Firebase</h3><p>Edite preço, limites e descrição.</p></div><div id="listaPlanosADM"></div><button class="btn-back" onclick="fecharTelaADMPlanos()">← VOLTAR PRO ADM</button></div></div>
+<div id="tela-comoUsar" class="fullPage"><div class="fullHeader"><b>📖 Como Usar</b></div><div class="wrap">
+<div class="card" style="text-align:center;border:2px solid #FF4D8D"><h2>Bem-vinda ao BoloPro!</h2><p>Aprenda em 5 minutos a vender bolo no automático, sem ficar horas no WhatsApp.</p></div>
+<div class="card"><h3>✅ Checklist rápido</h3><div class="check">☑️ <span><b>Passo 1:</b> Complete seu Perfil</span></div><div class="check">☑️ <span><b>Passo 2:</b> Cadastre 3 bolos com foto bonita</span></div><div class="check">☑️ <span><b>Passo 3:</b> Copie seu Link de Vendas</span></div><div class="check">☑️ <span><b>Passo 4:</b> Poste o link no Status + Bio do Instagram</span></div><div class="check">☑️ <span><b>Passo 5:</b> Receba o pedido pronto no WhatsApp</span></div></div>
+<div class="passo"><b>PASSO 1 - Cadastre sua loja</b><p>Menu → Perfil → Editar Perfil. Coloque nome, WhatsApp e cidade.</p></div>
+<div class="passo"><b>PASSO 2 - Cadastre seus bolos</b><p>Home → Add Bolo. Foto com luz natural vende 3x mais!</p></div>
+<div class="passo"><b>PASSO 3 - Kit Festa (só Pago)</b><p>Home → Editar Kit. No Grátis fica invisível.</p></div>
+<div class="passo"><b>PASSO 4 - Copie seu Link</b><p>Home → Link de Vendas → Copiar. Esse link leva direto pro seu catálogo no Firebase.</p></div>
+<div class="passo"><b>PASSO 5 - Divulgue todos os dias!</b><p>Status, Bio do Instagram, Grupos, Stories.</p></div>
+<button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-suporte" class="fullPage"><div class="fullHeader"><b>💬 Suporte</b></div><div class="wrap">
+<div class="card" style="text-align:center"><p style="font-size:40px">💬</p><h2>Central de Ajuda BoloPro</h2><p>Estamos aqui pra te ajudar a vender mais!</p><p style="font-size:12px;color:#16A34A">● Online agora - Respondemos em até 2h</p></div>
+<div class="card"><h3>📞 Canais Oficiais</h3><p><b>WhatsApp:</b> 15 99764-3116<br><b>E-mail:</b> suportecodewayapp@gmail.com<br><b>Atendimento:</b> Segunda a Sábado - 8h às 20h<br><b>Empresa:</b> CodeWay - Cotia / SP</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Preciso de ajuda no BoloPro!','_blank')">💬 CHAMAR NO WHATSAPP AGORA</button><p style="font-size:12px;color:#888;text-align:center">⚠️ Nunca passe sua senha. Suporte nunca pede senha.</p></div>
+<div class="card"><h3>❓ FAQ</h3><div class="faq"><b>Esqueci minha senha?</b><p>Clique em "Esqueci minha senha" no login. Você recebe e-mail do Firebase.</p></div><div class="faq"><b>Como tiro a marca d'água?</b><p>Assine Mensal R$ 19,90 ou Anual R$ 199.</p></div><div class="faq"><b>Como libero o Kit Festa?</b><p>Só no Plano Pago. Assine e aparece na hora.</p></div></div>
+<div class="card"><h3>📝 Enviar Dúvida - Salva no Firebase</h3><label>Categoria</label><select id="suporteCategoria"><option>Problema no login</option><option>Link não abre</option><option>Pedido não chegou</option><option>Plano / Pagamento / Código</option><option>Kit Festa</option><option>Sugestão</option><option>Outro</option></select><label>Descreva</label><textarea rows="4" id="duvidaSuporte" placeholder="Ex: Tentei cadastrar um bolo e deu erro..."></textarea><button class="btn" onclick="enviarSuporte()">ENVIAR DÚVIDA</button></div>
+<button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-termos" class="fullPage"><div class="fullHeader"><b>📄 Termos</b></div><div class="wrap">
+<div class="card"><h2>Termos de Uso e Privacidade - BoloPro</h2><p style="font-size:12px;color:#888">Atualização: 23/11/2026 • Versão 2.0 • CodeWay • Cotia / SP • Firebase bolopro-2949f</p></div>
+<div class="card"><h3>1. O que é o BoloPro?</h3><p>Plataforma da CodeWay para boleiras organizarem pedidos, catálogo, clientes e calendário. O BoloPro não produz, vende ou entrega bolos.</p></div>
+<div class="card"><h3>2. Cadastro</h3><p>Você é responsável por e-mail, senha e WhatsApp. Conta pessoal e intransferível. Senha fica só no Firebase Auth.</p></div>
+<div class="card"><h3>3. Pagamento</h3><p>Direto entre cliente e boleira (Pix, cartão, dinheiro). BoloPro não intermedia.</p></div>
+<div class="card"><h3>4. Planos</h3><p><b>Grátis:</b> marca d'água + Kit invisível. <b>Mensal R$ 19,90 / Anual R$ 199:</b> SEM marca, Kit liberado, ilimitado + IA.</p></div>
+<div class="card"><h3>5. Privacidade - LGPD</h3><p>Coletamos só o necessário. Dados não são vendidos. Você pode pedir ver, corrigir ou excluir tudo pelo suporte. Armazenamento no Firebase (Google).</p></div>
+<div class="card"><h3>6. Cancelamento</h3><p>Cancele quando quiser, sem multa. Plano continua até o fim do período pago.</p></div>
+<div class="card"><h3>7. Contato</h3><p><b>CodeWay</b> • suportecodewayapp@gmail.com • 15 99764-3116 • Foro: Cotia / SP</p><button class="btn" onclick="fecharTela()">LI E CONCORDO</button></div>
+<button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-catalogoEdit" class="fullPage"><div class="fullHeader"><b>➕ Add Bolo</b></div><div class="wrap"><div class="card"><p style="text-align:center;font-size:40px">🍰</p><h3 style="text-align:center">Novo Bolo - Salva no Firebase</h3><label>📸 Foto do Bolo</label><input id="catFoto" placeholder="Cole o link da foto"><label>🍰 Nome do Bolo *</label><input id="catNome" placeholder="Ex: Bolo de Chocolate com Ninho"><label>📂 Categoria *</label><select id="catCategoria"><option>🎂 Aniversário</option><option>💍 Casamento</option><option>🎉 Festa</option><option>🍫 Chocolate</option><option>🍓 Frutas</option><option>👶 Chá de Bebê</option><option>🏢 Corporativo</option><option>✨ Personalizado</option></select><label>💰 Preço por KG *</label><input id="catPreco" type="number" placeholder="Ex: 80"><label>⚖️ Tamanhos</label><div class="opt" id="catTamanhos"><button class="sel" onclick="this.classList.toggle('sel')">1kg</button><button class="sel" onclick="this.classList.toggle('sel')">2kg</button><button class="sel" onclick="this.classList.toggle('sel')">3kg</button><button class="sel" onclick="this.classList.toggle('sel')">5kg</button><button onclick="this.classList.toggle('sel')">10kg</button></div><label>🍫 Recheios</label><div class="opt" id="catRecheios"><button class="sel" onclick="this.classList.toggle('sel')">Ninho</button><button class="sel" onclick="this.classList.toggle('sel')">Brigadeiro</button><button onclick="this.classList.toggle('sel')">Morango</button><button onclick="this.classList.toggle('sel')">Doce de Leite</button><button onclick="this.classList.toggle('sel')">Prestígio</button><button onclick="this.classList.toggle('sel')">Oreo</button></div><label>🎂 Coberturas</label><div class="opt" id="catCoberturas"><button class="sel" onclick="this.classList.toggle('sel')">Chantilly</button><button onclick="this.classList.toggle('sel')">Chocolate</button><button onclick="this.classList.toggle('sel')">Pasta Americana</button><button onclick="this.classList.toggle('sel')">Glacê</button></div><label>⏰ Prazo</label><select id="catPrazo"><option>1 dia antes</option><option>2 dias antes</option><option>3 dias antes</option><option>1 semana antes</option></select><label>📝 Descrição</label><textarea id="catDesc" rows="3" placeholder="Ex: Massa de chocolate fofinha..."></textarea><label>⚠️ Alergênicos</label><input id="catAlerg" placeholder="Ex: Contém glúten, leite e ovo"><label>✅ Disponível?</label><select id="catAtivo"><option value="SIM">✅ SIM</option><option value="NAO">⏸️ NÃO - Pausado</option></select><button class="btn" onclick="salvarCatalogoCompleto()">✅ SALVAR BOLO NO FIREBASE</button><div id="listaCatalogoEdit" style="margin-top:12px"></div><h3 style="margin-top:16px">🍰 Seus Bolos - <span id="qtdCatalogo">0 bolos</span></h3><p id="catalogoVazio">Você ainda não tem bolos.</p><div id="catalogoPainel"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-kitEdit" class="fullPage"><div class="fullHeader"><b>🎉 Kit Aniversário - Plano Pago</b></div><div class="wrap"><div class="card"><label>Nome do Kit</label><input id="kitNome" placeholder="Ex: Kit Festa 20 pessoas"><label>O que vem?</label><textarea id="kitItens" rows="2"></textarea><label>Preço</label><input id="kitPreco" type="number" placeholder="299"><button class="btn btn-gold" onclick="salvarKit()">SALVAR KIT NO FIREBASE 🎉</button><p id="kitSalvoMsg" style="font-size:13px;color:#16A34A;font-weight:700;margin-top:8px"></p></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-verBoleira" class="fullPage"><div class="fullHeader"><b id="verBoleiraTitulo">👩‍🍳 Boleira</b></div><div class="wrap"><div class="card"><div id="verBoleiraConteudo"></div><p style="font-size:11px;color:#999">🔒 Senha nunca é mostrada - fica só no Firebase Auth.</p></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-verPedido" class="fullPage"><div class="fullHeader"><b>📦 Detalhes do Pedido</b></div><div class="wrap"><div class="card"><div id="verPedidoConteudo"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAnG2Zh2xlCpWZPStMI8Md15F77LI0N3XY",
+  authDomain: "bolopro-2949f.firebaseapp.com",
+  projectId: "bolopro-2949f",
+  storageBucket: "bolopro-2949f.firebasestorage.app",
+  messagingSenderId: "939937281099",
+  appId: "1:939937281099:web:74683a4681f63767a749ce",
+  measurementId: "G-43QYH6ZF11"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let usuarioAtual={uid:'',loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:'',isAdmin:false};
+let catalogo=[]; let pedidos=[]; let boleiras=[]; let notificacoes=[];
 let filtroAtual='todas';
 let boloAtual=null; let kg=2; let recheio='Ninho'; let cobertura='Chantilly'; let formato='Redondo'; let entrega='Retirada'; let pagamento='Pix'; let sinal='Sim, vou pixar sinal'; let kitSel=null;
 let linkLojaAtual='';
-let params=new URLSearchParams(window.location.search);
-let lojaParam=params.get('loja');
-if(lojaParam){ setTimeout(function(){ document.getElementById('authPage').classList.add('hidden'); document.getElementById('clientePage').classList.remove('hidden'); document.getElementById('tituloLoja').innerText=lojaParam.replace(/-/g,' ').replace(/\b\w/g,function(l){return l.toUpperCase();}); atualizarMarcaAgua(); atualizarKitUI(); atualizarVisibilidadeKit(); },300); }
+let kitGlobal={nome:'Kit Festa 20 pessoas',itens:'Bolo 2kg + 100 brigadeiros + 50 beijinhos',preco:299};
+let planos={
+  gratis:{nome:'GRATIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para começar a testar',recursos:'✅ Até 3 bolos\n✅ Até 10 pedidos/mês\n✅ Link da loja\n✅ Calendário\n❌ Sem IA\n❌ Sem Kit Festa\n💧 Com marca d\'água'},
+  mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mês',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'✅ Bolos ilimitados\n✅ Pedidos ilimitados\n✅ BoloPro IA\n✅ Kit Festa liberado\n✅ SEM marca d\'água\n✅ Suporte prioritário'},
+  anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses grátis!',recursos:'✅ TUDO do Mensal\n✅ Kit Festa liberado\n✅ 2 meses GRÁTIS\n✅ Selo ⭐ Destaque\n✅ SEM marca d\'água'}
+};
+const planoPago=()=> usuarioAtual.plano && usuarioAtual.plano!=='GRATIS';
+const $=id=>document.getElementById(id);
+function mostrarToast(m){let t=$('copyToast');t.innerText=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+function setSync(t){let s=$('syncBadge');if(s){s.innerText=t;s.classList.add('show');}}
+function slugify(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+async function copiarTextoSeguro(texto,msgOk){
+  texto=String(texto||'');if(!texto){alert('Nada para copiar!');return false;}
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(texto); mostrarToast(msgOk||'✅ Copiado!'); return true; } }catch(e){}
+  try{let ta=document.createElement('textarea');ta.value=texto;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=document.execCommand('copy');document.body.removeChild(ta);if(ok){mostrarToast(msgOk||'✅ Copiado!');return true;}}catch(e){}
+  alert(texto);return true;
+}
+async function salvarNoFirebase(c,d){try{let doc=await addDoc(collection(db,c),Object.assign({},d,{criadoEm:serverTimestamp()}));setSync('☁️ Salvo no Firebase 2949f');return doc.id;}catch(e){alert('Erro ao salvar no Firebase: '+e.message);return null;}}
+async function salvarBoleiraNoBanco(){
+  if(!usuarioAtual.uid) return;
+  await setDoc(doc(db,'boleiras',usuarioAtual.uid),{loja:usuarioAtual.loja,email:usuarioAtual.email,zap:usuarioAtual.zap,cidade:usuarioAtual.cidade,sobre:usuarioAtual.sobre,plano:usuarioAtual.plano,dataCadastro:usuarioAtual.dataCadastro,isAdmin:usuarioAtual.isAdmin||false,kit:kitGlobal,atualizadoEm:serverTimestamp()},{merge:true});
+  setSync('☁️ Salvo no Firebase 2949f');
+}
+async function carregarDadosDaBoleira(){
+  if(!usuarioAtual.uid) return;
+  let d=await getDoc(doc(db,'boleiras',usuarioAtual.uid));
+  if(d.exists()){let x=d.data();usuarioAtual.loja=x.loja||usuarioAtual.loja;usuarioAtual.zap=x.zap||'';usuarioAtual.cidade=x.cidade||'';usuarioAtual.sobre=x.sobre||usuarioAtual.sobre;usuarioAtual.plano=x.plano||'GRATIS';usuarioAtual.isAdmin=x.isAdmin||false;if(x.kit)kitGlobal=x.kit;}
+  let s1=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));
+  catalogo=[];s1.forEach(doc=>catalogo.push(Object.assign({id:doc.id},doc.data())));
+  let s2=await getDocs(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)));
+  pedidos=[];s2.forEach(doc=>pedidos.push(Object.assign({id:doc.id},doc.data())));
+  pedidos.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
+  let s3=await getDocs(collection(db,'planos_config'));
+  s3.forEach(doc=>{let x=doc.data();if(planos[x.key])planos[x.key]=Object.assign(planos[x.key],x);});
+  onSnapshot(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));lista.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));pedidos=lista;renderPedidos();renderHome();});
+  onSnapshot(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));catalogo=lista;renderCatalogo();});
+  renderTudo();
+}
+function renderTudo(){renderCatalogo();renderPedidos();renderCalendario();atualizarSino();renderPlanosBoleira();renderHome();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();}
+function atualizarKitUI(){
+  if($('kitNome'))$('kitNome').value=kitGlobal.nome;
+  if($('kitItens'))$('kitItens').value=kitGlobal.itens;
+  if($('kitPreco'))$('kitPreco').value=kitGlobal.preco;
+  if($('kitClienteNome'))$('kitClienteNome').innerText=kitGlobal.nome+' - R$ '+kitGlobal.preco;
+  if($('kitClienteItens'))$('kitClienteItens').innerText=kitGlobal.itens;
+  if($('homeKitTxt'))$('homeKitTxt').innerText=kitGlobal.nome;
+}
+function atualizarVisibilidadeKit(){
+  let pago=planoPago();
+  if($('cardKitCliente'))$('cardKitCliente').style.display=pago?'block':'none';
+  if($('btnKitHome'))$('btnKitHome').style.display=pago?'block':'none';
+  if($('avisoKitGratis'))$('avisoKitGratis').style.display=pago?'none':'block';
+}
+let notaFeedback=5;
+function selecionarNota(n){notaFeedback=n;document.querySelectorAll('.estrela').forEach((el,i)=>el.classList.toggle('sel',i<n));$('notaTexto').innerText=n+'/5 - '+['','Péssimo','Ruim','Ok','Bom','Perfeito!'][n];}
 function atualizarMarcaAgua(){
-  let gratis = (usuarioAtual.plano||'GRATIS')=='GRATIS';
-  document.getElementById('marcaAgua').classList.toggle('show', gratis && document.getElementById('painelPage').classList.contains('hidden')==false);
-  document.getElementById('marcaAguaCliente').classList.toggle('show', gratis && document.getElementById('clientePage').classList.contains('hidden')==false);
-  let faixa=document.getElementById('faixaGratis'); if(faixa) faixa.classList.toggle('hidden', !gratis || document.getElementById('painelPage').classList.contains('hidden'));
-  let txt=document.getElementById('textoMarcaAgua'); if(txt) txt.innerText = gratis ? 'No Gratis aparece marca dagua BoloPro. No Pago, some!' : 'Voce esta no Plano Pago - SEM marca dagua!';
-  let txtKit=document.getElementById('textoKitPlano'); if(txtKit) txtKit.innerText = gratis ? 'Kit Festa: invisivel no Gratis - so no Plano Pago' : 'Kit Festa liberado!';
+  let gratis=(usuarioAtual.plano||'GRATIS')=='GRATIS';
+  $('marcaAgua').classList.toggle('show',gratis && !$('painelPage').classList.contains('hidden'));
+  $('marcaAguaCliente').classList.toggle('show',gratis && !$('clientePage').classList.contains('hidden'));
+  if($('faixaGratis'))$('faixaGratis').classList.toggle('hidden',!gratis || $('painelPage').classList.contains('hidden'));
+  if($('textoMarcaAgua'))$('textoMarcaAgua').innerText=gratis?'💧 No Grátis aparece marca d\'água BoloPro. No Pago, some!':'✅ Você está no Plano Pago - SEM marca d\'água!';
+  if($('textoKitPlano'))$('textoKitPlano').innerText=gratis?'🎉 Kit Festa: invisível no Grátis - só no Plano Pago':'✅ Kit Festa liberado!';
   atualizarVisibilidadeKit();
 }
-function toggleOlho(id,btn){let i=document.getElementById(id);i.type=i.type=='password'?'text':'password';btn.innerText=i.type=='password'?'👁️':'🙈';}
-function mudaAba(t){document.getElementById('tabLogin').classList.toggle('active',t=='login');document.getElementById('tabCad').classList.toggle('active',t=='cad');document.getElementById('formLogin').classList.toggle('hidden',t!='login');document.getElementById('formCad').classList.toggle('hidden',t!='cad');}
+let params=new URLSearchParams(window.location.search);
+let lojaUidParam=params.get('uid');
+let lojaParam=params.get('loja');
+async function carregarLojaPublica(){
+  if(!lojaUidParam && !lojaParam) return;
+  $('authPage').classList.add('hidden');$('clientePage').classList.remove('hidden');
+  try{
+    if(lojaUidParam){
+      let snap=await getDoc(doc(db,'boleiras',lojaUidParam));
+      if(snap.exists()){let x=snap.data();usuarioAtual={uid:snap.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;$('cidadeLoja').innerText=x.cidade||'';}
+    } else {
+      let snap=await getDocs(query(collection(db,'boleiras'),where('loja','==',lojaParam)));
+      if(!snap.empty){let d=snap.docs[0];let x=d.data();usuarioAtual={uid:d.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;} else {$('tituloLoja').innerText=lojaParam;}
+    }
+    if(usuarioAtual.uid){let s=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));catalogo=[];s.forEach(d=>catalogo.push(Object.assign({id:d.id},d.data())));renderCatalogo();}
+    atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();
+  }catch(e){$('tituloLoja').innerText=lojaParam||'Minha Loja';}
+}
+function toggleOlho(id,btn){let i=$(id);i.type=i.type=='password'?'text':'password';btn.innerText=i.type=='password'?'👁️':'🙈';}
+function mudaAba(t){$('tabLogin').classList.toggle('active',t=='login');$('tabCad').classList.toggle('active',t=='cad');$('formLogin').classList.toggle('hidden',t!='login');$('formCad').classList.toggle('hidden',t!='cad');}
+async function recuperarSenha(){let email=$('loginEmail').value.trim();if(!email){alert('Digite seu e-mail!');return;}try{await sendPasswordResetEmail(auth,email);alert('E-mail de recuperação enviado!');}catch(e){alert('Erro: '+e.message);}}
 async function fazerCadastro(){
-  let loja=document.getElementById('cadLoja').value.trim();let email=document.getElementById('cadEmail').value.trim().toLowerCase();let senha=document.getElementById('cadSenha').value;let senha2=document.getElementById('cadSenha2').value;let zap=document.getElementById('cadZap').value.trim();let cidade=document.getElementById('cadCidade').value.trim();
+  let loja=$('cadLoja').value.trim();let email=$('cadEmail').value.trim().toLowerCase();let senha=$('cadSenha').value;let senha2=$('cadSenha2').value;let zap=$('cadZap').value.trim();let cidade=$('cadCidade').value.trim();
   if(!loja||!email){alert('Preencha nome da loja e email!');return;}
-  if(!senha||senha.length<6){alert('Senha minimo 6 letras!');return;}
-  if(senha!==senha2){alert('As senhas nao sao iguais! Confira!');return;}
-  carregarTudo();
-  if(boleiras.find(function(b){return b.email.toLowerCase()==email;})){alert('Esse e-mail ja esta cadastrado! Faca login.');mudaAba('login');return;}
-  let novaBoleira={id:Date.now(),nome:loja,email:email,zap:zap,cidade:cidade,plano:'GRATIS',status:'ATIVA',pedidos:0,fatura:0,img:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',cadastro:new Date().toLocaleDateString('pt-BR'),sobre:'Bolos artesanais feitos com amor!',senha:senha};
-  await salvarNoFirebase('boleiras',{loja:loja,email:email,zap:zap,cidade:cidade,plano:'GRATIS',status:'ATIVA',pedidos:0,fatura:0,senha:senha});
-  usuarioAtual={loja:loja,email:email,zap:zap,cidade:cidade,sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:novaBoleira.cadastro,senha:senha};
-  boleiras.push(novaBoleira);
-  catalogo=[]; pedidos=[]; notificacoes=[]; kitGlobal={nome:'Kit Festa 20 pessoas',itens:'Bolo 2kg + 100 brigadeiros + 50 beijinhos',preco:299};
-  persistirTudo();
-  abrirPainel(loja,email);
+  if(!senha||senha.length<6){alert('Senha mínimo 6 letras!');return;}
+  if(senha!==senha2){alert('As senhas não são iguais!');return;}
+  try{
+    let cred=await createUserWithEmailAndPassword(auth,email,senha);
+    usuarioAtual={uid:cred.user.uid,loja,email,zap,cidade,sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:new Date().toLocaleDateString('pt-BR'),isAdmin:false};
+    await setDoc(doc(db,'boleiras',cred.user.uid),{loja,email,zap,cidade,sobre:usuarioAtual.sobre,plano:'GRATIS',dataCadastro:usuarioAtual.dataCadastro,isAdmin:false,kit:kitGlobal,criadoEm:serverTimestamp()});
+    setSync('☁️ Conta criada no bolopro-2949f');abrirPainel(loja,email);await carregarDadosDaBoleira();
+  }catch(e){if(e.code=='auth/email-already-in-use')alert('E-mail já cadastrado! Faça login.');else alert('Erro: '+e.message);}
 }
 async function fazerLogin(){
-  let email=document.getElementById('loginEmail').value.trim().toLowerCase()||'ana@gmail.com';let senha=document.getElementById('loginSenha').value;
-  if(!senha){alert('Digite a senha!');return;}
-  carregarTudo();
-  let achada=boleiras.find(function(b){return b.email.toLowerCase()==email.toLowerCase();});
-  if(!achada && db){
-    try{ let snap=await db.collection('boleiras').where('email','==',email).get(); if(!snap.empty){ snap.forEach(function(doc){let x=doc.data(); achada={id:doc.id,nome:x.loja||x.nome,email:x.email,zap:x.zap,cidade:x.cidade,plano:x.plano||'GRATIS',status:x.status||'ATIVA',pedidos:x.pedidos||0,fatura:x.fatura||0,img:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',cadastro:x.dataCadastro||'',sobre:x.sobre||'',senha:x.senha||''}; boleiras.push(achada);}); } }catch(e){}
+  let email=$('loginEmail').value.trim().toLowerCase();let senha=$('loginSenha').value;
+  if(!email||!senha){alert('Digite e-mail e senha!');return;}
+  try{
+    let cred=await signInWithEmailAndPassword(auth,email,senha);
+    let d=await getDoc(doc(db,'boleiras',cred.user.uid));
+    if(!d.exists()){alert('Perfil não encontrado no Firestore.');return;}
+    let x=d.data();if(x.status=='BLOQUEADA'){alert('Conta bloqueada! Suporte: 15 99764-3116');await signOut(auth);return;}
+    usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre||'Bolos artesanais feitos com amor!',plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false};
+    if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,email);await carregarDadosDaBoleira();
+  }catch(e){alert('Erro no login: '+e.message);}
+}
+onAuthStateChanged(auth,async(user)=>{
+  if(user && !lojaParam && !lojaUidParam && !usuarioAtual.uid){
+    let d=await getDoc(doc(db,'boleiras',user.uid));
+    if(d.exists()){let x=d.data();usuarioAtual={uid:user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false};if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,x.email);await carregarDadosDaBoleira();}
   }
-  if(!achada){alert('E-mail nao encontrado! Cadastre-se primeiro.');mudaAba('cad');return;}
-  if(achada.senha && achada.senha!==senha){alert('Senha incorreta! Confira sua senha.');return;}
-  if(achada.status=='BLOQUEADA'){alert('Conta bloqueada! Fale com o suporte: 15 99764-3116');return;}
-  usuarioAtual={loja:achada.nome,email:achada.email,zap:achada.zap,cidade:achada.cidade,sobre:achada.sobre||'Bolos artesanais feitos com amor!',plano:achada.plano,dataCadastro:achada.cadastro,senha:achada.senha||senha};
-  carregarTudo();
-  abrirPainel(achada.nome,email);
-  carregarDoFirebase();
-}
+});
 function abrirPainel(loja,email){
-  document.getElementById('authPage').classList.add('hidden');document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('clientePage').classList.add('hidden');
-  document.getElementById('painelPage').classList.remove('hidden');document.getElementById('topBar').classList.remove('hidden');
-  document.getElementById('nomeLojaPainel').innerText=loja;document.getElementById('emailPainel').innerText=email+' - Plano '+usuarioAtual.plano;
-  document.getElementById('tituloLoja').innerText=loja;document.getElementById('topNome').innerText=loja;
-  document.getElementById('menuNome').innerText=loja;document.getElementById('menuEmail').innerText=email;document.getElementById('avatarLetra').innerText=loja.charAt(0).toUpperCase();
-  document.getElementById('cidadeLoja').innerText=usuarioAtual.cidade||'';
-  document.getElementById('menuPlanoBadge').innerText='PLANO '+usuarioAtual.plano;
-  let slug=slugify(loja);linkLojaAtual='https://bolopro.com.br/loja?loja='+slug;document.getElementById('meuLink').innerText=linkLojaAtual;
-  atualizarPerfilView(); renderCatalogo(); renderPedidos(); renderCalendario(); atualizarSino(); renderPlanosBoleira(); renderHome(); atualizarMarcaAgua(); atualizarKitUI(); atualizarVisibilidadeKit();
+  $('authPage').classList.add('hidden');$('admLoginPage').classList.add('hidden');$('clientePage').classList.add('hidden');
+  $('painelPage').classList.remove('hidden');$('topBar').classList.remove('hidden');
+  $('nomeLojaPainel').innerText=loja;$('emailPainel').innerText=email+' • Plano '+usuarioAtual.plano;
+  $('tituloLoja').innerText=loja;$('topNome').innerText=loja;$('menuNome').innerText=loja;$('menuEmail').innerText=email;$('avatarLetra').innerText=loja.charAt(0).toUpperCase();
+  $('cidadeLoja').innerText=usuarioAtual.cidade||'';$('menuPlanoBadge').innerText='PLANO '+usuarioAtual.plano;
+  linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual;
+  atualizarPerfilView();renderTudo();
 }
-function abrirLoginADM(){document.getElementById('authPage').classList.add('hidden');document.getElementById('admLoginPage').classList.remove('hidden');}
-function voltarLoginBoleira(){document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');}
-async function fazerLoginADM(){let s=document.getElementById('admSenha').value;if(s!=='123456'){alert('Senha ADM incorreta!');return;}document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('admPage').classList.remove('hidden');carregarTudo();await carregarDoFirebase();renderBoleirasADM();renderPlanosADM();}
-function sairADM(){document.getElementById('admPage').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');}
-async function gerarCodigo(){let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let rand='';for(let i=0;i<6;i++)rand+=chars.charAt(Math.floor(Math.random()*chars.length));let codigo='BOLOPRO-'+rand;let para=document.getElementById('codigoBoleira').value;let validade=document.getElementById('codigoValidade').value;let tipoPlano=document.getElementById('codigoPlanoTipo').value;codigosGerados.unshift({codigo:codigo,para:para,validade:validade,tipoPlano:tipoPlano,usado:false});salvarLS('bolopro_codigos',codigosGerados);document.getElementById('codigoGerado').innerText=codigo;document.getElementById('codigoGerado').classList.remove('hidden');document.getElementById('btnCopiarCodigo').classList.remove('hidden');await salvarNoFirebase('codigos_pro',{codigo:codigo,para:para,validade:validade,tipoPlano:tipoPlano,usado:false});renderCodigos();}
-function renderCodigos(){let h='';codigosGerados.forEach(function(c){h+='<div style="background:#F6F7FB;padding:10px;border-radius:10px;margin-top:8px;font-size:13px"><b>'+c.codigo+'</b> - '+(c.tipoPlano||'MENSAL')+' - '+c.para+' - '+c.validade+' dias - '+(c.usado?'USADO':'DISPONIVEL')+' <button class="btn btn-sm btn-green" onclick="copiarCodigoEspecifico(\''+c.codigo+'\')">Copiar</button></div>';});document.getElementById('listaCodigos').innerHTML=h;}
-async function copiarCodigo(){let cod=document.getElementById('codigoGerado').innerText.trim();if(!cod||cod=='BOLOPRO-XXXX'){alert('Gere um codigo primeiro!');return;}await copiarTextoSeguro('Seu codigo PRO do BoloPro e: '+cod+' - Cole no app em Planos > Desbloquear!','Codigo copiado!');}
-async function copiarCodigoEspecifico(cod){await copiarTextoSeguro('Seu codigo PRO do BoloPro e: '+cod+' - Cole no app em Planos > Desbloquear!','Codigo copiado!');}
+function abrirLoginADM(){$('authPage').classList.add('hidden');$('admLoginPage').classList.remove('hidden');}
+function voltarLoginBoleira(){$('admLoginPage').classList.add('hidden');$('authPage').classList.remove('hidden');}
+async function fazerLoginADM(){
+  let email=$('admEmail').value.trim().toLowerCase();let senha=$('admSenha').value;
+  if(!email||!senha){alert('Digite e-mail e senha do ADM!');return;}
+  try{
+    let cred=await signInWithEmailAndPassword(auth,email,senha);
+    let d=await getDoc(doc(db,'boleiras',cred.user.uid));
+    if(!d.exists()||!d.data().isAdmin){alert('Essa conta não é ADM!');await signOut(auth);return;}
+    let x=d.data();usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:true};
+    $('admLoginPage').classList.add('hidden');$('admPage').classList.remove('hidden');await carregarBoleirasADM();renderPlanosADM();
+  }catch(e){alert('Erro ADM: '+e.message+'\n\nNo Firestore em boleiras/{seu uid} coloque isAdmin: true');}
+}
+function sairADM(){$('admPage').classList.add('hidden');$('authPage').classList.remove('hidden');}
+async function carregarBoleirasADM(){let snap=await getDocs(collection(db,'boleiras'));boleiras=[];snap.forEach(d=>boleiras.push(Object.assign({id:d.id},d.data())));renderBoleirasADM();renderCodigos();}
+async function gerarCodigo(){
+  let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let rand='';for(let i=0;i<6;i++)rand+=chars.charAt(Math.floor(Math.random()*chars.length));let codigo='BOLOPRO-'+rand;
+  let para=$('codigoBoleira').value;let validade=$('codigoValidade').value;let tipoPlano=$('codigoPlanoTipo').value;
+  await setDoc(doc(db,'codigos_pro',codigo),{codigo,para,validade:parseInt(validade),tipoPlano,usado:false,criadoEm:serverTimestamp(),criadoPor:usuarioAtual.uid});
+  $('codigoGerado').innerText=codigo;$('codigoGerado').classList.remove('hidden');$('btnCopiarCodigo').classList.remove('hidden');setSync('☁️ Código salvo no Firebase');renderCodigos();
+}
+async function renderCodigos(){let snap=await getDocs(query(collection(db,'codigos_pro'),orderBy('criadoEm','desc'),limit(20)));let h='';snap.forEach(d=>{let c=d.data();h+=`<div style="background:#F6F7FB;padding:10px;border-radius:10px;margin-top:8px;font-size:13px"><b>${c.codigo}</b> • ${c.tipoPlano} • ${c.para||'Genérico'} • ${c.validade} dias • ${c.usado?'✅ USADO':'🟢 DISPONÍVEL'} <button class="btn btn-sm btn-green" onclick="copiarCodigoEspecifico('${c.codigo}')">📋 Copiar</button></div>`;});$('listaCodigos').innerHTML=h||'<p>Nenhum código ainda.</p>';}
+async function copiarCodigo(){let cod=$('codigoGerado').innerText.trim();if(!cod||cod=='BOLOPRO-XXXX'){alert('Gere um código primeiro!');return;}await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
+async function copiarCodigoEspecifico(cod){await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
 function renderHome(){
-  let clientesUnicos=[];pedidos.forEach(function(p){if(clientesUnicos.indexOf(p.cliente)===-1)clientesUnicos.push(p.cliente);});
-  document.getElementById('homeQtdClientes').innerText=clientesUnicos.length+' clientes';
-  document.getElementById('homeQtdPedidos').innerText=pedidos.length+' pedidos';
-  document.getElementById('homeQtdCatalogo').innerText=catalogo.length+' bolos';
-  document.getElementById('homeKitTxt').innerText=kitGlobal.nome;
-  document.getElementById('meuLinkResumo').innerText=linkLojaAtual?linkLojaAtual.replace('https://',''):'Copiar link da loja';
-  let html='';
-  if(!pedidos.length) html='<div class="pedidoHome"><p>Nenhum pedido ainda. Quando chegar um pedido, aparece aqui! Manda seu link pra cliente!</p></div>';
-  pedidos.slice(0,5).forEach(function(p){
-    let idx=pedidos.indexOf(p);let pago=p.status=='PAGO';
-    html+='<div class="pedidoHome"><b>'+p.cliente+' - '+(pago?'PAGO':'DEVENDO')+'</b><p>'+p.bolo+' | R$ '+p.valor+',00 | '+p.data+'</p><p>Entrega: '+p.data+' | '+p.pagamento+'</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago('+idx+')">'+(pago?'Marcar Devendo':'Marcar Pago')+'</button><button class="btnLaranja" onclick="cobrarCliente('+idx+')">Cobrar</button><button class="btnVermelho" onclick="excluirPedido('+idx+')">Excluir</button><button class="btnRosa" onclick="verPedido('+idx+')">Ver</button></div></div>';
-  });
-  document.getElementById('ultimosPedidosHome').innerHTML=html;
-  atualizarVisibilidadeKit();
+  let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length;
+  $('homeQtdClientes').innerText=clientesUnicos+' clientes';$('homeQtdPedidos').innerText=pedidos.length+' pedidos';$('homeQtdCatalogo').innerText=catalogo.length+' bolos';$('homeKitTxt').innerText=kitGlobal.nome;
+  $('meuLinkResumo').innerText=linkLojaAtual?linkLojaAtual.replace('https://',''):'Copiar link da loja';
+  let html='';if(!pedidos.length)html='<div class="pedidoHome"><p>Nenhum pedido ainda. Manda seu link pra cliente!</p></div>';
+  pedidos.slice(0,5).forEach(p=>{let pago=p.status=='PAGO';html+=`<div class="pedidoHome"><b>👤 ${p.cliente} - ${pago?'✅ PAGO':'💸 DEVENDO'}</b><p>🍰 ${p.bolo} | 💰 R$ ${p.valor},00 | 📅 ${p.data}</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago('${p.id}')">${pago?'Marcar Devendo':'Marcar Pago'}</button><button class="btnLaranja" onclick="cobrarCliente('${p.id}')">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido('${p.id}')">🗑️</button><button class="btnRosa" onclick="verPedido('${p.id}')">Ver</button></div></div>`;});
+  $('ultimosPedidosHome').innerHTML=html;atualizarVisibilidadeKit();
 }
-function alternarPago(i){pedidos[i].status=pedidos[i].status=='PAGO'?'PENDENTE':'PAGO';persistirTudo();renderPedidos();renderHome();renderPedidosCompleta();}
-function cobrarCliente(i){let p=pedidos[i];let msg='Oi '+p.cliente+'! Tudo bem? Aqui e da '+usuarioAtual.loja+'! Passando pra lembrar do seu pedido de '+p.bolo+' - R$ '+p.valor+',00 - Entrega '+p.data+'. Pode confirmar o pagamento? Obrigada!';window.open('https://wa.me/55'+p.zap+'?text='+encodeURIComponent(msg),'_blank');}
-function excluirPedido(i){if(confirm('Excluir esse pedido?')){pedidos.splice(i,1);persistirTudo();renderPedidos();renderHome();renderPedidosCompleta();}}
+async function alternarPago(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let novo=p.status=='PAGO'?'PENDENTE':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderHome();renderPedidosCompleta();}
+function cobrarCliente(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let msg=`Oi ${p.cliente}! Tudo bem? 😊 Aqui é da ${usuarioAtual.loja}! Passando pra lembrar do seu pedido de ${p.bolo} - R$ ${p.valor},00 - Entrega ${p.data}. Pode confirmar o pagamento? Obrigada! 💖`;window.open(`https://wa.me/55${p.zap}?text=${encodeURIComponent(msg)}`,'_blank');}
+async function excluirPedido(id){if(confirm('Excluir esse pedido do Firebase?')){await deleteDoc(doc(db,'pedidos',id));pedidos=pedidos.filter(x=>x.id!=id);renderPedidos();renderHome();renderPedidosCompleta();}}
 function renderClientes(){
-  let busca=(document.getElementById('buscaCliente')?document.getElementById('buscaCliente').value:'').toLowerCase();
-  let mapa={};pedidos.forEach(function(p){if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});
-  let lista=Object.values(mapa).filter(function(c){return !busca||c.nome.toLowerCase().indexOf(busca)>=0;});
-  let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';
-  lista.forEach(function(c){html+='<div class="card"><b>'+c.nome+'</b><p>'+c.zap+'<br>'+c.qtd+' pedidos - R$ '+c.total+',00 - Ultimo: '+c.ultimo+'</p><button class="btn btn-green" onclick="window.open(\'https://wa.me/55'+c.zap+'?text=Oi '+c.nome+'! Aqui e da '+usuarioAtual.loja+'! Quer encomendar um bolo?\',\'_blank\')">Chamar no WhatsApp</button></div>';});
-  document.getElementById('listaClientes').innerHTML=html;
+  let busca=($('buscaCliente')?.value||'').toLowerCase();let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});
+  let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';
+  lista.forEach(c=>{html+=`<div class="card"><b>👤 ${c.nome}</b><p>📱 ${c.zap||''}<br>📦 ${c.qtd} pedidos • 💰 R$ ${c.total},00 • Último: ${c.ultimo}</p><button class="btn btn-green" onclick="window.open('https://wa.me/55${c.zap}?text=Oi ${c.nome}! Aqui é da ${usuarioAtual.loja}! Quer encomendar um bolo?','_blank')">💬 Chamar no WhatsApp</button></div>`;});
+  $('listaClientes').innerHTML=html;
 }
 function renderCalendarioTela(){
-  let hoje=new Date();document.getElementById('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[];
-  pedidos.forEach(function(p){if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}});
+  let hoje=new Date();$('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[];
+  pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}});
   let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
-  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.indexOf(d)>=0)cls='tem';if(d==hoje.getDate())cls+=' hoje';h+='<div class="'+cls+'">'+d+'</div>';}
-  document.getElementById('calGrid2').innerHTML=h;
-  let html='';pedidos.forEach(function(p,i){html+='<div class="pedido" onclick="verPedido('+i+')"><b>'+p.cliente+'</b> - '+p.bolo+'<p>'+p.data+' '+(p.hora||'')+' - R$ '+p.valor+',00</p></div>';});
-  document.getElementById('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>';
+  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
+  $('calGrid2').innerHTML=h;let html='';pedidos.forEach(p=>{html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> - ${p.bolo}<p>📅 ${p.data} ${p.hora||''} • R$ ${p.valor},00</p></div>`;});
+  $('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>';
 }
-function compartilharWhats(){window.open('https://wa.me/?text='+encodeURIComponent('Oi! Conheca minha loja de bolos! '+linkLojaAtual),'_blank');}
+function compartilharWhats(){window.open(`https://wa.me/?text=${encodeURIComponent('Oi! Conheça minha loja de bolos! 😍🎂 '+linkLojaAtual)}`,'_blank');}
 function renderPlanosBoleira(){
   let atual=usuarioAtual.plano||'GRATIS';let html='';
-  let p=planos.gratis;html+='<div class="planoCard '+(atual=='GRATIS'?'atual':'')+'"><h3>'+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p><p style="font-size:12px">Limite: '+p.limiteBolos+' bolos - '+p.limitePedidos+' pedidos/mes</p>'+(atual=='GRATIS'?'<button class="btn btn-green">SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Gratis</button>')+'</div>';
-  p=planos.mensal;html+='<div class="planoCard destaque"><div class="selo">MAIS ESCOLHIDO</div><h3>'+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p>'+(atual=='MENSAL'?'<button class="btn btn-green">SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">QUERO O MENSAL</button>')+'</div>';
-  p=planos.anual;html+='<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">MELHOR VALOR</div><h3>'+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p>'+(atual=='ANUAL'?'<button class="btn btn-green">SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">QUERO O ANUAL - R$ 199</button>')+'</div>';
-  document.getElementById('listaPlanosBoleira').innerHTML=html;
-  document.getElementById('planoAtualTexto').innerHTML='Voce esta no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'Com marca dagua':'SEM marca dagua');
+  let p=planos.gratis;html+=`<div class="planoCard ${atual=='GRATIS'?'atual':''}"><h3>🆓 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='GRATIS'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Grátis</button>'}</div>`;
+  p=planos.mensal;html+=`<div class="planoCard destaque"><div class="selo">⭐ MAIS ESCOLHIDO</div><h3>📅 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='MENSAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">💎 QUERO O MENSAL</button>'}</div>`;
+  p=planos.anual;html+=`<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">🏆 MELHOR VALOR</div><h3>🏆 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='ANUAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">🏆 QUERO O ANUAL - R$ 199</button>'}</div>`;
+  $('listaPlanosBoleira').innerHTML=html;$('planoAtualTexto').innerHTML='Você está no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'💧 Com marca d\'água':'✅ SEM marca d\'água');
 }
-function queroPlano(tipo){let p=tipo=='MENSAL'?planos.mensal:planos.anual;window.open('https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro '+tipo+' - '+p.precoTexto+'! Me manda o codigo!','_blank');}
-function voltarPlanoGratis(){usuarioAtual.plano='GRATIS';persistirTudo();alert('Voce voltou para o Plano Gratis - Kit Festa vai ficar invisivel e volta a marca dagua');renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();document.getElementById('emailPainel').innerText=usuarioAtual.email+' - Plano GRATIS';document.getElementById('menuPlanoBadge').innerText='PLANO GRATIS';}
+function queroPlano(tipo){let p=tipo=='MENSAL'?planos.mensal:planos.anual;window.open(`https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro ${tipo} - ${p.precoTexto}! Me manda o código!`,'_blank');}
+async function voltarPlanoGratis(){usuarioAtual.plano='GRATIS';await salvarBoleiraNoBanco();alert('Você voltou para o Plano Grátis');renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();$('emailPainel').innerText=usuarioAtual.email+' • Plano GRATIS';$('menuPlanoBadge').innerText='PLANO GRÁTIS';}
 async function usarCodigo(){
-  let cod=document.getElementById('codigoPlano').value.trim().toUpperCase();if(!cod){alert('Cole seu codigo!');return;}
-  let achado=null;for(let i=0;i<codigosGerados.length;i++){if(codigosGerados[i].codigo===cod){achado=codigosGerados[i];break;}}let tipo='MENSAL';
-  if(achado){achado.usado=true;tipo=achado.tipoPlano||'MENSAL';salvarLS('bolopro_codigos',codigosGerados);}else if(cod.indexOf('BOLOPRO-')===0){tipo='MENSAL';}else{alert('Codigo invalido! Peca pro ADM: 15 99764-3116');return;}
-  usuarioAtual.plano=tipo;
-  let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].email.toLowerCase()==usuarioAtual.email.toLowerCase()){b=boleiras[i];break;}} if(b) b.plano=tipo;
-  persistirTudo();
-  await salvarNoFirebase('assinaturas',{codigo:cod,plano:tipo,dias:tipo=='ANUAL'?365:30,loja:usuarioAtual.loja,email:usuarioAtual.email});
-  alert(tipo+' desbloqueado! Kit Festa liberado + Marca dagua removida!');document.getElementById('emailPainel').innerText=usuarioAtual.email+' - Plano '+tipo+' ATIVO';document.getElementById('menuPlanoBadge').innerText='PLANO '+tipo;renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();fecharTela();
+  let cod=$('codigoPlano').value.trim().toUpperCase();if(!cod){alert('Cole seu código!');return;}
+  try{
+    let d=await getDoc(doc(db,'codigos_pro',cod));if(!d.exists()){alert('Código inválido! Peça pro ADM: 15 99764-3116');return;}
+    let c=d.data();if(c.usado){alert('Esse código já foi usado!');return;}
+    let tipo=c.tipoPlano||'MENSAL';
+    await updateDoc(doc(db,'codigos_pro',cod),{usado:true,usadoPor:usuarioAtual.uid,usadoEm:serverTimestamp()});
+    usuarioAtual.plano=tipo;await salvarBoleiraNoBanco();
+    await salvarNoFirebase('assinaturas',{codigo:cod,plano:tipo,uid:usuarioAtual.uid,loja:usuarioAtual.loja,email:usuarioAtual.email});
+    alert('🎉 '+tipo+' desbloqueado no Firebase! Kit liberado + Marca removida!');$('emailPainel').innerText=usuarioAtual.email+' • Plano '+tipo+' ATIVO';$('menuPlanoBadge').innerText='PLANO '+tipo;renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();fecharTela();
+  }catch(e){alert('Erro: '+e.message);}
 }
-function abrirPlanosADM(){document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});document.getElementById('tela-planosADM').classList.add('show');renderPlanosADM();}
-function fecharTelaADMPlanos(){document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});}
+function abrirPlanosADM(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-planosADM').classList.add('show');renderPlanosADM();}
+function fecharTelaADMPlanos(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
 function renderPlanosADM(){
-  document.getElementById('tagMensalADM').innerText='MENSAL '+planos.mensal.precoTexto;
-  document.getElementById('tagAnualADM').innerText='ANUAL '+planos.anual.precoTexto;
-  let html='';
-  [['gratis','GRATIS'],['mensal','MENSAL'],['anual','ANUAL']].forEach(function(arr){
-    let key=arr[0];let titulo=arr[1];let p=planos[key];
-    html+='<div class="card"><h3>'+titulo+' - Editavel</h3><label>Preco</label><input id="admPreco_'+key+'" type="number" step="0.01" value="'+p.preco+'"><label>Texto do preco</label><input id="admPrecoTexto_'+key+'" value="'+p.precoTexto+'"><label>Periodo</label><input id="admPeriodo_'+key+'" value="'+p.periodo+'"><label>Descricao</label><input id="admDesc_'+key+'" value="'+p.desc+'"><label>Limite Bolos</label><input id="admLimBolos_'+key+'" type="number" value="'+p.limiteBolos+'"><label>Limite Pedidos</label><input id="admLimPedidos_'+key+'" type="number" value="'+p.limitePedidos+'"><label>Recursos</label><textarea id="admRec_'+key+'" rows="6">'+p.recursos+'</textarea><button class="btn btn-green" onclick="salvarPlanoADM(\''+key+'\')">SALVAR '+titulo+'</button></div>';
-  });
-  document.getElementById('listaPlanosADM').innerHTML=html;
+  $('tagMensalADM').innerText='MENSAL '+planos.mensal.precoTexto;$('tagAnualADM').innerText='ANUAL '+planos.anual.precoTexto;let html='';
+  [['gratis','🆓 GRÁTIS'],['mensal','📅 MENSAL'],['anual','🏆 ANUAL']].forEach(([key,titulo])=>{let p=planos[key];html+=`<div class="card"><h3>${titulo} - Editável - Salva no Firebase</h3><label>Preço</label><input id="admPreco_${key}" type="number" step="0.01" value="${p.preco}"><label>Texto do preço</label><input id="admPrecoTexto_${key}" value="${p.precoTexto}"><label>Período</label><input id="admPeriodo_${key}" value="${p.periodo}"><label>Descrição</label><input id="admDesc_${key}" value="${p.desc}"><label>Recursos</label><textarea id="admRec_${key}" rows="6">${p.recursos}</textarea><button class="btn btn-green" onclick="salvarPlanoADM('${key}')">✅ SALVAR ${titulo} NO FIREBASE</button></div>`;});
+  $('listaPlanosADM').innerHTML=html;
 }
 async function salvarPlanoADM(key){
-  let preco=parseFloat(document.getElementById('admPreco_'+key).value)||0;
-  planos[key]={nome:key=='gratis'?'GRATIS':key=='mensal'?'MENSAL':'ANUAL',preco:preco,precoTexto:document.getElementById('admPrecoTexto_'+key).value,periodo:document.getElementById('admPeriodo_'+key).value,desc:document.getElementById('admDesc_'+key).value,limiteBolos:parseInt(document.getElementById('admLimBolos_'+key).value)||999,limitePedidos:parseInt(document.getElementById('admLimPedidos_'+key).value)||999,recursos:document.getElementById('admRec_'+key).value};
-  persistirTudo();
-  await salvarNoFirebase('planos_config',{plano:key, nome:planos[key].nome, preco:preco});
-  alert('Plano '+planos[key].nome+' salvo!');renderPlanosADM();renderPlanosBoleira();
+  let preco=parseFloat($('admPreco_'+key).value)||0;
+  let dados={key,nome:key=='gratis'?'GRATIS':key=='mensal'?'MENSAL':'ANUAL',preco,precoTexto:$('admPrecoTexto_'+key).value,periodo:$('admPeriodo_'+key).value,desc:$('admDesc_'+key).value,recursos:$('admRec_'+key).value};
+  planos[key]=Object.assign(planos[key],dados);await setDoc(doc(db,'planos_config',key),dados,{merge:true});alert('✅ Plano '+dados.nome+' salvo no Firebase!');renderPlanosADM();renderPlanosBoleira();
 }
-function filtroADM(f,btn){filtroAtual=f;document.querySelectorAll('.filterRow button').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderBoleirasADM();}
+function filtroADM(f,btn){filtroAtual=f;document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoleirasADM();}
 function renderBoleirasADM(){
-  let busca=(document.getElementById('buscaBoleira').value||'').toLowerCase();
-  let lista=boleiras.filter(function(b){if(filtroAtual=='PRO'&&['MENSAL','ANUAL','PRO'].indexOf(b.plano)===-1)return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!(b.nome.toLowerCase().indexOf(busca)>=0||b.email.toLowerCase().indexOf(busca)>=0||(b.cidade||'').toLowerCase().indexOf(busca)>=0))return false;return true;});
-  document.getElementById('qtdMostra').innerText=lista.length;document.getElementById('admTotal').innerText=boleiras.length;document.getElementById('admPro').innerText=boleiras.filter(function(b){return ['MENSAL','ANUAL','PRO'].indexOf(b.plano)>=0;}).length;
-  document.getElementById('admFatura').innerText='R$ '+boleiras.reduce(function(s,b){return s+(b.fatura||0);},0);
-  document.getElementById('codigoBoleira').innerHTML='<option>Qualquer boleira - Codigo generico</option>'+boleiras.map(function(b){return '<option>'+b.nome+' - '+b.email+'</option>';}).join('');
-  let html='';lista.forEach(function(b){let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+='<div class="boleiraRow" onclick="verBoleira('+b.id+')"><img src="'+b.img+'"><div class="info"><b>'+b.nome+'</b> <span class="tag '+tagCls+'">'+b.plano+'</span> '+(b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':'')+'<p>'+b.email+'<br>'+(b.zap||'')+' - '+(b.cidade||'')+'<br>'+(b.pedidos||0)+' pedidos - R$ '+(b.fatura||0)+' - Cadastro: '+(b.cadastro||'')+'</p><p style="color:#FF4D8D">Clique para ver TODAS as informacoes</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO('+b.id+',\'MENSAL\')">Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO('+b.id+',\'ANUAL\')">Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira('+b.id+')">'+(b.status=='BLOQUEADA'?'Desbloquear':'Bloquear')+'</button><button class="btn btn-sm btn-outline" onclick="mandarZap('+b.id+')">WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira('+b.id+')">Excluir</button></div></div></div>';});
-  if(!html)html='<div class="card"><p>Nenhuma boleira cadastrada ainda.</p></div>';
-  document.getElementById('listaBoleirasADM').innerHTML=html;
+  let busca=($('buscaBoleira').value||'').toLowerCase();
+  let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!((b.loja||'').toLowerCase().includes(busca)||b.email.toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;});
+  $('qtdMostra').innerText=lista.length;$('admTotal').innerText=boleiras.length;$('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length;
+  $('codigoBoleira').innerHTML='<option value="">Qualquer boleira - Código genérico</option>'+boleiras.map(b=>`<option value="${b.id}">${b.loja} - ${b.email}</option>`).join('');
+  let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+=`<div class="boleiraRow" onclick="verBoleira('${b.id}')"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200"><div class="info"><b>${b.loja}</b> <span class="tag ${tagCls}">${b.plano||'GRATIS'}</span> ${b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':''}<p>📧 ${b.email}<br>📱 ${b.zap||''} • 📍 ${b.cidade||''}<br>📅 ${b.dataCadastro||''}</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO('${b.id}','MENSAL')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO('${b.id}','ANUAL')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira('${b.id}')">${b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear'}</button><button class="btn btn-sm btn-outline" onclick="mandarZap('${b.id}')">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira('${b.id}')">🗑️ Excluir</button></div></div></div>`;});
+  if(!html)html='<div class="card"><p>Nenhuma boleira no Firebase ainda.</p></div>';$('listaBoleirasADM').innerHTML=html;
 }
-function verBoleira(id){let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].id==id){b=boleiras[i];break;}}if(!b)return;document.getElementById('verBoleiraTitulo').innerText=b.nome;document.getElementById('verBoleiraConteudo').innerHTML='<p><b>Loja:</b> '+b.nome+'<br><b>E-mail:</b> '+b.email+'<br><b>WhatsApp:</b> '+(b.zap||'Nao informado')+'<br><b>Cidade:</b> '+(b.cidade||'Nao informada')+'<br><b>Sobre:</b> '+(b.sobre||'')+'<br><b>Plano:</b> '+b.plano+'<br><b>Status:</b> '+b.status+'<br><b>Pedidos:</b> '+(b.pedidos||0)+'<br><b>Faturamento:</b> R$ '+(b.fatura||0)+'<br><b>Cadastro:</b> '+(b.cadastro||'')+'<br><b>Link:</b> https://bolopro.com.br/loja?loja='+slugify(b.nome)+'<br><b>Senha:</b> ........ (nunca mostrada)</p><button class="btn btn-green" onclick="copiarTextoSeguro(\'https://bolopro.com.br/loja?loja='+slugify(b.nome)+'\',\'Link copiado!\')">Copiar Link da Loja</button>';document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});document.getElementById('tela-verBoleira').classList.add('show');}
-function virarPRO(id,tipo){let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].id==id){b=boleiras[i];break;}}b.plano=tipo||'MENSAL';if(usuarioAtual.email && usuarioAtual.email.toLowerCase()==b.email.toLowerCase()){usuarioAtual.plano=tipo;persistirTudo();}salvarLS('bolopro_boleiras',boleiras);alert(b.nome+' agora e '+b.plano);renderBoleirasADM();}
-function bloquearBoleira(id){let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].id==id){b=boleiras[i];break;}}b.status=b.status=='BLOQUEADA'?'ATIVA':'BLOQUEADA';salvarLS('bolopro_boleiras',boleiras);alert(b.nome+' esta '+b.status);renderBoleirasADM();}
-function mandarZap(id){let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].id==id){b=boleiras[i];break;}}window.open('https://wa.me/55'+b.zap+'?text=Oi '+b.nome+'! Aqui e do BoloPro!','_blank');}
-function excluirBoleira(id){if(confirm('Excluir essa boleira?')){boleiras=boleiras.filter(function(x){return x.id!=id;});salvarLS('bolopro_boleiras',boleiras);renderBoleirasADM();}}
-function toggleMenuTop(){document.getElementById('menuTop').classList.toggle('show');document.getElementById('overlay').classList.toggle('show');}
-function fecharTudo(){document.getElementById('menuTop').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
+function verBoleira(id){let b=boleiras.find(x=>x.id==id);if(!b)return;$('verBoleiraTitulo').innerText='👩‍🍳 '+b.loja;$('verBoleiraConteudo').innerHTML=`<p><b>🏪 Loja:</b> ${b.loja}<br><b>📧 E-mail:</b> ${b.email}<br><b>📱 WhatsApp:</b> ${b.zap||'Não informado'}<br><b>📍 Cidade:</b> ${b.cidade||'Não informada'}<br><b>📝 Sobre:</b> ${b.sobre||''}<br><b>💎 Plano:</b> ${b.plano}<br><b>📌 Status:</b> ${b.status||'ATIVA'}<br><b>📅 Cadastro:</b> ${b.dataCadastro||''}<br><b>🆔 UID Firebase:</b> ${b.id}<br><b>🔗 Link:</b> ${window.location.origin+window.location.pathname}?uid=${b.id}</p><button class="btn btn-green" onclick="copiarTextoSeguro('${window.location.origin+window.location.pathname}?uid=${b.id}','✅ Link copiado!')">📋 Copiar Link da Loja</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verBoleira').classList.add('show');}
+async function virarPRO(id,tipo){await updateDoc(doc(db,'boleiras',id),{plano:tipo});let b=boleiras.find(x=>x.id==id);if(b)b.plano=tipo;if(usuarioAtual.uid==id)usuarioAtual.plano=tipo;alert(b.loja+' agora é '+tipo+' - salvo no Firebase');renderBoleirasADM();}
+async function bloquearBoleira(id){let b=boleiras.find(x=>x.id==id);let novo=b.status=='BLOQUEADA'?'ATIVA':'BLOQUEADA';await updateDoc(doc(db,'boleiras',id),{status:novo});b.status=novo;alert(b.loja+' está '+novo);renderBoleirasADM();}
+function mandarZap(id){let b=boleiras.find(x=>x.id==id);window.open(`https://wa.me/55${b.zap}?text=Oi ${b.loja}! Aqui é do BoloPro!`,'_blank');}
+async function excluirBoleira(id){if(confirm('Excluir essa boleira do Firebase?')){await deleteDoc(doc(db,'boleiras',id));boleiras=boleiras.filter(x=>x.id!=id);renderBoleirasADM();}}
+function toggleMenuTop(){$('menuTop').classList.toggle('show');$('overlay').classList.toggle('show');}
+function fecharTudo(){$('menuTop').classList.remove('show');$('overlay').classList.remove('show');}
 function abrirTela(nome){
-  if(nome=='kitEdit' && !planoPago()){alert('Kit Festa e exclusivo do Plano Pago! Assine para liberar.');document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});document.getElementById('tela-plano').classList.add('show');renderPlanosBoleira();return;}
-  document.getElementById('menuTop').classList.remove('show');document.getElementById('overlay').classList.remove('show');document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});document.getElementById('tela-'+nome).classList.add('show');if(nome=='catalogoEdit')renderCatalogoEdit();if(nome=='perfil')atualizarPerfilView();if(nome=='pedidos')renderPedidosCompleta();if(nome=='notificacoes')abrirNotificacoes();if(nome=='plano')renderPlanosBoleira();if(nome=='clientes')renderClientes();if(nome=='calendario')renderCalendarioTela();if(nome=='kitEdit')atualizarKitUI();window.scrollTo(0,0);}
-function fecharTela(){document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});}
+  if(nome=='kitEdit' && !planoPago()){alert('🎉 Kit Festa é exclusivo do Plano Pago!');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-plano').classList.add('show');renderPlanosBoleira();return;}
+  $('menuTop').classList.remove('show');$('overlay').classList.remove('show');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-'+nome).classList.add('show');if(nome=='catalogoEdit')renderCatalogoEdit();if(nome=='perfil')atualizarPerfilView();if(nome=='pedidos')renderPedidosCompleta();if(nome=='notificacoes')abrirNotificacoes();if(nome=='plano')renderPlanosBoleira();if(nome=='clientes')renderClientes();if(nome=='calendario')renderCalendarioTela();if(nome=='kitEdit')atualizarKitUI();window.scrollTo(0,0);}
+function fecharTela(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
 function atualizarPerfilView(){
-  document.getElementById('perfilTitulo').innerText=usuarioAtual.loja;
-  document.getElementById('viewLoja').innerText=usuarioAtual.loja;document.getElementById('viewEmail').innerText=usuarioAtual.email;document.getElementById('viewZap').innerText=usuarioAtual.zap||'Nao informado';document.getElementById('viewCidade').innerText=usuarioAtual.cidade||'Nao informada';document.getElementById('viewSobre').innerText=usuarioAtual.sobre;document.getElementById('viewPlano').innerText=usuarioAtual.plano;document.getElementById('viewData').innerText=usuarioAtual.dataCadastro||new Date().toLocaleDateString('pt-BR');document.getElementById('viewLink').innerText=linkLojaAtual;
-  document.getElementById('perfilView').classList.remove('hidden');document.getElementById('perfilEdit').classList.add('hidden');
+  $('perfilTitulo').innerText=usuarioAtual.loja;$('viewLoja').innerText=usuarioAtual.loja;$('viewEmail').innerText=usuarioAtual.email;$('viewZap').innerText=usuarioAtual.zap||'Não informado';$('viewCidade').innerText=usuarioAtual.cidade||'Não informada';$('viewSobre').innerText=usuarioAtual.sobre;$('viewPlano').innerText=usuarioAtual.plano;$('viewData').innerText=usuarioAtual.dataCadastro||new Date().toLocaleDateString('pt-BR');$('viewLink').innerText=linkLojaAtual;
+  $('perfilView').classList.remove('hidden');$('perfilEdit').classList.add('hidden');
 }
-function editarPerfil(){document.getElementById('perfilView').classList.add('hidden');document.getElementById('perfilEdit').classList.remove('hidden');document.getElementById('perfilLoja').value=usuarioAtual.loja;document.getElementById('perfilEmail').value=usuarioAtual.email;document.getElementById('perfilZap').value=usuarioAtual.zap;document.getElementById('perfilCidade').value=usuarioAtual.cidade;document.getElementById('perfilSobre').value=usuarioAtual.sobre;}
-function cancelarEditPerfil(){document.getElementById('perfilView').classList.remove('hidden');document.getElementById('perfilEdit').classList.add('hidden');}
-async function salvarPerfil(){let n=document.getElementById('perfilLoja').value.trim();if(!n){alert('Nome da loja e obrigatorio!');return;}usuarioAtual.loja=n;usuarioAtual.zap=document.getElementById('perfilZap').value;usuarioAtual.cidade=document.getElementById('perfilCidade').value;usuarioAtual.sobre=document.getElementById('perfilSobre').value;
-  document.getElementById('nomeLojaPainel').innerText=n;document.getElementById('tituloLoja').innerText=n;document.getElementById('topNome').innerText=n;document.getElementById('menuNome').innerText=n;
-  linkLojaAtual='https://bolopro.com.br/loja?loja='+slugify(n);document.getElementById('meuLink').innerText=linkLojaAtual;
-  let b=null;for(let i=0;i<boleiras.length;i++){if(boleiras[i].email.toLowerCase()==usuarioAtual.email.toLowerCase()){b=boleiras[i];break;}} if(b){b.nome=n;b.zap=usuarioAtual.zap;b.cidade=usuarioAtual.cidade;b.sobre=usuarioAtual.sobre;}
-  persistirTudo();
-  await salvarNoFirebase('perfil',{loja:n,zap:usuarioAtual.zap,cidade:usuarioAtual.cidade,sobre:usuarioAtual.sobre,email:usuarioAtual.email});
-  alert('Perfil salvo! E-mail nao foi alterado');atualizarPerfilView();renderHome();}
-async function enviarFeedback(){
-  let categoria=document.getElementById('feedCategoria').value;
-  let texto=document.getElementById('feedText').value;
-  let indica=document.getElementById('feedIndica').value;
-  await salvarNoFirebase('feedbacks',{nota:notaFeedback,categoria:categoria,texto:texto,indica:indica,email:usuarioAtual.email,loja:usuarioAtual.loja});
-  alert('Obrigado! Seu feedback '+notaFeedback+'/5 foi enviado!');fecharTela();}
-async function enviarSuporte(){
-  let cat=document.getElementById('suporteCategoria').value;
-  await salvarNoFirebase('suporte',{categoria:cat,duvida:document.getElementById('duvidaSuporte').value,email:usuarioAtual.email,loja:usuarioAtual.loja});
-  alert('Chamado enviado! Categoria: '+cat+'. Te respondemos no WhatsApp 15 99764-3116 em ate 2h!');fecharTela();}
+function editarPerfil(){$('perfilView').classList.add('hidden');$('perfilEdit').classList.remove('hidden');$('perfilLoja').value=usuarioAtual.loja;$('perfilEmail').value=usuarioAtual.email;$('perfilZap').value=usuarioAtual.zap;$('perfilCidade').value=usuarioAtual.cidade;$('perfilSobre').value=usuarioAtual.sobre;}
+function cancelarEditPerfil(){$('perfilView').classList.remove('hidden');$('perfilEdit').classList.add('hidden');}
+async function salvarPerfil(){
+  let n=$('perfilLoja').value.trim();if(!n){alert('Nome da loja é obrigatório!');return;}
+  usuarioAtual.loja=n;usuarioAtual.zap=$('perfilZap').value;usuarioAtual.cidade=$('perfilCidade').value;usuarioAtual.sobre=$('perfilSobre').value;
+  await salvarBoleiraNoBanco();$('nomeLojaPainel').innerText=n;$('tituloLoja').innerText=n;$('topNome').innerText=n;$('menuNome').innerText=n;
+  linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual;
+  alert('✅ Perfil salvo no Firebase!');atualizarPerfilView();renderHome();
+}
+async function enviarFeedback(){let categoria=$('feedCategoria').value;let texto=$('feedText').value;let indica=$('feedIndica').value;await salvarNoFirebase('feedbacks',{nota:notaFeedback,categoria,texto,indica,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja});alert('Obrigado! Feedback '+notaFeedback+'/5 salvo no Firebase! 💖');fecharTela();}
+async function enviarSuporte(){let cat=$('suporteCategoria').value;await salvarNoFirebase('suporte',{categoria:cat,duvida:$('duvidaSuporte').value,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja,status:'ABERTO'});alert('Chamado salvo no Firebase! Te respondemos no WhatsApp 15 99764-3116 em até 2h!');fecharTela();}
 function perguntarIA(){
-  let tipo=document.getElementById('iaTipo').value;let desc=document.getElementById('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r='';
-  if(tipo=='preco')r='<b>Preco ideal para: '+desc+'</b><br><br>Custo: R$ 55<br>Preco sugerido: <b>R$ 160</b><br>Lucro: R$ 105';
-  if(tipo=='descricao')r='<b>Descricao:</b><br>"'+desc+' feito com massa fofinha, recheio cremoso e muito amor!"';
-  if(tipo=='legenda')r='<b>Legenda:</b><br>Olha esse '+desc+' que acabou de sair do forno! Quem quer? Comenta EU QUERO!';
-  if(tipo=='nome')r='<b>Nomes:</b><br>- '+desc+' Supreme<br>- Delicia de '+desc+'<br>- '+desc+' da Casa';
-  if(tipo=='kit')r='<b>Kit:</b><br>Kit Festa 20 pessoas - Bolo '+desc+' 2kg + 100 brigadeiros + 50 beijinhos - <b>R$ 299</b>';
-  document.getElementById('iaResposta').innerHTML='<div class="iaBox">'+r+'<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById(\'iaResposta\').innerText,\'Copiado!\')">Copiar</button></div>';
+  let tipo=$('iaTipo').value;let desc=$('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r='';
+  if(tipo=='preco')r=`🤖 <b>Preço ideal para: ${desc}</b><br><br>💰 Custo: R$ 55<br>💰 Preço sugerido: <b>R$ 160</b><br>💰 Lucro: R$ 105`;
+  if(tipo=='descricao')r=`🤖 <b>Descrição:</b><br>"${desc} feito com massa fofinha, recheio cremoso e muito amor! 😍🎂"`;
+  if(tipo=='legenda')r=`🤖 <b>Legenda:</b><br>🎂 Olha esse ${desc} que acabou de sair do forno! 😍<br>Quem quer? Comenta EU QUERO! 👇`;
+  if(tipo=='nome')r=`🤖 <b>Nomes:</b><br>• ${desc} Supreme<br>• Delícia de ${desc}<br>• ${desc} da Casa`;
+  if(tipo=='kit')r=`🤖 <b>Kit:</b><br>🎉 Kit Festa 20 pessoas - Bolo ${desc} 2kg + 100 brigadeiros + 50 beijinhos - <b>R$ 299</b>`;
+  $('iaResposta').innerHTML=`<div class="iaBox">${r}<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById('iaResposta').innerText,'✅ Copiado!')">📋 Copiar</button></div>`;
 }
-function renderCatalogo(){let html='';catalogo.forEach(function(c,i){if(c.ativo=='NAO')return;html+='<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="'+c.img+'" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">'+c.nome+'</b><br><span style="font-size:12px;color:#FF4D8D">R$ '+c.preco+'/kg - '+(c.categoria||'')+'</span></div><button onclick="excluirBolo('+i+')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">Excluir</button></div>';});document.getElementById('catalogoPainel').innerHTML=html;document.getElementById('qtdCatalogo').innerText=catalogo.length+' bolos';document.getElementById('catalogoVazio').style.display=catalogo.length?'none':'block';
-  let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda nao cadastrou bolos.</p>';catalogo.forEach(function(c,i){if(c.ativo=='NAO')return;h2+='<div class="bolo '+(i==0?'sel':'')+'" onclick="selBolo(this,'+i+')"><img src="'+c.img+'"><b>'+c.nome+'</b><br><span>R$ '+c.preco+'/kg - '+(c.categoria||'')+'</span></div>';});document.getElementById('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
-function renderCatalogoEdit(){let h='';catalogo.forEach(function(c,i){h+='<p style="font-size:13px">- '+c.nome+' - R$ '+c.preco+'/kg <button onclick="excluirBolo('+i+');renderCatalogoEdit()">Excluir</button></p>';});document.getElementById('listaCatalogoEdit').innerHTML=h||'<p>Nenhum bolo ainda.</p>';}
+function renderCatalogo(){
+  let html='';catalogo.forEach(c=>{if(c.ativo=='NAO')return;html+=`<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="${c.img}" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">${c.nome}</b><br><span style="font-size:12px;color:#FF4D8D">R$ ${c.preco}/kg • ${c.categoria||''}</span></div><button onclick="excluirBolo('${c.id}')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>`;});
+  $('catalogoPainel').innerHTML=html;$('qtdCatalogo').innerText=catalogo.length+' bolos';$('catalogoVazio').style.display=catalogo.length?'none':'block';
+  let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach(c=>{if(c.ativo=='NAO')return;h2+=`<div class="bolo" onclick="selBolo(this,'${c.id}')"><img src="${c.img}"><b>${c.nome}</b><br><span>R$ ${c.preco}/kg • ${c.categoria||''}</span></div>`;});$('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
+function renderCatalogoEdit(){let h='';catalogo.forEach(c=>{h+=`<p style="font-size:13px">• ${c.nome} - R$ ${c.preco}/kg <button onclick="excluirBolo('${c.id}');renderCatalogoEdit()">Excluir</button></p>`;});$('listaCatalogoEdit').innerHTML=h||'<p>Nenhum bolo ainda.</p>';}
 async function salvarCatalogoCompleto(){
-  let nome=document.getElementById('catNome').value.trim();let preco=parseInt(document.getElementById('catPreco').value)||0;
-  if(!nome||!preco){alert('Preencha nome e preco por kg!');return;}
-  let tamanhos=[];document.querySelectorAll('#catTamanhos button.sel').forEach(function(b){tamanhos.push(b.innerText);});
-  let recheios=[];document.querySelectorAll('#catRecheios button.sel').forEach(function(b){recheios.push(b.innerText);});
-  let coberturas=[];document.querySelectorAll('#catCoberturas button.sel').forEach(function(b){coberturas.push(b.innerText);});
-  let novo={id:Date.now(),nome:nome,preco:preco,categoria:document.getElementById('catCategoria').value,img:document.getElementById('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:document.getElementById('catDesc').value||'Delicioso!',tamanhos:tamanhos.join(', '),recheios:recheios.join(', '),coberturas:coberturas.join(', '),prazo:document.getElementById('catPrazo').value,alerg:document.getElementById('catAlerg').value||'Consulte',ativo:document.getElementById('catAtivo').value,loja:usuarioAtual.loja};
-  catalogo.push(novo);persistirTudo();await salvarNoFirebase('catalogo',Object.assign({},novo,{loja:usuarioAtual.loja}));
-  alert('Bolo salvo!');document.getElementById('catNome').value='';document.getElementById('catPreco').value='';document.getElementById('catDesc').value='';document.getElementById('catFoto').value='';
-  fecharTela();renderCatalogo();renderHome();
+  if(!usuarioAtual.uid){alert('Faça login primeiro!');return;}
+  let nome=$('catNome').value.trim();let preco=parseInt($('catPreco').value)||0;
+  if(!nome||!preco){alert('Preencha nome e preço por kg!');return;}
+  if(!planoPago() && catalogo.length>=planos.gratis.limiteBolos){alert('No Grátis o limite é 3 bolos! Assine para ilimitado.');abrirTela('plano');return;}
+  let tamanhos=[...document.querySelectorAll('#catTamanhos button.sel')].map(b=>b.innerText).join(', ');
+  let recheios=[...document.querySelectorAll('#catRecheios button.sel')].map(b=>b.innerText).join(', ');
+  let coberturas=[...document.querySelectorAll('#catCoberturas button.sel')].map(b=>b.innerText).join(', ');
+  let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,nome,preco,categoria:$('catCategoria').value,img:$('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:$('catDesc').value||'Delicioso!',tamanhos,recheios,coberturas,prazo:$('catPrazo').value,alerg:$('catAlerg').value||'Consulte',ativo:$('catAtivo').value,criadoEm:serverTimestamp()};
+  let id=await salvarNoFirebase('catalogos',novo);if(id)catalogo.unshift(Object.assign({id},novo));
+  alert('🎉 Bolo salvo no Firebase!');$('catNome').value='';$('catPreco').value='';$('catDesc').value='';$('catFoto').value='';fecharTela();renderCatalogo();renderHome();
 }
-function excluirBolo(i){catalogo.splice(i,1);persistirTudo();renderCatalogo();renderHome();}
+async function excluirBolo(id){if(!confirm('Excluir esse bolo do Firebase?'))return;await deleteDoc(doc(db,'catalogos',id));catalogo=catalogo.filter(x=>x.id!=id);renderCatalogo();renderHome();}
 async function salvarKit(){
-  if(!planoPago()){alert('Kit Festa e exclusivo do Plano Pago!');abrirTela('plano');return;}
-  let nome=document.getElementById('kitNome').value.trim();let itens=document.getElementById('kitItens').value.trim();let preco=parseInt(document.getElementById('kitPreco').value)||0;
-  if(!nome||!preco){alert('Preencha nome e preco do kit!');return;}
-  kitGlobal={nome:nome,itens:itens||'Bolo + docinhos',preco:preco};
-  kitSel=null;
-  persistirTudo();
-  await salvarNoFirebase('kits',{nome:nome,itens:kitGlobal.itens,preco:preco,loja:usuarioAtual.loja,email:usuarioAtual.email});
-  document.getElementById('kitSalvoMsg').innerText='Kit salvo! Ja aparece na loja da cliente.';
-  atualizarKitUI(); atualizarVisibilidadeKit();
-  setTimeout(function(){fecharTela();renderHome();},800);
+  if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');abrirTela('plano');return;}
+  let nome=$('kitNome').value.trim();let itens=$('kitItens').value.trim();let preco=parseInt($('kitPreco').value)||0;
+  if(!nome||!preco){alert('Preencha nome e preço do kit!');return;}
+  kitGlobal={nome,itens:itens||'Bolo + docinhos',preco};kitSel=null;await salvarBoleiraNoBanco();
+  $('kitSalvoMsg').innerText='✅ Kit salvo no Firebase! Já aparece na loja da cliente.';atualizarKitUI();atualizarVisibilidadeKit();setTimeout(()=>{fecharTela();renderHome();},800);
 }
-function selKit(nome,preco){kitSel={nome:nome,preco:preco};document.getElementById('resumo').innerText=nome;document.getElementById('totalVal').innerText='R$ '+preco+',00';document.getElementById('sinalVal').innerText='Sinal: R$ '+(preco/2)+',00';alert(nome+' selecionado!');}
-function selKitAtual(){if(!planoPago()){alert('Kit Festa e exclusivo do Plano Pago!');return;} selKit(kitGlobal.nome,kitGlobal.preco);}
+function selKit(nome,preco){kitSel={nome,preco};$('resumo').innerText=nome;$('totalVal').innerText='R$ '+preco+',00';$('sinalVal').innerText='Sinal: R$ '+(preco/2)+',00';alert(nome+' selecionado!');}
+function selKitAtual(){if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');return;}selKit(kitGlobal.nome,kitGlobal.preco);}
 function renderPedidos(){
-  let total=0;pedidos.forEach(function(p){total+=p.valor;});
-  document.getElementById('statHoje').innerText='R$ '+total;document.getElementById('statMes').innerText='R$ '+(total*4);document.getElementById('statPedidos').innerText=pedidos.length;
-  document.getElementById('listaPedidosResumo').innerHTML='';
-  renderCalendario();renderHome();
+  let total=0;pedidos.forEach(p=>total+=p.valor||0);
+  $('statHoje').innerText='R$ '+total;$('statMes').innerText='R$ '+(total*4);$('statPedidos').innerText=pedidos.length;$('listaPedidosResumo').innerHTML='';renderCalendario();renderHome();
 }
 function renderPedidosCompleta(){
-  if(!pedidos.length){document.getElementById('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda.</p></div>';return;}
-  let html='';pedidos.forEach(function(p,i){let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+='<div class="pedido" onclick="verPedido('+i+')"><b>'+p.cliente+'</b> <span class="badge '+cor+'">'+p.status+'</span><p>'+p.bolo+' - '+(p.kg||'')+'kg - '+(p.recheio||'')+'</p><p>'+p.data+' '+(p.hora||'')+' - '+(p.entrega||'')+' - '+(p.pagamento||'')+'</p><p><b>R$ '+p.valor+',00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus('+i+')">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente('+i+')">Cobrar</button></div></div>';});
-  document.getElementById('listaPedidosCompleta').innerHTML=html;
+  if(!pedidos.length){$('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda no Firebase.</p></div>';return;}
+  let html='';pedidos.forEach(p=>{let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> <span class="badge ${cor}">${p.status}</span><p>🍰 ${p.bolo} - ${p.kg||''}kg - ${p.recheio||''}</p><p>📅 ${p.data} ${p.hora||''} • 🚚 ${p.entrega} • 💳 ${p.pagamento}</p><p><b>R$ ${p.valor},00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus('${p.id}')">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente('${p.id}')">💰 Cobrar</button></div></div>`;});
+  $('listaPedidosCompleta').innerHTML=html;
 }
-function verPedido(i){let p=pedidos[i];if(!p)return;document.getElementById('verPedidoConteudo').innerHTML='<h3>Pedido de '+p.cliente+'</h3><p><b>Cliente:</b> '+p.cliente+'<br><b>WhatsApp:</b> '+(p.zap||'')+'<br><b>Bolo:</b> '+p.bolo+'<br><b>Kg:</b> '+(p.kg||'')+'<br><b>Recheio:</b> '+(p.recheio||'')+'<br><b>Cobertura:</b> '+(p.cobertura||'')+'<br><b>Formato:</b> '+(p.formato||'')+'<br><b>Tema:</b> '+(p.tema||'')+'<br><b>Frase:</b> '+(p.frase||'')+'<br><b>Data:</b> '+p.data+' '+(p.hora||'')+'<br><b>Entrega:</b> '+(p.entrega||'')+'<br><b>Endereco:</b> '+(p.endereco||'')+'<br><b>Para quem:</b> '+(p.paraQuem||'')+'<br><b>Pagamento:</b> '+(p.pagamento||'')+'<br><b>Sinal:</b> '+(p.sinal||'')+'<br><b>Obs:</b> '+(p.obs||'')+'<br><b>Como conheceu:</b> '+(p.como||'')+'<br><b>Total:</b> R$ '+p.valor+',00<br><b>Status:</b> '+p.status+'<br><b>Pedido as:</b> '+(p.horaPedido||'')+'</p><button class="btn btn-green" onclick="mudarStatus('+i+');verPedido('+i+')">Mudar Status</button><button class="btn btn-outline" onclick="window.open(\'https://wa.me/55'+(p.zap||'')+'?text=Oi '+p.cliente+'! Sobre seu pedido!\',\'_blank\')">Chamar Cliente</button>';document.querySelectorAll('.fullPage').forEach(function(m){m.classList.remove('show');});document.getElementById('tela-verPedido').classList.add('show');}
-function mudarStatus(i){let s=pedidos[i].status;pedidos[i].status=s=='PAGO'?'PENDENTE':s=='PENDENTE'?'FAZENDO':'PAGO';persistirTudo();renderPedidos();renderPedidosCompleta();}
+function verPedido(id){let p=pedidos.find(x=>x.id==id);if(!p)return;$('verPedidoConteudo').innerHTML=`<h3>📦 Pedido de ${p.cliente}</h3><p><b>👩 Cliente:</b> ${p.cliente}<br><b>📱 WhatsApp:</b> ${p.zap||''}<br><b>🍰 Bolo:</b> ${p.bolo}<br><b>⚖️ Kg:</b> ${p.kg||''}<br><b>🍫 Recheio:</b> ${p.recheio||''}<br><b>🎂 Cobertura:</b> ${p.cobertura||''}<br><b>🔲 Formato:</b> ${p.formato||''}<br><b>🎉 Tema:</b> ${p.tema||''}<br><b>💬 Frase:</b> ${p.frase||''}<br><b>📅 Data:</b> ${p.data} ${p.hora||''}<br><b>🚚 Entrega:</b> ${p.entrega}<br><b>📍 Endereço:</b> ${p.endereco||''}<br><b>🎂 Para quem:</b> ${p.paraQuem||''}<br><b>💳 Pagamento:</b> ${p.pagamento}<br><b>💰 Sinal:</b> ${p.sinal||''}<br><b>📝 Obs:</b> ${p.obs||''}<br><b>📣 Como conheceu:</b> ${p.como||''}<br><b>💵 Total:</b> R$ ${p.valor},00<br><b>📌 Status:</b> ${p.status}<br><b>🕐 Pedido às:</b> ${p.horaPedido||''}</p><button class="btn btn-green" onclick="mudarStatus('${p.id}');verPedido('${p.id}')">🔄 Mudar Status</button><button class="btn btn-outline" onclick="window.open('https://wa.me/55${p.zap||''}?text=Oi ${p.cliente}! Sobre seu pedido!','_blank')">💬 Chamar Cliente</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verPedido').classList.add('show');}
+async function mudarStatus(id){let p=pedidos.find(x=>x.id==id);let s=p.status;let novo=s=='PAGO'?'PENDENTE':s=='PENDENTE'?'FAZENDO':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderPedidosCompleta();}
 function renderCalendario(){
-  let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();let nomeMes=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  document.getElementById('mesCal').innerText=nomeMes;
-  let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];
-  pedidos.forEach(function(p){if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}});
+  let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();$('mesCal').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}});
   let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
-  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.indexOf(d)>=0)cls='tem';if(d==hoje.getDate())cls+=' hoje';h+='<div class="'+cls+'">'+d+'</div>';}
-  document.getElementById('calGrid').innerHTML=h;
+  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
+  $('calGrid').innerHTML=h;
 }
 async function copiarLink(){
-  let link='https://bolopro.com.br/loja?loja='+slugify(usuarioAtual.loja);
-  linkLojaAtual=link;document.getElementById('meuLink').innerText=link;
-  await copiarTextoSeguro(link,'Link copiado! Manda pra cliente!');
+  if(!usuarioAtual.uid){alert('Faça login para copiar seu link!');return;}
+  let link=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;linkLojaAtual=link;$('meuLink').innerText=link;
+  await copiarTextoSeguro(link,'✅ Link copiado! Manda pra cliente!');
 }
-function verComoCliente(){document.getElementById('painelPage').classList.add('hidden');document.getElementById('clientePage').classList.remove('hidden');fecharTudo();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();window.scrollTo(0,0);}
-function voltarPainel(){document.getElementById('clientePage').classList.add('hidden');document.getElementById('painelPage').classList.remove('hidden');atualizarMarcaAgua();window.scrollTo(0,0);}
-function sair(){persistirTudo();fecharTudo();fecharTela();document.getElementById('painelPage').classList.add('hidden');document.getElementById('clientePage').classList.add('hidden');document.getElementById('topBar').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');document.getElementById('marcaAgua').classList.remove('show');document.getElementById('marcaAguaCliente').classList.remove('show');}
-function selBolo(el,idx){document.querySelectorAll('#bolosCliente .bolo').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');boloAtual=catalogo[idx];kitSel=null;atualiza();}
-function selTam(el,v){document.querySelectorAll('#tamanhos button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');kg=v;atualiza();}
-function selRec(el){document.querySelectorAll('#recheios button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');recheio=el.innerText;atualiza();}
-function selCob(el){document.querySelectorAll('#coberturas button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');cobertura=el.innerText;}
-function selForm(el){document.querySelectorAll('#formatos button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');formato=el.innerText;}
-function selEnt(el,v){document.querySelectorAll('#entregas button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');entrega=v;atualiza();}
-function selPag(el){document.querySelectorAll('#pagamentos button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');pagamento=el.innerText;}
-function selSinal(el){document.querySelectorAll('#sinais button').forEach(function(b){b.classList.remove('sel');});el.classList.add('sel');sinal=el.innerText;}
-function atualiza(){if(kitSel)return;if(!boloAtual){document.getElementById('resumo').innerText='Escolha um bolo';return;}let ev=entrega.indexOf('Entrega')>=0?15:0;let t=boloAtual.preco*kg+ev;document.getElementById('resumo').innerText=boloAtual.nome+' - '+kg+'kg - '+recheio+' - '+formato;document.getElementById('totalVal').innerText='R$ '+t.toFixed(2).replace('.',',');document.getElementById('sinalVal').innerText='Sinal: R$ '+(t/2).toFixed(2).replace('.',',');}
-function atualizarSino(){let qtd=notificacoes.filter(function(n){return !n.lida;}).length;let sino=document.getElementById('sinoNoti');if(sino){sino.innerText=qtd>0?'🔔 '+qtd:'🔔';sino.style.background=qtd>0?'#DC2626':'#fff';sino.style.color=qtd>0?'#fff':'#111';}}
-function mostrarPopupNotificacao(noti){let div=document.createElement('div');div.style.cssText='position:fixed;top:70px;left:12px;right:12px;background:#111;color:#fff;padding:14px;border-radius:14px;z-index:999;box-shadow:0 10px 30px rgba(0,0,0,.3)';div.innerHTML='<b>'+noti.titulo+'</b><br><span style="font-size:13px">'+noti.texto+'</span><br><button onclick="this.parentElement.remove();abrirTela(\'pedidos\')" style="background:#FF4D8D;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px;font-weight:800">VER PEDIDO</button> <button onclick="this.parentElement.remove()" style="background:#333;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px">Fechar</button>';document.body.appendChild(div);setTimeout(function(){div.remove();},8000);}
-function abrirNotificacoes(){let html=notificacoes.length?'':'<div class="card"><p>Nenhuma notificacao ainda.</p></div>';notificacoes.forEach(function(n){html+='<div style="background:#fff;padding:12px;border-radius:12px;margin-bottom:8px;border:1px solid #EFEFEF"><b>'+n.titulo+'</b><br><span style="font-size:13px">'+n.texto+'</span><br><small style="color:#888">'+n.hora+'</small></div>';});document.getElementById('listaNotificacoes').innerHTML=html;notificacoes.forEach(function(n){n.lida=true;});persistirTudo();atualizarSino();}
+function verComoCliente(){$('painelPage').classList.add('hidden');$('clientePage').classList.remove('hidden');fecharTudo();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();window.scrollTo(0,0);}
+function voltarPainel(){$('clientePage').classList.add('hidden');$('painelPage').classList.remove('hidden');atualizarMarcaAgua();window.scrollTo(0,0);}
+async function sair(){try{await signOut(auth);}catch(e){}fecharTudo();fecharTela();$('painelPage').classList.add('hidden');$('clientePage').classList.add('hidden');$('topBar').classList.add('hidden');$('authPage').classList.remove('hidden');$('marcaAgua').classList.remove('show');$('marcaAguaCliente').classList.remove('show');usuarioAtual={uid:'',loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:'',isAdmin:false};catalogo=[];pedidos=[];}
+function selBolo(el,idx){document.querySelectorAll('#bolosCliente .bolo').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');boloAtual=catalogo.find(x=>x.id==idx)||catalogo[0];kitSel=null;atualiza();}
+function selTam(el,v){document.querySelectorAll('#tamanhos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');kg=v;atualiza();}
+function selRec(el){document.querySelectorAll('#recheios button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');recheio=el.innerText;atualiza();}
+function selCob(el){document.querySelectorAll('#coberturas button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');cobertura=el.innerText;}
+function selForm(el){document.querySelectorAll('#formatos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');formato=el.innerText;}
+function selEnt(el,v){document.querySelectorAll('#entregas button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');entrega=v;atualiza();}
+function selPag(el){document.querySelectorAll('#pagamentos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');pagamento=el.innerText;}
+function selSinal(el){document.querySelectorAll('#sinais button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');sinal=el.innerText;}
+function atualiza(){if(kitSel)return;if(!boloAtual){$('resumo').innerText='Escolha um bolo';return;}let ev=entrega.includes('Entrega')?15:0;let t=boloAtual.preco*kg+ev;$('resumo').innerText=`${boloAtual.nome} - ${kg}kg - ${recheio} - ${formato}`;$('totalVal').innerText='R$ '+t.toFixed(2).replace('.',',');$('sinalVal').innerText='Sinal: R$ '+(t/2).toFixed(2).replace('.',',');}
+function atualizarSino(){let qtd=notificacoes.filter(n=>!n.lida).length;let sino=$('sinoNoti');if(sino){sino.innerText=qtd>0?'🔔 '+qtd:'🔔';sino.style.background=qtd>0?'#DC2626':'#fff';sino.style.color=qtd>0?'#fff':'#111';}}
+function mostrarPopupNotificacao(noti){let div=document.createElement('div');div.style.cssText='position:fixed;top:70px;left:12px;right:12px;background:#111;color:#fff;padding:14px;border-radius:14px;z-index:999;box-shadow:0 10px 30px rgba(0,0,0,.3)';div.innerHTML=`<b>${noti.titulo}</b><br><span style="font-size:13px">${noti.texto}</span><br><button onclick="this.parentElement.remove();abrirTela('pedidos')" style="background:#FF4D8D;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px;font-weight:800">VER PEDIDO →</button> <button onclick="this.parentElement.remove()" style="background:#333;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px">Fechar</button>`;document.body.appendChild(div);setTimeout(()=>div.remove(),8000);}
+function abrirNotificacoes(){let html=notificacoes.length?'':'<div class="card"><p>Nenhuma notificação ainda.</p></div>';notificacoes.forEach(n=>{html+=`<div style="background:#fff;padding:12px;border-radius:12px;margin-bottom:8px;border:1px solid #EFEFEF"><b>${n.titulo}</b><br><span style="font-size:13px">${n.texto}</span><br><small style="color:#888">${n.hora}</small></div>`;});$('listaNotificacoes').innerHTML=html;notificacoes.forEach(n=>n.lida=true);atualizarSino();}
 async function pedir(){
-  let nome=document.getElementById('nomeCliente').value.trim();let zapC=document.getElementById('zapCliente').value.trim();
+  let nome=$('nomeCliente').value.trim();let zapC=$('zapCliente').value.trim();
   if(!nome||!zapC){alert('Preencha seu Nome e WhatsApp!');return;}
-  let dataInput=document.getElementById('dataEntrega').value||'';let data=dataInput?new Date(dataInput+'T12:00:00').toLocaleDateString('pt-BR'):'A combinar';let hora=document.getElementById('horaEntrega').value||'A combinar';let tema=document.getElementById('tema').value||'Sem tema';let frase=document.getElementById('frase').value||'Sem frase';let endereco=document.getElementById('endereco').value||'Retirada na loja';let paraQuem=document.getElementById('paraQuem').value||nome;let obs=document.getElementById('obs').value||'Sem observacao';let como=document.getElementById('comoConheceu').value;
-  let total=kitSel?kitSel.preco:(boloAtual?boloAtual.preco*kg+(entrega.indexOf('Entrega')>=0?15:0):0);
+  if(!usuarioAtual.uid){alert('Loja não encontrada. Recarregue o link da boleira!');return;}
+  let dataInput=$('dataEntrega').value||'';let data=dataInput?new Date(dataInput+'T12:00:00').toLocaleDateString('pt-BR'):'A combinar';let hora=$('horaEntrega').value||'A combinar';let tema=$('tema').value||'Sem tema';let frase=$('frase').value||'Sem frase';let endereco=$('endereco').value||'Retirada na loja';let paraQuem=$('paraQuem').value||nome;let obs=$('obs').value||'Sem observação';let como=$('comoConheceu').value;
+  let total=kitSel?kitSel.preco:(boloAtual?boloAtual.preco*kg+(entrega.includes('Entrega')?15:0):0);
   let horaPedido=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  let novo={id:Date.now(),cliente:nome,zap:zapC,bolo:kitSel?kitSel.nome:(boloAtual?boloAtual.nome:'Bolo'),kg:kg,recheio:recheio,cobertura:cobertura,formato:formato,tema:tema,frase:frase,data:data,dataISO:dataInput,hora:hora,entrega:entrega,endereco:endereco,paraQuem:paraQuem,pagamento:pagamento,sinal:sinal,obs:obs,como:como,valor:total,status:'PENDENTE',horaPedido:horaPedido,loja:usuarioAtual.loja};
-  pedidos.unshift(novo);persistirTudo();await salvarNoFirebase('pedidos',Object.assign({},novo,{loja:usuarioAtual.loja}));
-  let marca = (usuarioAtual.plano||'GRATIS')=='GRATIS' ? '\n\nFeito com BoloPro - bolopro.com.br' : '';
-  let msg='NOVO PEDIDO - '+usuarioAtual.loja+'\nCliente: '+nome+'\nWhatsApp: '+zapC+'\nData da entrega: '+data+'\nHorario: '+hora+'\nPedido feito as: '+horaPedido+'\nBolo: '+novo.bolo+'\nTamanho: '+kg+'kg\nRecheio: '+recheio+'\nCobertura: '+cobertura+'\nFormato: '+formato+'\nTema: '+tema+'\nFrase no bolo: '+frase+'\nPara quem e: '+paraQuem+'\nEntrega: '+entrega+'\nEndereco: '+endereco+'\nPagamento: '+pagamento+'\nSinal: '+sinal+'\nTOTAL: R$ '+total+',00\nObs: '+obs+'\nComo conheceu: '+como+marca;
-  let noti={titulo:'Novo Pedido!',texto:nome+' pediu '+novo.bolo+' - R$ '+total+' - Entrega '+data+' '+hora,hora:horaPedido,lida:false};
-  notificacoes.unshift(noti);persistirTudo();await salvarNoFirebase('notificacoes',Object.assign({},noti,{loja:usuarioAtual.loja}));
-  atualizarSino();mostrarPopupNotificacao(noti);
-  window.open('https://wa.me/55'+usuarioAtual.zap+'?text='+encodeURIComponent(msg),'_blank');
-  alert('Pedido enviado!');voltarPainel();renderPedidos();
+  let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,cliente:nome,zap:zapC,bolo:kitSel?kitSel.nome:(boloAtual?boloAtual.nome:'Bolo'),kg,recheio,cobertura,formato,tema,frase,data,dataISO:dataInput,hora,entrega,endereco,paraQuem,pagamento,sinal,obs,como,valor:total,status:'PENDENTE',horaPedido,criadoEm:serverTimestamp()};
+  let id=await salvarNoFirebase('pedidos',novo);if(id)pedidos.unshift(Object.assign({id},novo));
+  let marca=(usuarioAtual.plano||'GRATIS')=='GRATIS'?'\n\n🎂 Feito com BoloPro - bolopro.com.br':'';
+  let msg=`🎂 *NOVO PEDIDO - ${usuarioAtual.loja}* 🎂\n━━━━━━━━━━━━━━━\n👩 *CLIENTE*\nNome: ${nome}\nWhatsApp: ${zapC}\n━━━━━━━━━━━━━━━\n📅 *DATA*\nData da entrega: ${data}\nHorário: ${hora}\nPedido feito às: ${horaPedido}\n━━━━━━━━━━━━━━━\n🍰 *RESUMO*\nBolo: ${novo.bolo}\nTamanho: ${kg}kg\nRecheio: ${recheio}\nCobertura: ${cobertura}\nFormato: ${formato}\nTema: ${tema}\nFrase: ${frase}\nPara quem: ${paraQuem}\n━━━━━━━━━━━━━━━\n🚚 *ENTREGA*\nTipo: ${entrega}\nEndereço: ${endereco}\n━━━━━━━━━━━━━━━\n💳 *PAGAMENTO*\nForma: ${pagamento}\nSinal: ${sinal}\n💰 *TOTAL: R$ ${total},00*\n━━━━━━━━━━━━━━━\n📝 *OBS*\n${obs}\n📣 Como conheceu: ${como}${marca}`;
+  let noti={titulo:'🎂 Novo Pedido!',texto:`${nome} pediu ${novo.bolo} - R$ ${total} - Entrega ${data} ${hora}`,hora:horaPedido,lida:false};
+  notificacoes.unshift(noti);atualizarSino();mostrarPopupNotificacao(noti);
+  window.open(`https://wa.me/55${usuarioAtual.zap}?text=${encodeURIComponent(msg)}`,'_blank');
+  alert('✅ Pedido salvo no Firebase e enviado!');voltarPainel();renderPedidos();
 }
-carregarTudo();
+// Expor tudo pro HTML (onclick) - obrigatório com type=module
+Object.assign(window,{toggleOlho,mudaAba,recuperarSenha,fazerCadastro,fazerLogin,abrirLoginADM,voltarLoginBoleira,fazerLoginADM,sairADM,gerarCodigo,copiarCodigo,copiarCodigoEspecifico,alternarPago,cobrarCliente,excluirPedido,renderClientes,compartilharWhats,queroPlano,voltarPlanoGratis,usarCodigo,abrirPlanosADM,fecharTelaADMPlanos,salvarPlanoADM,filtroADM,verBoleira,virarPRO,bloquearBoleira,mandarZap,excluirBoleira,toggleMenuTop,fecharTudo,abrirTela,fecharTela,editarPerfil,cancelarEditPerfil,salvarPerfil,enviarFeedback,enviarSuporte,perguntarIA,salvarCatalogoCompleto,excluirBolo,salvarKit,selKit,selKitAtual,verPedido,mudarStatus,copiarLink,verComoCliente,voltarPainel,sair,selBolo,selTam,selRec,selCob,selForm,selEnt,selPag,selSinal,selecionarNota,pedir,abrirNotificacoes});
+carregarLojaPublica();
 renderCatalogo();renderPedidos();renderCalendario();renderPlanosBoleira();atualizarKitUI();atualizarVisibilidadeKit();
 </script>
 </body>
