@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BoloPro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#F6F7FB;color:#111;padding-top:56px}
+.topBar{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-shadow:0 1px 10px rgba(0,0,0,.08);z-index:99}
+.topBar b{color:#FF4D8D;font-size:19px}
+.iconBtn{border:1px solid #EDEDEF;background:#fff;padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer;font-size:13px}
+.iconBtn.primary{background:#FF4D8D;color:#fff;border-color:#FF4D8D}
+.wrap{max-width:460px;margin:0 auto;padding:12px}
+.card{background:#fff;border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.05);margin-bottom:12px;border:1px solid #EFEFEF}
+.card h3{font-size:15px;margin-bottom:6px}.card p{font-size:13px;color:#666;line-height:1.5}
+label{font-weight:700;font-size:12px;color:#333;display:block;margin:12px 0 6px;text-transform:uppercase}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid #EDEDEF;border-radius:12px;font-size:14px;outline:none;background:#fff}
+input:disabled{background:#F3F4F6;color:#888}
+input:focus{border-color:#FF4D8D}
+.btn{width:100%;background:#FF4D8D;color:#fff;border:none;padding:13px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-green{background:#16A34A}.btn-outline{background:#fff;color:#FF4D8D;border:1.5px solid #FF4D8D}.btn-dark{background:#111}.btn-gold{background:#FFB800;color:#111}.btn-sm{width:auto;padding:7px 10px;font-size:12px;margin:0}
+.btn-back{width:100%;background:#F3F4F6;color:#111;border:none;padding:13px;border-radius:12px;font-weight:800;cursor:pointer;margin-top:18px;font-size:15px}
+.hidden{display:none}
+.center{max-width:420px;margin:26px auto;padding:14px}.center h1{text-align:center;color:#FF4D8D;font-size:34px}
+.tabs{display:flex;background:#F0F0F2;border-radius:12px;padding:4px;margin:12px 0}.tabs button{flex:1;padding:10px;border:none;border-radius:9px;font-weight:800;cursor:pointer;background:transparent;color:#666}.tabs button.active{background:#fff;color:#FF4D8D}
+.kpi{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.kpi .box{background:#fff;border:1px solid #EFEFEF;border-radius:16px;padding:13px;text-align:center}.kpi b{font-size:18px;display:block}.kpi span{font-size:11px;color:#888;font-weight:700}
+.pedido{border:1px solid #EFEFEF;border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}.pedido b{font-size:14px}.pedido p{font-size:12px;color:#666;margin:3px 0}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.pendente{background:#FEF3C7;color:#92400E}.pago{background:#DCFCE7;color:#166534}.fazendo{background:#DBEAFE;color:#1E40AF}
+.linkBox{background:#FFFBEB;border:1px dashed #F59E0B;padding:11px;border-radius:12px;font-size:13px;word-break:break-all;margin-top:8px}
+.bolos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bolo{border:1.5px solid #EDEDEF;border-radius:14px;padding:9px;text-align:center;cursor:pointer;background:#fff}.bolo.sel{border-color:#FF4D8D;background:#FFF5F8}.bolo img{width:100%;height:78px;object-fit:cover;border-radius:10px}.bolo b{font-size:12px}
+.opt{display:flex;gap:7px;flex-wrap:wrap}.opt button{padding:9px 12px;border:1.5px solid #EDEDEF;background:#fff;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px}.opt button.sel{background:#FF4D8D;color:#fff;border-color:#FF4D8D}
+.total{background:#111;color:#fff;padding:14px;border-radius:14px;text-align:center;margin-top:12px}
+.small{text-align:center;font-size:12px;color:#888;margin-top:9px}
+.menuTop{position:fixed;top:56px;left:0;right:0;background:#fff;box-shadow:0 12px 30px rgba(0,0,0,.12);z-index:98;display:none;border-radius:0 0 18px 18px;overflow:hidden}
+.menuTop.show{display:block}
+.menuTop .head{padding:14px;display:flex;gap:10px;align-items:center;background:#FFF5F8;border-bottom:1px solid #F0E6EA}
+.avatar{width:44px;height:44px;border-radius:50%;background:#FF4D8D;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800}
+.menuList a{display:flex;gap:12px;align-items:center;padding:14px 16px;text-decoration:none;color:#222;border-bottom:1px solid #F5F5F5;font-size:14px;font-weight:700}
+.menuList a small{display:block;font-weight:400;color:#888;font-size:11px}
+.menuList a span{font-size:20px;width:28px;text-align:center}
+.menuList a.danger{color:#DC2626}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:90}.overlay.show{display:block}
+.fullPage{position:fixed;inset:0;background:#F6F7FB;z-index:100;display:none;overflow:auto;padding-top:56px}
+.fullPage.show{display:block}
+.fullHeader{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;box-shadow:0 1px 10px rgba(0,0,0,.08);z-index:101}
+.fullHeader b{font-size:17px}
+.lockBtn{position:absolute;top:10px;right:10px;background:transparent;border:none;width:38px;height:38px;border-radius:50%;font-size:16px;cursor:pointer;opacity:0.02;color:#111}
+.loginWrap{position:relative}
+.kit{border:1.5px dashed #FFB800;background:#FFFBEB;border-radius:14px;padding:12px;margin-top:10px}
+.admHeader{background:#111;color:#fff;border-radius:18px;padding:16px;margin-bottom:12px}.admHeader p{color:#CBD5E1;font-size:13px}
+.boleiraRow{background:#fff;border:1px solid #EFEFEF;border-radius:16px;padding:13px;margin-bottom:10px;display:flex;gap:12px;cursor:pointer}
+.boleiraRow img{width:48px;height:48px;border-radius:50%;object-fit:cover}.boleiraRow .info{flex:1}.boleiraRow .info b{font-size:14px}.boleiraRow .info p{font-size:12px;color:#666;margin:2px 0}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px}.tag-pro{background:#FF4D8D;color:#fff}.tag-free{background:#E5E7EB;color:#374151}.tag-block{background:#FEE2E2;color:#991B1B}.tag-mensal{background:#DBEAFE;color:#1E40AF}.tag-anual{background:#FEF3C7;color:#92400E}
+.filterRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.filterRow button{padding:8px 12px;border-radius:999px;border:1.5px solid #EDEDEF;background:#fff;font-weight:700;cursor:pointer;font-size:12px}.filterRow button.active{background:#111;color:#fff;border-color:#111}
+.codeBox{background:#111;color:#0F0;padding:14px;border-radius:12px;text-align:center;font-size:22px;font-weight:800;letter-spacing:3px;margin:10px 0}
+.passWrap{position:relative}.passWrap input{padding-right:44px}.eyeBtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:#F3F4F6;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px}
+.calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:12px}.calGrid div{padding:9px 0;border-radius:10px;background:#fff;border:1px solid #EFEFEF}.calGrid div.tem{background:#FF4D8D;color:#fff;font-weight:800}.calGrid div.hoje{border:2px solid #FF4D8D}
+.iaBox{background:#F0F9FF;border:1px solid #BFDBFE;border-radius:14px;padding:12px;margin-top:10px;font-size:13px;line-height:1.5}
+.copyToast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:999px;font-size:13px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,.3);display:none}
+.planoCard{border:2px solid #EDEDEF;border-radius:18px;padding:16px;margin-bottom:12px;background:#fff;text-align:center;position:relative}
+.planoCard.destaque{border-color:#FF4D8D;background:#FFF5F8;box-shadow:0 8px 24px rgba(255,77,141,.18)}
+.planoCard.atual{border-color:#16A34A;background:#F0FDF4}
+.planoPreco{font-size:32px;font-weight:900;margin:8px 0}
+.planoPreco small{font-size:13px;color:#888;font-weight:400}
+.selo{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#FF4D8D;color:#fff;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800}
+.seloAnual{background:#FFB800;color:#111}
+.homeBg{background:linear-gradient(180deg,#FF8FB8 0%,#FFC0D6 45%,#FFE4EF 100%);min-height:100vh;padding:14px 12px 20px;margin-top:-56px;padding-top:14px}
+.homeLogo{text-align:center;color:#fff;margin:6px 0 2px}
+.homeLogo .marca{font-family:Georgia,serif;font-size:42px;font-weight:700;line-height:1}
+.homeLogo .marca i{font-style:italic;color:#FFF5F8}
+.homeLogo h1{font-size:30px;line-height:1.05;margin:8px 0 6px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.homeLogo p{font-size:13px;font-weight:700}
+.homeCard{background:#fff;border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);margin-top:14px}
+.homeGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.homeBtn{background:#E91E7F;color:#fff;border:none;border-radius:14px;padding:16px 8px;cursor:pointer;text-align:center;box-shadow:0 4px 14px rgba(233,30,127,.25)}
+.homeBtn:active{transform:scale(.97)}
+.homeBtn span{font-size:22px;display:block}
+.homeBtn b{font-size:15px;display:block;margin-top:4px}
+.homeBtn small{font-size:11px;opacity:.85}
+.homeBtn.full{grid-column:1/-1}
+.homeBtn.gold{background:#FFB800;color:#111;box-shadow:0 4px 14px rgba(255,184,0,.3)}
+.ultPedTitle{font-size:19px;font-weight:900;margin:4px 0 10px}
+.pedidoHome{border:1.5px solid #EFEFEF;border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}
+.pedidoHome b{font-size:15px}
+.pedidoHome p{font-size:13px;color:#444;margin:3px 0;line-height:1.4}
+.btnRowHome{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btnRowHome button{border:none;padding:10px 12px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;color:#fff}
+.btnVerde{background:#16A34A}.btnLaranja{background:#F97316}.btnVermelho{background:#EF4444}.btnRosa{background:#E91E7F}
+.ctaWhats{background:#16A34A;color:#fff;border:none;width:100%;padding:15px;border-radius:999px;font-weight:900;font-size:17px;cursor:pointer;margin-top:12px;box-shadow:0 8px 20px rgba(22,163,74,.35)}
+.marcaAgua{position:fixed;bottom:14px;right:14px;z-index:999;pointer-events:none;opacity:.22;font-weight:900;font-size:18px;color:#E91E7F;background:#fff;padding:6px 12px;border-radius:999px;border:1.5px solid #E91E7F;display:none}
+.marcaAgua.show{display:block}
+.marcaAguaCliente{position:fixed;bottom:14px;right:14px;z-index:999;pointer-events:none;opacity:.22;font-weight:900;font-size:15px;color:#E91E7F;background:#fff;padding:6px 12px;border-radius:999px;border:1.5px solid #E91E7F;display:none}
+.marcaAguaCliente.show{display:block}
+.faixaGratis{background:#FFF3CD;border:1.5px dashed #F59E0B;border-radius:12px;padding:10px;text-align:center;font-size:13px;margin-bottom:12px}
+.passo{background:#FFF5F8;border:1.5px solid #FFD0E2;border-radius:14px;padding:12px;margin-bottom:10px}
+.passo b{color:#E91E7F}
+.faq{background:#F6F7FB;border-radius:12px;padding:10px;margin-bottom:8px}
+.switchRow{display:flex;justify-content:space-between;align-items:center;background:#F6F7FB;border-radius:12px;padding:12px;margin-bottom:8px}
+.switchRow b{font-size:14px}.switchRow small{display:block;color:#666;font-size:12px}
+.switch{width:48px;height:26px;border-radius:999px;background:#E5E7EB;position:relative;cursor:pointer;border:none}
+.switch.on{background:#16A34A}
+.switch:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s}
+.switch.on:after{left:25px}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyDcZa03lSVUMAYgJzWfJZI3XSC-Jm0V-Uc",authDomain:"bolopro-697a7.firebaseapp.com",projectId:"bolopro-697a7",storageBucket:"bolopro-697a7.firebasestorage.app",messagingSenderId:"746282781210",appId:"1:746282781210:web:3e3aa0d5655281d869dfa3",measurementId:"G-8ES4DX7MEC"};
+let db=null;try{firebase.initializeApp(firebaseConfig);db=firebase.firestore();}catch(e){}
+async function salvarNoFirebase(c,d){if(!db)return null;try{let doc=await db.collection(c).add({...d,criadoEm:new Date()});return doc.id;}catch(e){return null;}}
+function slugify(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+function mostrarToast(msg){let t=document.getElementById('copyToast');t.innerText=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+async function copiarTextoSeguro(texto,msgOk){
+  texto=String(texto||'');if(!texto){alert('Nada para copiar!');return false;}
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(texto); mostrarToast(msgOk||'✅ Copiado!'); return true; } }catch(e){}
+  try{let ta=document.createElement('textarea'); ta.value=texto; ta.style.position='fixed'; ta.style.top='0'; ta.style.left='0'; ta.style.opacity='0'; ta.setAttribute('readonly','');document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0,99999);let ok=document.execCommand('copy'); document.body.removeChild(ta);if(ok){ mostrarToast(msgOk||'✅ Copiado!'); return true; }}catch(e){}
+  let caixa=document.createElement('div'); caixa.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+  caixa.innerHTML=`<div style="background:#fff;border-radius:18px;padding:18px;width:100%;max-width:380px;text-align:center"><h3 style="margin-bottom:8px">📋 Segure e copie:</h3><textarea readonly style="width:100%;height:90px;padding:10px;border:1.5px solid #FF4D8D;border-radius:12px;font-size:14px" onclick="this.select()">${texto}</textarea><p style="font-size:12px;color:#666;margin:8px 0">Toque no texto, segure e clique em Copiar</p><button onclick="this.parentElement.parentElement.remove()" style="width:100%;background:#FF4D8D;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:800">FECHAR</button></div>`;
+  document.body.appendChild(caixa); caixa.querySelector('textarea').select();return true;
+}
+let planos={
+  gratis:{nome:'GRÁTIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para começar a testar',recursos:'✅ Até 3 bolos no catálogo\n✅ Até 10 pedidos por mês\n✅ Link da loja\n✅ Calendário\n❌ Sem BoloPro IA\n💧 Com marca d\'água + texto BoloPro na mensagem'},
+  mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mês',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'✅ Bolos ilimitados\n✅ Pedidos ilimitados\n✅ BoloPro IA\n✅ Lembrete automático\n✅ SEM marca d\'água\n✅ SEM texto BoloPro na mensagem'},
+  anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses grátis! Economize R$ 39,80',recursos:'✅ TUDO do Mensal\n✅ 2 meses GRÁTIS\n✅ Selo ⭐ Loja Destaque\n✅ SEM marca d\'água\n✅ Prioridade máxima'}
+};
+// ===== CONTEÚDO EDITÁVEL PELO ADM - O QUE APARECE OU NÃO =====
+let configApp={
+  tituloHome:'Conheça o Portfólio Completo!',
+  subtituloHome:'✔ Catálogo no WhatsApp em 1 clique • ✔ Pedidos Organizados',
+  mostrarIA:true, mostrarKit:true, mostrarCalendario:true, mostrarFeedback:true, mostrarPlanos:true,
+  textoBoasVindas:'✨ BEM-VINDA',
+  textoSuporte:'Precisa de ajuda? Fala com a gente! Respondemos em até 2h em horário comercial.',
+  textoTermos:'1. O BoloPro é uma ferramenta para boleiras organizarem pedidos.\n2. A boleira é responsável pelos bolos, preços e entregas.\n3. Pagamentos são feitos direto entre cliente e boleira.\n4. Seus dados não são vendidos.\n5. O plano PRO é desbloqueado por código.\n6. No Plano Grátis aparece marca d\'água BoloPro + texto BoloPro na mensagem do WhatsApp. No Plano Pago, some tudo.',
+  textoQuemSomos:'O BoloPro nasceu da CodeWay, uma empresa criada para ajudar boleiras a venderem mais sem complicação.',
+  textoProxima:'🚀 Em breve: lembrete automático, pagamento pelo app e loja com foto!'
+};
+</script>
+</head>
+<body>
+<div id="copyToast" class="copyToast">✅ Copiado!</div>
+<div id="marcaAgua" class="marcaAgua">🎂 BoloPro</div>
+<div id="marcaAguaCliente" class="marcaAguaCliente">🎂 Feito com BoloPro</div>
+
+<div id="topBar" class="topBar hidden"><b>🎂 <span id="topNome">BoloPro</span></b><div><button class="iconBtn" id="sinoNoti" onclick="abrirTela('notificacoes');abrirNotificacoes()">🔔</button> <button class="iconBtn" onclick="verComoCliente()">👀 Loja</button> <button class="iconBtn primary" onclick="toggleMenuTop()">☰ Menu</button></div></div>
+
+<!-- MENU FLUTUANTE ATUALIZADO -->
+<div id="menuTop" class="menuTop">
+  <div class="head"><div class="avatar" id="avatarLetra">A</div><div><b id="menuNome">Minha Loja</b><br><span id="menuEmail" style="font-size:12px;color:#888"></span><br><span id="menuPlanoBadge" style="font-size:11px;background:#FF4D8D;color:#fff;padding:2px 8px;border-radius:999px">PLANO GRÁTIS</span></div></div>
+  <div class="menuList">
+    <a href="#" onclick="abrirTela('perfil');return false"><span>👤</span><div>Perfil<small>Ver e editar suas informações</small></div></a>
+    <a href="#" onclick="abrirTela('plano');return false"><span>💎</span><div>Planos<small>Grátis • Mensal R$ 19,90 • Anual R$ 199</small></div></a>
+    <a href="#" onclick="abrirTela('feedback');return false"><span>⭐</span><div>Feedback<small>Avaliar o app</small></div></a>
+    <a href="#" onclick="abrirTela('ia');return false"><span>🤖</span><div>BoloPro IA<small>Sua assistente inteligente</small></div></a>
+    <a href="#" onclick="abrirTela('comoUsar');return false"><span>📖</span><div>Como Usar<small>Passo a passo completo</small></div></a>
+    <a href="#" onclick="abrirTela('suporte');return false"><span>💬</span><div>Suporte<small>Falar com a CodeWay</small></div></a>
+    <a href="#" onclick="abrirTela('termos');return false"><span>📄</span><div>Termos<small>Termos de uso e privacidade</small></div></a>
+    <a href="#" onclick="abrirTela('proxima');return false"><span>🚀</span><div>Próxima Atualização<small>O que vem por aí!</small></div></a>
+    <a href="#" onclick="abrirTela('quemSomos');return false"><span>💖</span><div>Quem Somos<small>Conheça o BoloPro</small></div></a>
+    <a href="#" onclick="sair();return false" class="danger"><span>🚪</span><div>Sair<small>Sair da conta</small></div></a>
+  </div>
+</div>
+
+<div id="authPage" class="center">
+  <div class="loginWrap card">
+    <button class="lockBtn" onclick="abrirLoginADM()">🔒</button>
+    <h1>🎂 BoloPro</h1><p style="text-align:center;color:#666;font-size:14px">Login da Boleira</p>
+    <div class="tabs"><button id="tabLogin" class="active" onclick="mudaAba('login')">ENTRAR</button><button id="tabCad" onclick="mudaAba('cad')">CADASTRAR</button></div>
+    <div id="formLogin">
+      <label>Email</label><input id="loginEmail" type="email" placeholder="Ex: ana@gmail.com">
+      <label>Senha</label><div class="passWrap"><input id="loginSenha" type="password" placeholder="Sua senha"><button class="eyeBtn" onclick="toggleOlho('loginSenha',this)">👁️</button></div>
+      <button class="btn" onclick="fazerLogin()">ENTRAR NO PAINEL →</button>
+    </div>
+    <div id="formCad" class="hidden">
+      <label>Nome da Loja</label><input id="cadLoja" placeholder="Ex: Doces da Ana">
+      <label>Email</label><input id="cadEmail" type="email" placeholder="Ex: ana@gmail.com">
+      <label>Senha</label><div class="passWrap"><input id="cadSenha" type="password" placeholder="Mínimo 6 letras"><button class="eyeBtn" onclick="toggleOlho('cadSenha',this)">👁️</button></div>
+      <label>Confirmar Senha</label><div class="passWrap"><input id="cadSenha2" type="password" placeholder="Repita a senha"><button class="eyeBtn" onclick="toggleOlho('cadSenha2',this)">👁️</button></div>
+      <label>WhatsApp</label><input id="cadZap" placeholder="11999999999">
+      <label>Cidade</label><input id="cadCidade" placeholder="São Paulo - SP">
+      <button class="btn" onclick="fazerCadastro()">CRIAR CONTA GRÁTIS 🎉</button>
+    </div>
+  </div><p class="small">Feito para boleiras que querem vender mais no WhatsApp</p>
+</div>
+
+<div id="admLoginPage" class="center hidden">
+  <div class="card" style="border:2px solid #111"><h1 style="color:#111">🔐 ADM</h1>
+  <label>Email do ADM</label><input id="admEmail" type="email" placeholder="adm@bolopro.com.br">
+  <label>Senha do ADM</label><div class="passWrap"><input id="admSenha" type="password" placeholder="Senha ADM"><button class="eyeBtn" onclick="toggleOlho('admSenha',this)">👁️</button></div>
+  <button class="btn btn-dark" onclick="fazerLoginADM()">ENTRAR COMO ADM →</button>
+  <button class="btn btn-outline" onclick="voltarLoginBoleira()">← Voltar</button></div>
+</div>
+
+<div id="admPage" class="hidden"><div class="wrap">
+  <div class="admHeader"><p>👑 PAINEL DO DONO</p><h2>BoloPro - ADM</h2><p>Controle total do app.</p></div>
+  <div class="kpi"><div class="box"><b id="admTotal">0</b><span>BOLEIRAS</span></div><div class="box"><b id="admFatura">R$ 0</b><span>FATURAMENTO</span></div><div class="box"><b id="admPro">0</b><span>PRO ATIVO</span></div></div>
+  <div class="card" style="margin-top:12px;border:2px solid #111"><h3>🎛️ Editar Conteúdo do App</h3><p>Liga/desliga o que aparece ou não no app e edita os textos! Ex: esconder a IA, mudar o título da home, mudar o texto do Suporte...</p>
+  <button class="btn btn-dark" onclick="abrirConteudoADM()">🎛️ ABRIR EDITOR DE CONTEÚDO →</button></div>
+  <div class="card" style="border:2px solid #FFB800"><h3>💎 Gerenciar Planos</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="tag tag-free">GRÁTIS R$ 0</span><span class="tag tag-mensal" id="tagMensalADM">MENSAL R$ 19,90</span><span class="tag tag-anual" id="tagAnualADM">ANUAL R$ 199,00</span></div>
+  <button class="btn btn-gold" onclick="abrirPlanosADM()">💎 ABRIR PÁGINA DOS PLANOS →</button></div>
+  <div class="card" style="border:2px solid #FF4D8D"><h3>🔑 Gerar Código PRO</h3>
+  <label>Para qual boleira?</label><select id="codigoBoleira"><option>Qualquer boleira - Código genérico</option></select>
+  <label>Qual plano liberar?</label><select id="codigoPlanoTipo"><option value="MENSAL">MENSAL - 30 dias</option><option value="ANUAL">ANUAL - 365 dias</option></select>
+  <label>Validade</label><select id="codigoValidade"><option value="30">30 dias - R$ 19,90</option><option value="365">365 dias - R$ 199,00</option></select>
+  <div id="codigoGerado" class="codeBox hidden">BOLOPRO-XXXX</div>
+  <button class="btn btn-dark" onclick="gerarCodigo()">🎲 GERAR CÓDIGO ALEATÓRIO</button>
+  <button class="btn btn-green hidden" id="btnCopiarCodigo" onclick="copiarCodigo()">📋 COPIAR CÓDIGO</button><div id="listaCodigos"></div></div>
+  <div class="card"><h3>🔍 Buscar Boleira</h3><input id="buscaBoleira" placeholder="Buscar por nome, email ou cidade..." oninput="renderBoleirasADM()">
+  <div class="filterRow" style="margin-top:10px"><button class="active" onclick="filtroADM('todas',this)">Todas</button><button onclick="filtroADM('PRO',this)">💎 PRO</button><button onclick="filtroADM('MENSAL',this)">📅 Mensal</button><button onclick="filtroADM('ANUAL',this)">🏆 Anual</button><button onclick="filtroADM('GRATIS',this)">🆓 Grátis</button><button onclick="filtroADM('BLOQUEADA',this)">🚫 Bloqueadas</button></div>
+  <p style="font-size:12px;color:#888">Mostrando <b id="qtdMostra">0</b> boleiras</p></div>
+  <div id="listaBoleirasADM"></div>
+  <button class="btn btn-outline" onclick="sairADM()">Sair do ADM</button>
+</div></div>
+
+<!-- TELA PRINCIPAL COM ADD BOLO + KIT FESTA -->
+<div id="painelPage" class="hidden">
+  <div class="homeBg">
+    <div class="wrap" style="padding:0">
+      <div class="homeLogo">
+        <div class="marca">Bolo<i>Pro</i></div>
+        <h1 id="tituloHomeApp">Conheça o Portfólio Completo!</h1>
+        <p id="subtituloHomeApp">✔ Catálogo no WhatsApp em 1 clique • ✔ Pedidos Organizados</p>
+        <p style="margin-top:6px;font-size:14px" id="nomeLojaPainel">Minha Loja</p>
+        <p id="emailPainel" style="font-size:12px;opacity:.9">Plano Grátis</p>
+      </div>
+      <div id="faixaGratis" class="faixaGratis hidden">💧 Você está no <b>Plano Grátis</b> - com marca d'água BoloPro + texto BoloPro na mensagem<br><a href="#" onclick="abrirTela('plano');return false" style="color:#E91E7F;font-weight:800">💎 Remover - Assinar R$ 19,90</a></div>
+      <div class="homeCard">
+        <div class="kpi" style="margin-bottom:12px">
+          <div class="box"><b id="statHoje">R$ 0</b><span>HOJE</span></div>
+          <div class="box"><b id="statMes">R$ 0</b><span>MÊS</span></div>
+          <div class="box"><b id="statPedidos">0</b><span>PEDIDOS</span></div>
+        </div>
+        <div class="homeGrid">
+          <button class="homeBtn" onclick="abrirTela('catalogoEdit')"><span>➕</span><b>Add Bolo</b><small id="homeQtdCatalogo">0 bolos</small></button>
+          <button class="homeBtn gold" onclick="abrirTela('kitEdit')"><span>🎉</span><b>Editar Kit Festa</b><small>Kit Aniversário</small></button>
+          <button class="homeBtn" onclick="abrirTela('pedidos')"><span>📦</span><b>Pedidos</b><small id="homeQtdPedidos">Ver todos</small></button>
+          <button class="homeBtn" onclick="abrirTela('clientes')"><span>👥</span><b>Clientes</b><small id="homeQtdClientes">Ver todos</small></button>
+          <button class="homeBtn" onclick="abrirTela('calendario')"><span>📅</span><b>Calendário</b><small>Entregas</small></button>
+          <button class="homeBtn" onclick="abrirTela('linkVendas')"><span>🔗</span><b>Link de Vendas</b><small>Copiar link</small></button>
+        </div>
+        <div id="boxIAHome" class="card" style="border:2px solid #111;margin:0 0 12px"><h3>🤖 BoloPro IA</h3><p>Sua assistente para preços e legendas!</p><button class="btn btn-dark" onclick="abrirTela('ia')">🤖 ABRIR IA</button></div>
+        <div class="ultPedTitle">📦 Últimos Pedidos</div>
+        <div id="ultimosPedidosHome"></div>
+        <div id="listaPedidosResumo"></div>
+        <div class="card" style="margin:12px 0 0;box-shadow:none;border:1.5px solid #EFEFEF">
+          <h3>📅 Calendário - <span id="mesCal"></span></h3>
+          <div class="calGrid" id="calGrid"></div>
+          <p class="small">Dias em rosa = tem entrega!</p>
+        </div>
+      </div>
+      <button class="ctaWhats" onclick="copiarLink()">💬 COPIAR LINK DA LOJA</button>
+      <p style="text-align:center;color:#fff;font-size:12px;font-weight:700;margin-top:8px">Manda o link pra cliente e ela monta o bolo sozinha!</p>
+    </div>
+  </div>
+</div>
+
+<div id="clientePage" class="hidden"><div class="wrap">
+  <div class="card" style="background:#FF4D8D;color:#fff;border:none;text-align:center"><p style="color:#FFE4EF;font-size:12px" id="textoBoasVindasCliente">✨ BEM-VINDA</p><h2 id="tituloLoja">Minha Loja</h2><p id="cidadeLoja" style="color:#FFE4EF"></p></div>
+  <div class="card" id="cardKitCliente"><h3>🎉 Kit Aniversário</h3><div class="kit"><b>Kit Festa 20 pessoas - R$ 299</b><p>Bolo 2kg + 100 brigadeiros + 50 beijinhos</p><button class="btn btn-gold" onclick="selKit('Kit Festa 20 pessoas',299)">ESCOLHER ESSE KIT</button></div>
+  <label>1. Bolo *</label><div class="bolos" id="bolosCliente"><p>Essa boleira ainda não cadastrou bolos.</p></div>
+  <label>2. Tamanho *</label><div class="opt" id="tamanhos"><button onclick="selTam(this,1)">1kg</button><button class="sel" onclick="selTam(this,2)">2kg</button><button onclick="selTam(this,3)">3kg</button><button onclick="selTam(this,5)">5kg</button></div>
+  <label>3. Recheio *</label><div class="opt" id="recheios"><button class="sel" onclick="selRec(this)">Ninho</button><button onclick="selRec(this)">Brigadeiro</button><button onclick="selRec(this)">Morango</button><button onclick="selRec(this)">Doce de Leite</button></div>
+  <label>4. Cobertura</label><div class="opt" id="coberturas"><button class="sel" onclick="selCob(this)">Chantilly</button><button onclick="selCob(this)">Chocolate</button><button onclick="selCob(this)">Pasta Americana</button></div>
+  <label>5. Formato</label><div class="opt" id="formatos"><button class="sel" onclick="selForm(this)">Redondo</button><button onclick="selForm(this)">Quadrado</button><button onclick="selForm(this)">Coração</button></div>
+  <label>6. Tema</label><input id="tema" placeholder="Ex: Princesa, Futebol">
+  <label>7. Frase no bolo</label><input id="frase" placeholder="Ex: Feliz Aniversário Maria!">
+  <label>8. Data e Hora *</label><input type="date" id="dataEntrega"><input type="time" id="horaEntrega" style="margin-top:8px">
+  <label>9. Entrega ou Retirada? *</label><div class="opt" id="entregas"><button class="sel" onclick="selEnt(this,'Retirada')">🏠 Retirada</button><button onclick="selEnt(this,'Entrega')">🛵 Entrega - R$ 15</button></div>
+  <label>10. Endereço</label><textarea id="endereco" rows="2" placeholder="Rua, número, bairro"></textarea>
+  <label>11. Nome da Cliente *</label><input id="nomeCliente" placeholder="Seu nome">
+  <label>12. WhatsApp *</label><input id="zapCliente" placeholder="11999999999">
+  <label>13. Para quem é o bolo?</label><input id="paraQuem" placeholder="Ex: Maria, 10 anos">
+  <label>14. Pagamento *</label><div class="opt" id="pagamentos"><button class="sel" onclick="selPag(this)">💚 Pix</button><button onclick="selPag(this)">💳 Cartão</button><button onclick="selPag(this)">💵 Dinheiro</button></div>
+  <label>15. Sinal 50%?</label><div class="opt" id="sinais"><button class="sel" onclick="selSinal(this)">Sim, vou pixar sinal</button><button onclick="selSinal(this)">Não, pago na retirada</button></div>
+  <label>16. Alergia / Obs</label><textarea id="obs" rows="2" placeholder="Ex: Sem lactose"></textarea>
+  <label>17. Como conheceu?</label><select id="comoConheceu"><option>Instagram</option><option>WhatsApp / Indicação</option><option>Facebook</option><option>Já sou cliente</option><option>Google</option></select>
+  <div class="total"><div id="resumo">Escolha um bolo</div><b id="totalVal">R$ 0,00</b><div id="sinalVal" style="font-size:13px">Sinal: R$ 0,00</div></div>
+  <button class="btn btn-green" onclick="pedir()">📲 PEDIR NO WHATSAPP</button>
+  <button class="btn btn-outline" onclick="voltarPainel()">← Voltar pro Painel</button>
+  </div></div>
+</div>
+
+<div id="overlay" class="overlay" onclick="fecharTudo()"></div>
+
+<div id="tela-perfil" class="fullPage"><div class="fullHeader"><b>👤 Meu Perfil</b></div><div class="wrap"><div class="card">
+  <p style="text-align:center;font-size:40px">👩‍🍳</p><h3 style="text-align:center" id="perfilTitulo">Minha Loja</h3>
+  <div id="perfilView">
+    <p><b>🏪 Loja:</b> <span id="viewLoja"></span><br><b>📧 E-mail:</b> <span id="viewEmail"></span> <small>(não pode mudar)</small><br><b>📱 WhatsApp:</b> <span id="viewZap"></span><br><b>📍 Cidade:</b> <span id="viewCidade"></span><br><b>📝 Sobre:</b> <span id="viewSobre"></span><br><b>💎 Plano:</b> <span id="viewPlano"></span><br><b>📅 Cadastro:</b> <span id="viewData"></span><br><b>🔗 Link:</b> <span id="viewLink"></span></p>
+    <button class="btn" onclick="editarPerfil()">✏️ EDITAR PERFIL</button>
+  </div>
+  <div id="perfilEdit" class="hidden">
+    <label>Nome da Loja</label><input id="perfilLoja">
+    <label>E-mail - NÃO PODE MUDAR 🔒</label><input id="perfilEmail" disabled>
+    <label>WhatsApp</label><input id="perfilZap">
+    <label>Cidade</label><input id="perfilCidade">
+    <label>Sobre a loja</label><textarea rows="3" id="perfilSobre">Bolos artesanais feitos com amor!</textarea>
+    <button class="btn btn-green" onclick="salvarPerfil()">✅ SALVAR ALTERAÇÕES</button>
+    <button class="btn btn-outline" onclick="cancelarEditPerfil()">Cancelar</button>
+  </div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div></div>
+
+<div id="tela-pedidos" class="fullPage"><div class="fullHeader"><b>📦 Pedidos</b></div><div class="wrap"><div class="card"><h3>Todos os pedidos</h3><p>Clique em um pedido para ver TODAS as informações.</p></div><div id="listaPedidosCompleta"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-clientes" class="fullPage"><div class="fullHeader"><b>👥 Clientes</b></div><div class="wrap"><div class="card"><h3>👥 Seus Clientes</h3><input id="buscaCliente" placeholder="🔍 Buscar cliente..." oninput="renderClientes()"></div><div id="listaClientes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-calendario" class="fullPage"><div class="fullHeader"><b>📅 Calendário</b></div><div class="wrap"><div class="card"><h3>📅 Calendário de Entregas</h3><p id="mesCal2" style="font-weight:800"></p><div class="calGrid" id="calGrid2"></div><p class="small">Dias em rosa = tem entrega!</p></div><div id="listaCalendario"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-linkVendas" class="fullPage"><div class="fullHeader"><b>🔗 Link de Vendas</b></div><div class="wrap"><div class="card"><h3>🔗 Seu link de vendas</h3><p>Mande esse link pra cliente. Ela abre e faz o pedido sozinha!</p><div class="linkBox" id="meuLink">https://bolopro.com.br/loja</div><button class="btn btn-green" onclick="copiarLink()">📋 COPIAR LINK DA MINHA LOJA</button><button class="btn btn-outline" onclick="verComoCliente()">👀 VER COMO A CLIENTE VÊ</button><button class="btn btn-dark" onclick="compartilharWhats()">💬 MANDAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<div id="tela-notificacoes" class="fullPage"><div class="fullHeader"><b>🔔 Notificações</b></div><div class="wrap"><div id="listaNotificacoes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-ia" class="fullPage"><div class="fullHeader"><b>🤖 BoloPro IA</b></div><div class="wrap"><div class="card"><h3>🤖 Sua assistente inteligente</h3><p>Preço, descrição, legenda e nome de bolo em 1 clique!</p><label>O que você quer que a IA faça?</label><select id="iaTipo"><option value="preco">💰 Calcular preço ideal do bolo</option><option value="descricao">📝 Criar descrição pro bolo</option><option value="legenda">📸 Criar legenda pro Instagram</option><option value="nome">🎂 Inventar nome de bolo novo</option><option value="kit">🎉 Montar um Kit Aniversário</option></select><label>Descreva seu bolo</label><input id="iaPergunta" placeholder="Ex: Bolo de chocolate 2kg com Ninho"><button class="btn btn-dark" onclick="perguntarIA()">🤖 PERGUNTAR PRA IA</button><div id="iaResposta"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-feedback" class="fullPage"><div class="fullHeader"><b>⭐ Feedback</b></div><div class="wrap"><div class="card"><p style="font-size:32px;text-align:center">⭐⭐⭐⭐⭐</p><h3 style="text-align:center">O que achou do BoloPro?</h3><label>Seu comentário</label><textarea rows="4" id="feedText" placeholder="O que você mais gostou?"></textarea><button class="btn" onclick="enviarFeedback()">ENVIAR FEEDBACK 💖</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<div id="tela-plano" class="fullPage"><div class="fullHeader"><b>💎 Planos</b></div><div class="wrap"><div class="card" style="text-align:center"><h3>Seu Plano Atual</h3><p id="planoAtualTexto">Você está no <b>Plano Grátis</b></p><p id="textoMarcaAgua" style="font-size:12px;color:#E91E7F">💧 No Grátis aparece marca d'água + texto BoloPro na mensagem. No Pago, some!</p></div><div id="listaPlanosBoleira"></div><div class="card"><h3>🔑 Tem um código?</h3><label>Código PRO</label><input id="codigoPlano" placeholder="Ex: BOLOPRO-A1B2C3"><button class="btn" onclick="usarCodigo()">🔓 DESBLOQUEAR COM CÓDIGO</button></div><div class="card"><h3>Como pagar?</h3><p>1. Escolha Mensal ou Anual<br>2. Chama no WhatsApp e paga via Pix<br>3. Recebe o código na hora!</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro!','_blank')">💬 QUERO ASSINAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<div id="tela-planosADM" class="fullPage"><div class="fullHeader"><b>💎 Planos - ADM</b></div><div class="wrap"><div class="card" style="border:2px solid #111"><h3>👑 Gerenciar Planos</h3><p>Edite preço, limites e descrição.</p></div><div id="listaPlanosADM"></div><div class="card"><button class="btn btn-outline" onclick="abrirTela('plano');renderPlanosBoleira()">👀 VER PRÉVIA COMO BOLEIRA</button></div><button class="btn-back" onclick="fecharTelaADMPlanos()">← VOLTAR PRO ADM</button></div></div>
+
+<!-- EDITOR DE CONTEÚDO DO ADM -->
+<div id="tela-conteudoADM" class="fullPage"><div class="fullHeader"><b>🎛️ Conteúdo do App - ADM</b></div><div class="wrap">
+  <div class="card" style="border:2px solid #111"><h3>🎛️ O que aparece ou não no app?</h3><p>Liga/desliga cada parte. Desligou, some na hora pra boleira!</p></div>
+  <div class="card"><h3>👁️ Mostrar / Esconder</h3>
+    <div class="switchRow"><div><b>🤖 BoloPro IA</b><small>Mostrar a IA na home e no menu?</small></div><button class="switch" id="swIA" onclick="toggleConfig('mostrarIA',this)"></button></div>
+    <div class="switchRow"><div><b>🎉 Kit Festa</b><small>Mostrar o Kit Aniversário pra cliente?</small></div><button class="switch" id="swKit" onclick="toggleConfig('mostrarKit',this)"></button></div>
+    <div class="switchRow"><div><b>📅 Calendário</b><small>Mostrar calendário na home?</small></div><button class="switch" id="swCal" onclick="toggleConfig('mostrarCalendario',this)"></button></div>
+    <div class="switchRow"><div><b>⭐ Feedback</b><small>Mostrar Feedback no menu?</small></div><button class="switch" id="swFeed" onclick="toggleConfig('mostrarFeedback',this)"></button></div>
+    <div class="switchRow"><div><b>💎 Planos</b><small>Mostrar Planos no menu?</small></div><button class="switch" id="swPlanos" onclick="toggleConfig('mostrarPlanos',this)"></button></div>
+  </div>
+  <div class="card"><h3>✏️ Editar Textos do App</h3>
+    <label>Título da Home</label><input id="cfgTituloHome">
+    <label>Subtítulo da Home</label><input id="cfgSubtituloHome">
+    <label>Texto Boas-Vindas da Cliente</label><input id="cfgBoasVindas">
+    <label>Texto do Suporte</label><textarea id="cfgSuporte" rows="3"></textarea>
+    <label>Texto do Quem Somos</label><textarea id="cfgQuemSomos" rows="3"></textarea>
+    <label>Texto da Próxima Atualização</label><textarea id="cfgProxima" rows="3"></textarea>
+    <label>Termos de Uso</label><textarea id="cfgTermos" rows="8"></textarea>
+    <button class="btn btn-green" onclick="salvarConteudoADM()">✅ SALVAR TUDO</button>
+  </div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR PRO ADM</button>
+</div></div>
+
+<!-- COMO USAR PROFISSIONAL -->
+<div id="tela-comoUsar" class="fullPage"><div class="fullHeader"><b>📖 Como Usar</b></div><div class="wrap">
+  <div class="card" style="text-align:center;border:2px solid #FF4D8D"><h2>🎂 Bem-vinda ao BoloPro!</h2><p>Aprenda em 5 minutos a vender bolo no automático!</p><p style="font-size:12px">⏱️ Tempo de leitura: 3 min • Nível: Iniciante</p></div>
+  <div class="passo"><b>PASSO 1 - Cadastre sua loja 🏪</b><p>Coloque nome da loja, WhatsApp e cidade. É com esse WhatsApp que você vai receber os pedidos!</p><p><b>Onde?</b> Menu → Perfil → Editar Perfil</p></div>
+  <div class="passo"><b>PASSO 2 - Cadastre seus bolos 🍰</b><p>Clique em <b>Add Bolo</b> na tela inicial. Coloque foto, nome, preço por kg, recheios e descrição. Quanto mais bonito, mais vende!</p><p><b>Dica de ouro:</b> Use foto com luz natural, de dia, sem filtro!</p></div>
+  <div class="passo"><b>PASSO 3 - Edite seu Kit Festa 🎉</b><p>Clique em <b>Editar Kit Festa</b> e monte seu kit (ex: Bolo 2kg + 100 brigadeiros). Kit vende 3x mais!</p></div>
+  <div class="passo"><b>PASSO 4 - Copie seu link 🔗</b><p>Clique em <b>Link de Vendas</b> → Copiar Link. Esse é o seu site de vendas!</p></div>
+  <div class="passo"><b>PASSO 5 - Divulgue! 📣</b><p>Cola o link no: Status do WhatsApp, Bio do Instagram, Grupos, Stories. Todo dia de manhã, posta 1 foto + link!</p><p><b>Modelo pronto:</b> "Oi! Agora você pode montar seu bolo sozinha! É só clicar aqui 👉 [seu link]"</p></div>
+  <div class="passo"><b>PASSO 6 - Receba o pedido! 🎉</b><p>Cliente monta o bolo sozinha → Você recebe no seu WhatsApp com Nome, Data, Resumo e Total + Notificação no app + Pedido no Calendário!</p></div>
+  <div class="card"><h3>❓ Dúvidas Frequentes</h3><div class="faq"><b>Preciso pagar pra usar?</b><p>Não! O Grátis já funciona. O Pago só tira a marca d'água e libera tudo ilimitado.</p></div><div class="faq"><b>Como a cliente paga?</b><p>Direto pra você! Pix, cartão ou dinheiro. O app só organiza, não fica com seu dinheiro.</p></div><div class="faq"><b>Posso mudar o preço depois?</b><p>Sim! Vai em Add Bolo, exclui o antigo e cadastra de novo com o preço novo.</p></div></div>
+  <div class="card"><h3>🎥 Quer ajuda?</h3><p>Chama a gente no WhatsApp que a gente te ajuda passo a passo!</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Preciso de ajuda pra usar o BoloPro!','_blank')">💬 PEDIR AJUDA</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div>
+
+<!-- SUPORTE PROFISSIONAL -->
+<div id="tela-suporte" class="fullPage"><div class="fullHeader"><b>💬 Suporte</b></div><div class="wrap">
+  <div class="card" style="text-align:center"><p style="font-size:40px">💬</p><h2>Central de Ajuda BoloPro</h2><p id="textoSuporteApp">Precisa de ajuda? Fala com a gente!</p><p style="font-size:12px;color:#16A34A">🟢 Online agora - Respondemos em até 2h</p></div>
+  <div class="card"><h3>📞 Nossos Canais</h3><p><b>📱 WhatsApp:</b> 15 99764-3116<br><b>📧 E-mail:</b> suportecodewayapp@gmail.com<br><b>⏰ Atendimento:</b> Segunda a Sábado - 8h às 20h<br><b>📍 Empresa:</b> CodeWay - Cotia / SP<br><b>⚡ Tempo médio:</b> 15 min no WhatsApp</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Preciso de ajuda no BoloPro!','_blank')">💬 CHAMAR NO WHATSAPP AGORA</button></div>
+  <div class="card"><h3>❓ Perguntas Frequentes</h3><div class="faq"><b>Esqueci minha senha, e agora?</b><p>Chama no WhatsApp com seu e-mail que a gente reseta pra você.</p></div><div class="faq"><b>Meu link não abre, o que faço?</b><p>Confere se copiou o link inteiro. Se não abrir, chama no WhatsApp.</p></div><div class="faq"><b>Como tiro a marca d'água BoloPro?</b><p>Assina o Mensal R$ 19,90 ou Anual R$ 199 em Planos. Some na hora!</p></div><div class="faq"><b>Como peço meu código PRO?</b><p>Chama no WhatsApp, paga via Pix e recebe o código na hora!</p></div></div>
+  <div class="card"><h3>✍️ Enviar Dúvida</h3><label>Sua dúvida</label><textarea rows="4" id="duvidaSuporte" placeholder="Descreva sua dúvida com detalhes..."></textarea><button class="btn" onclick="enviarSuporte()">ENVIAR DÚVIDA</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div>
+
+<!-- TERMOS PROFISSIONAL -->
+<div id="tela-termos" class="fullPage"><div class="fullHeader"><b>📄 Termos</b></div><div class="wrap">
+  <div class="card"><h2>📄 Termos de Uso e Privacidade</h2><p style="font-size:12px;color:#888">Última atualização: 23/11/2026 • Versão 2.0 • CodeWay</p></div>
+  <div class="card"><h3>1. O que é o BoloPro?</h3><p id="textoTermosApp">O BoloPro é uma ferramenta para boleiras organizarem pedidos...</p></div>
+  <div class="card"><h3>2. Responsabilidades</h3><p><b>Da boleira:</b> Qualidade dos bolos, preços, entregas e atendimento ao cliente.<br><b>Do BoloPro:</b> Manter o app funcionando e seus dados seguros.<br><b>Pagamento:</b> É feito direto entre cliente e boleira. O BoloPro não fica com nenhuma parte.</p></div>
+  <div class="card"><h3>3. Planos e Marca d'água</h3><p><b>Grátis:</b> Com marca d'água BoloPro na tela + texto "Feito com BoloPro" na mensagem do WhatsApp.<br><b>Pago (Mensal/Anual):</b> SEM marca d'água e SEM texto BoloPro. Tudo limpo, só sua marca!</p></div>
+  <div class="card"><h3>4. Privacidade - LGPD</h3><p>Seus dados (nome, e-mail, WhatsApp) são usados só pra fazer o app funcionar. Não vendemos seus dados. Você pode pedir pra apagar tudo a qualquer momento pelo suporte.</p></div>
+  <div class="card"><h3>5. Cancelamento</h3><p>Você pode cancelar quando quiser, sem multa. Seu plano continua até acabar o período pago.</p></div>
+  <div class="card"><h3>6. Contato</h3><p><b>Empresa:</b> CodeWay<br><b>E-mail:</b> suportecodewayapp@gmail.com<br><b>WhatsApp:</b> 15 99764-3116</p><button class="btn" onclick="fecharTela()">✅ LI E CONCORDO</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div>
+
+<!-- PROXIMA ATUALIZACAO -->
+<div id="tela-proxima" class="fullPage"><div class="fullHeader"><b>🚀 Próxima Atualização</b></div><div class="wrap">
+  <div class="card" style="text-align:center;border:2px solid #FF4D8D"><p style="font-size:40px">🚀</p><h2>O que vem por aí!</h2><p id="textoProximaApp">Em breve novidades!</p><p style="font-size:12px">Vote na que você mais quer!</p></div>
+  <div class="card"><h3>🔜 Em Breve - Versão 3.0</h3><p>✅ <b>Lembrete Automático</b> - App lembra a cliente de pagar e buscar o bolo sozinha!<br><br>✅ <b>Pagamento pelo App</b> - Cliente paga com Pix dentro do app!<br><br>✅ <b>Relatório Mensal</b> - Quanto você faturou no mês, em 1 clique!<br><br>✅ <b>Foto direto da Galeria</b> - Sem precisar de link do Instagram!<br><br>✅ <b>Lista de Compras Automática</b> - App calcula quanto de farinha, ovo e leite comprar!</p></div>
+  <div class="card"><h3>🗳️ Qual você quer primeiro?</h3><button class="btn btn-outline" onclick="alert('Voto registrado! Obrigada! 💖')">🔔 Lembrete Automático</button><button class="btn btn-outline" onclick="alert('Voto registrado! Obrigada! 💖')">💳 Pagamento pelo App</button><button class="btn btn-outline" onclick="alert('Voto registrado! Obrigada! 💖')">📊 Relatório Mensal</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div>
+
+<!-- QUEM SOMOS -->
+<div id="tela-quemSomos" class="fullPage"><div class="fullHeader"><b>💖 Quem Somos</b></div><div class="wrap">
+  <div class="card" style="text-align:center"><p style="font-size:50px">🎂</p><h2>BoloPro</h2><p style="font-size:13px;color:#E91E7F;font-weight:800">Feito com amor, para quem faz com amor!</p></div>
+  <div class="card"><h3>💖 Nossa História</h3><p id="textoQuemSomosApp">O BoloPro nasceu da CodeWay...</p><p style="margin-top:10px">A gente viu muita boleira talentosa perdendo pedido porque ficava horas no WhatsApp respondendo "quanto é o bolo? qual recheio tem?".<br><br>Então criamos o BoloPro: a cliente monta o bolo sozinha, você só recebe o pedido pronto! Simples assim.</p></div>
+  <div class="card"><h3>🎯 Nossa Missão</h3><p>Ajudar 10.000 boleiras a venderem mais, com menos stress, usando só o celular.</p></div>
+  <div class="card"><h3>🏢 CodeWay</h3><p><b>Empresa:</b> CodeWay - Soluções Digitais<br><b>Cidade:</b> Cotia / SP<br><b>WhatsApp:</b> 15 99764-3116<br><b>E-mail:</b> suportecodewayapp@gmail.com<br><b>Fundação:</b> 2025</p><button class="btn btn-green" onclick="window.open('https://wa.me/5515997643116?text=Oi! Conheci o BoloPro e amei!','_blank')">💬 FALAR COM A GENTE</button></div>
+  <button class="btn-back" onclick="fecharTela()">← VOLTAR</button>
+</div></div>
+
+<div id="tela-catalogoEdit" class="fullPage"><div class="fullHeader"><b>➕ Add Bolo</b></div><div class="wrap"><div class="card"><p style="text-align:center;font-size:40px">🍰</p><h3 style="text-align:center">Novo Bolo no Catálogo</h3><label>📸 Foto do Bolo</label><input id="catFoto" placeholder="Cole o link da foto"><label>🍰 Nome do Bolo *</label><input id="catNome" placeholder="Ex: Bolo de Chocolate com Ninho"><label>📂 Categoria *</label><select id="catCategoria"><option>🎂 Aniversário</option><option>💍 Casamento</option><option>🎉 Festa</option><option>🍫 Chocolate</option><option>🍓 Frutas</option><option>👶 Chá de Bebê</option><option>🏢 Corporativo</option><option>✨ Personalizado</option></select><label>💰 Preço por KG *</label><input id="catPreco" type="number" placeholder="Ex: 80"><label>⚖️ Tamanhos</label><div class="opt" id="catTamanhos"><button class="sel" onclick="this.classList.toggle('sel')">1kg</button><button class="sel" onclick="this.classList.toggle('sel')">2kg</button><button class="sel" onclick="this.classList.toggle('sel')">3kg</button><button class="sel" onclick="this.classList.toggle('sel')">5kg</button><button onclick="this.classList.toggle('sel')">10kg</button></div><label>🍫 Recheios</label><div class="opt" id="catRecheios"><button class="sel" onclick="this.classList.toggle('sel')">Ninho</button><button class="sel" onclick="this.classList.toggle('sel')">Brigadeiro</button><button onclick="this.classList.toggle('sel')">Morango</button><button onclick="this.classList.toggle('sel')">Doce de Leite</button><button onclick="this.classList.toggle('sel')">Prestígio</button><button onclick="this.classList.toggle('sel')">Oreo</button></div><label>🎂 Coberturas</label><div class="opt" id="catCoberturas"><button class="sel" onclick="this.classList.toggle('sel')">Chantilly</button><button onclick="this.classList.toggle('sel')">Chocolate</button><button onclick="this.classList.toggle('sel')">Pasta Americana</button><button onclick="this.classList.toggle('sel')">Glacê</button></div><label>⏰ Prazo</label><select id="catPrazo"><option>1 dia antes</option><option>2 dias antes</option><option>3 dias antes</option><option>1 semana antes</option></select><label>📝 Descrição</label><textarea id="catDesc" rows="3" placeholder="Ex: Massa de chocolate fofinha..."></textarea><label>⚠️ Alergênicos</label><input id="catAlerg" placeholder="Ex: Contém glúten, leite e ovo"><label>✅ Disponível?</label><select id="catAtivo"><option value="SIM">✅ SIM</option><option value="NAO">⏸️ NÃO - Pausado</option></select><button class="btn" onclick="salvarCatalogoCompleto()">✅ SALVAR BOLO NO CATÁLOGO</button><div id="listaCatalogoEdit" style="margin-top:12px"></div><h3 style="margin-top:16px">🍰 Seus Bolos - <span id="qtdCatalogo">0 bolos</span></h3><p id="catalogoVazio">Você ainda não tem bolos.</p><div id="catalogoPainel"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-kitEdit" class="fullPage"><div class="fullHeader"><b>🎉 Editar Kit Festa</b></div><div class="wrap"><div class="card"><p style="text-align:center;font-size:40px">🎉</p><h3 style="text-align:center">Seu Kit Aniversário</h3><p style="text-align:center;font-size:13px">O Kit aparece primeiro pra cliente e vende 3x mais!</p><label>🎉 Nome do Kit</label><input id="kitNome" placeholder="Ex: Kit Festa 20 pessoas" value="Kit Festa 20 pessoas"><label>🍰 O que vem no Kit?</label><textarea id="kitItens" rows="3">Bolo 2kg + 100 brigadeiros + 50 beijinhos</textarea><label>💰 Preço do Kit</label><input id="kitPreco" type="number" placeholder="299" value="299"><label>📸 Foto do Kit (link)</label><input id="kitFoto" placeholder="Cole o link da foto do kit"><button class="btn btn-gold" onclick="salvarKit()">✅ SALVAR KIT FESTA 🎉</button><div class="card" style="margin-top:12px;background:#FFFBEB"><h3>👀 Como a cliente vai ver:</h3><p><b>🎉 Kit Festa 20 pessoas - R$ 299</b><br>Bolo 2kg + 100 brigadeiros + 50 beijinhos</p></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-verBoleira" class="fullPage"><div class="fullHeader"><b id="verBoleiraTitulo">👩‍🍳 Boleira</b></div><div class="wrap"><div class="card"><div id="verBoleiraConteudo"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-verPedido" class="fullPage"><div class="fullHeader"><b>📦 Detalhes do Pedido</b></div><div class="wrap"><div class="card"><div id="verPedidoConteudo"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<script>
+let usuarioAtual={loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:''};
+let catalogo=[]; let pedidos=[]; let boleiras=[]; let codigosGerados=[]; let notificacoes=[];
+let filtroAtual='todas';
+let boloAtual=null; let kg=2; let recheio='Ninho'; let cobertura='Chantilly'; let formato='Redondo'; let entrega='Retirada'; let pagamento='Pix'; let sinal='Sim, vou pixar sinal'; let kitSel=null;
+let linkLojaAtual='';
+let params=new URLSearchParams(window.location.search);
+let lojaParam=params.get('loja');
+if(lojaParam){ setTimeout(()=>{ document.getElementById('authPage').classList.add('hidden'); document.getElementById('clientePage').classList.remove('hidden'); document.getElementById('tituloLoja').innerText=lojaParam.replace(/-/g,' ').replace(/\b\w/g,l=>l.toUpperCase()); aplicarConfigApp(); atualizarMarcaAgua(); },300); }
+function atualizarMarcaAgua(){
+  let gratis = (usuarioAtual.plano||'GRATIS')=='GRATIS';
+  document.getElementById('marcaAgua').classList.toggle('show', gratis && !document.getElementById('painelPage').classList.contains('hidden'));
+  document.getElementById('marcaAguaCliente').classList.toggle('show', gratis && !document.getElementById('clientePage').classList.contains('hidden'));
+  let faixa=document.getElementById('faixaGratis'); if(faixa) faixa.classList.toggle('hidden', !gratis || document.getElementById('painelPage').classList.contains('hidden'));
+  let txt=document.getElementById('textoMarcaAgua'); if(txt) txt.innerText = gratis ? '💧 No Grátis aparece marca d\'água + texto BoloPro na mensagem. No Pago, some!' : '✅ Você está no Plano Pago - SEM marca d\'água e SEM texto BoloPro!';
+}
+function aplicarConfigApp(){
+  document.getElementById('tituloHomeApp').innerText=configApp.tituloHome;
+  document.getElementById('subtituloHomeApp').innerText=configApp.subtituloHome;
+  document.getElementById('textoBoasVindasCliente').innerText=configApp.textoBoasVindas;
+  document.getElementById('textoSuporteApp').innerText=configApp.textoSuporte;
+  document.getElementById('textoTermosApp').innerText=configApp.textoTermos;
+  document.getElementById('textoQuemSomosApp').innerText=configApp.textoQuemSomos;
+  document.getElementById('textoProximaApp').innerText=configApp.textoProxima;
+  let ia=document.getElementById('boxIAHome'); if(ia) ia.style.display=configApp.mostrarIA?'block':'none';
+  let kit=document.getElementById('cardKitCliente'); if(kit) kit.style.display=configApp.mostrarKit?'block':'none';
+}
+function toggleConfig(chave,btn){
+  configApp[chave]=!configApp[chave];
+  btn.classList.toggle('on',configApp[chave]);
+  aplicarConfigApp();
+}
+function abrirConteudoADM(){
+  document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));document.getElementById('tela-conteudoADM').classList.add('show');
+  document.getElementById('swIA').classList.toggle('on',configApp.mostrarIA);
+  document.getElementById('swKit').classList.toggle('on',configApp.mostrarKit);
+  document.getElementById('swCal').classList.toggle('on',configApp.mostrarCalendario);
+  document.getElementById('swFeed').classList.toggle('on',configApp.mostrarFeedback);
+  document.getElementById('swPlanos').classList.toggle('on',configApp.mostrarPlanos);
+  document.getElementById('cfgTituloHome').value=configApp.tituloHome;
+  document.getElementById('cfgSubtituloHome').value=configApp.subtituloHome;
+  document.getElementById('cfgBoasVindas').value=configApp.textoBoasVindas;
+  document.getElementById('cfgSuporte').value=configApp.textoSuporte;
+  document.getElementById('cfgQuemSomos').value=configApp.textoQuemSomos;
+  document.getElementById('cfgProxima').value=configApp.textoProxima;
+  document.getElementById('cfgTermos').value=configApp.textoTermos;
+}
+async function salvarConteudoADM(){
+  configApp.tituloHome=document.getElementById('cfgTituloHome').value;
+  configApp.subtituloHome=document.getElementById('cfgSubtituloHome').value;
+  configApp.textoBoasVindas=document.getElementById('cfgBoasVindas').value;
+  configApp.textoSuporte=document.getElementById('cfgSuporte').value;
+  configApp.textoQuemSomos=document.getElementById('cfgQuemSomos').value;
+  configApp.textoProxima=document.getElementById('cfgProxima').value;
+  configApp.textoTermos=document.getElementById('cfgTermos').value;
+  await salvarNoFirebase('config_app',{...configApp});
+  aplicarConfigApp();
+  alert('✅ Conteúdo salvo! Já mudou no app da boleira!');
+  fecharTela();
+}
+function toggleOlho(id,btn){let i=document.getElementById(id);i.type=i.type=='password'?'text':'password';btn.innerText=i.type=='password'?'👁️':'🙈';}
+function mudaAba(t){document.getElementById('tabLogin').classList.toggle('active',t=='login');document.getElementById('tabCad').classList.toggle('active',t=='cad');document.getElementById('formLogin').classList.toggle('hidden',t!='login');document.getElementById('formCad').classList.toggle('hidden',t!='cad');}
+async function fazerCadastro(){
+  let loja=document.getElementById('cadLoja').value.trim();let email=document.getElementById('cadEmail').value.trim();let senha=document.getElementById('cadSenha').value;let senha2=document.getElementById('cadSenha2').value;let zap=document.getElementById('cadZap').value.trim();let cidade=document.getElementById('cadCidade').value.trim();
+  if(!loja||!email){alert('Preencha nome da loja e email!');return;}
+  if(!senha||senha.length<6){alert('Senha mínimo 6 letras!');return;}
+  if(senha!==senha2){alert('As senhas não são iguais!');return;}
+  await salvarNoFirebase('boleiras',{loja,email,zap,cidade,plano:'GRATIS',status:'ATIVA',pedidos:0,fatura:0});
+  usuarioAtual={loja,email,zap,cidade,sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:new Date().toLocaleDateString('pt-BR')};
+  boleiras.push({id:Date.now(),nome:loja,email,zap,cidade,plano:'GRATIS',status:'ATIVA',pedidos:0,fatura:0,img:'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200',cadastro:usuarioAtual.dataCadastro,sobre:usuarioAtual.sobre});
+  catalogo=[]; pedidos=[]; notificacoes=[]; abrirPainel(loja,email);
+}
+function fazerLogin(){
+  let email=document.getElementById('loginEmail').value.trim()||'ana@gmail.com';let senha=document.getElementById('loginSenha').value;
+  if(!senha){alert('Digite a senha!');return;}
+  let achada=boleiras.find(b=>b.email.toLowerCase()==email.toLowerCase());
+  if(achada){ usuarioAtual={loja:achada.nome,email:achada.email,zap:achada.zap,cidade:achada.cidade,sobre:achada.sobre||'Bolos artesanais feitos com amor!',plano:achada.plano,dataCadastro:achada.cadastro}; abrirPainel(achada.nome,email); }
+  else { let loja=localStorage.getItem('bolopro_loja')||'Minha Loja'; usuarioAtual.loja=loja; usuarioAtual.email=email; abrirPainel(loja,email); }
+}
+function abrirPainel(loja,email){
+  document.getElementById('authPage').classList.add('hidden');document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('clientePage').classList.add('hidden');
+  document.getElementById('painelPage').classList.remove('hidden');document.getElementById('topBar').classList.remove('hidden');
+  document.getElementById('nomeLojaPainel').innerText=loja;document.getElementById('emailPainel').innerText=email+' • Plano '+usuarioAtual.plano;
+  document.getElementById('tituloLoja').innerText=loja;document.getElementById('topNome').innerText=loja;
+  document.getElementById('menuNome').innerText=loja;document.getElementById('menuEmail').innerText=email;document.getElementById('avatarLetra').innerText=loja.charAt(0).toUpperCase();
+  document.getElementById('cidadeLoja').innerText=usuarioAtual.cidade||'';
+  document.getElementById('menuPlanoBadge').innerText='PLANO '+usuarioAtual.plano;
+  let slug=slugify(loja);linkLojaAtual='https://bolopro.com.br/loja?loja='+slug;document.getElementById('meuLink').innerText=linkLojaAtual;
+  atualizarPerfilView(); renderCatalogo(); renderPedidos(); renderCalendario(); atualizarSino(); renderPlanosBoleira(); renderHome(); aplicarConfigApp(); atualizarMarcaAgua();
+}
+function abrirLoginADM(){document.getElementById('authPage').classList.add('hidden');document.getElementById('admLoginPage').classList.remove('hidden');}
+function voltarLoginBoleira(){document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');}
+function fazerLoginADM(){let s=document.getElementById('admSenha').value;if(s!=='123456'){alert('Senha ADM incorreta!');return;}document.getElementById('admLoginPage').classList.add('hidden');document.getElementById('admPage').classList.remove('hidden');renderBoleirasADM();renderPlanosADM();}
+function sairADM(){document.getElementById('admPage').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');}
+async function gerarCodigo(){let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let rand='';for(let i=0;i<6;i++)rand+=chars.charAt(Math.floor(Math.random()*chars.length));let codigo='BOLOPRO-'+rand;let para=document.getElementById('codigoBoleira').value;let validade=document.getElementById('codigoValidade').value;let tipoPlano=document.getElementById('codigoPlanoTipo').value;codigosGerados.unshift({codigo,para,validade,tipoPlano,usado:false});document.getElementById('codigoGerado').innerText=codigo;document.getElementById('codigoGerado').classList.remove('hidden');document.getElementById('btnCopiarCodigo').classList.remove('hidden');await salvarNoFirebase('codigos_pro',{codigo,para,validade,tipoPlano,usado:false});renderCodigos();}
+function renderCodigos(){let h='';codigosGerados.forEach(c=>{h+=`<div style="background:#F6F7FB;padding:10px;border-radius:10px;margin-top:8px;font-size:13px"><b>${c.codigo}</b> • ${c.tipoPlano||'MENSAL'} • ${c.para} • ${c.validade} dias • ${c.usado?'✅ USADO':'🟢 DISPONÍVEL'} <button class="btn btn-sm btn-green" onclick="copiarCodigoEspecifico('${c.codigo}')">📋 Copiar</button></div>`;});document.getElementById('listaCodigos').innerHTML=h;}
+async function copiarCodigo(){let cod=document.getElementById('codigoGerado').innerText.trim();if(!cod||cod=='BOLOPRO-XXXX'){alert('Gere um código primeiro!');return;}await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
+async function copiarCodigoEspecifico(cod){await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
+function renderHome(){
+  let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length;
+  document.getElementById('homeQtdClientes').innerText=clientesUnicos+' clientes';
+  document.getElementById('homeQtdPedidos').innerText=pedidos.length+' pedidos';
+  document.getElementById('homeQtdCatalogo').innerText=catalogo.length+' bolos';
+  let html='';
+  if(!pedidos.length) html='<div class="pedidoHome"><p>Nenhum pedido ainda. Quando chegar um pedido, aparece aqui!</p></div>';
+  pedidos.slice(0,5).forEach((p)=>{let idx=pedidos.indexOf(p);let pago=p.status=='PAGO';
+    html+=`<div class="pedidoHome"><b>👤 ${p.cliente} - ${pago?'✅ PAGO':'💸 DEVENDO'}</b><p>🍰 ${p.bolo} | 💰 R$ ${p.valor},00 | 📅 ${p.data}</p><p>📅 Entrega: ${p.data} | 💳 ${p.pagamento}</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago(${idx})">${pago?'Marcar Devendo':'Marcar Pago'}</button><button class="btnLaranja" onclick="cobrarCliente(${idx})">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido(${idx})">🗑️</button><button class="btnRosa" onclick="verPedido(${idx})">Ver</button></div></div>`;});
+  document.getElementById('ultimosPedidosHome').innerHTML=html;
+}
+function alternarPago(i){pedidos[i].status=pedidos[i].status=='PAGO'?'PENDENTE':'PAGO';renderPedidos();renderHome();renderPedidosCompleta();}
+function cobrarCliente(i){let p=pedidos[i];let msg=`Oi ${p.cliente}! Tudo bem? 😊 Aqui é da ${usuarioAtual.loja}! Passando pra lembrar do seu pedido de ${p.bolo} - R$ ${p.valor},00 - Entrega ${p.data}. Pode confirmar o pagamento? Obrigada! 💖`;window.open(`https://wa.me/55${p.zap}?text=${encodeURIComponent(msg)}`,'_blank');}
+function excluirPedido(i){if(confirm('Excluir esse pedido?')){pedidos.splice(i,1);renderPedidos();renderHome();renderPedidosCompleta();}}
+function renderClientes(){
+  let busca=(document.getElementById('buscaCliente')?.value||'').toLowerCase();
+  let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});
+  let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));
+  let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';
+  lista.forEach(c=>{html+=`<div class="card"><b>👤 ${c.nome}</b><p>📱 ${c.zap||''}<br>📦 ${c.qtd} pedidos • 💰 R$ ${c.total},00 • Último: ${c.ultimo}</p><button class="btn btn-green" onclick="window.open('https://wa.me/55${c.zap}?text=Oi ${c.nome}! Aqui é da ${usuarioAtual.loja}! Quer encomendar um bolo?','_blank')">💬 Chamar no WhatsApp</button></div>`;});
+  document.getElementById('listaClientes').innerHTML=html;
+}
+function renderCalendarioTela(){
+  let hoje=new Date();document.getElementById('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[];
+  pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}});
+  let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
+  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
+  document.getElementById('calGrid2').innerHTML=h;
+  let html='';pedidos.forEach((p,i)=>{html+=`<div class="pedido" onclick="verPedido(${i})"><b>${p.cliente}</b> - ${p.bolo}<p>📅 ${p.data} ${p.hora||''} • R$ ${p.valor},00</p></div>`;});
+  document.getElementById('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>';
+}
+function compartilharWhats(){window.open(`https://wa.me/?text=${encodeURIComponent('Oi! Conheça minha loja de bolos! 😍🎂 '+linkLojaAtual)}`,'_blank');}
+function renderPlanosBoleira(){
+  let atual=usuarioAtual.plano||'GRATIS';let html='';
+  let p=planos.gratis;html+=`<div class="planoCard ${atual=='GRATIS'?'atual':''}"><h3>🆓 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='GRATIS'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Grátis</button>'}</div>`;
+  p=planos.mensal;html+=`<div class="planoCard destaque"><div class="selo">⭐ MAIS ESCOLHIDO</div><h3>📅 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='MENSAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">💎 QUERO O MENSAL</button>'}</div>`;
+  p=planos.anual;html+=`<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">🏆 MELHOR VALOR</div><h3>🏆 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='ANUAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">🏆 QUERO O ANUAL - R$ 199</button>'}</div>`;
+  document.getElementById('listaPlanosBoleira').innerHTML=html;
+  document.getElementById('planoAtualTexto').innerHTML='Você está no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'💧 Com marca d\'água + texto BoloPro':'✅ SEM marca d\'água e SEM texto BoloPro');
+}
+function queroPlano(tipo){let p=tipo=='MENSAL'?planos.mensal:planos.anual;window.open(`https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro ${tipo} - ${p.precoTexto}! Me manda o código!`,'_blank');}
+function voltarPlanoGratis(){usuarioAtual.plano='GRATIS';alert('Você voltou para o Plano Grátis - vai aparecer marca d\'água + texto BoloPro');renderPlanosBoleira();atualizarMarcaAgua();document.getElementById('emailPainel').innerText=usuarioAtual.email+' • Plano GRATIS';document.getElementById('menuPlanoBadge').innerText='PLANO GRÁTIS';}
+async function usarCodigo(){
+  let cod=document.getElementById('codigoPlano').value.trim().toUpperCase();if(!cod){alert('Cole seu código!');return;}
+  let achado=codigosGerados.find(c=>c.codigo===cod);let tipo='MENSAL';
+  if(achado){achado.usado=true;tipo=achado.tipoPlano||'MENSAL';}else if(cod.startsWith('BOLOPRO-')){tipo='MENSAL';}else{alert('Código inválido!');return;}
+  usuarioAtual.plano=tipo;await salvarNoFirebase('assinaturas',{codigo:cod,plano:tipo,dias:tipo=='ANUAL'?365:30});
+  alert('🎉 '+tipo+' desbloqueado! Marca d\'água e texto BoloPro removidos! ✅');document.getElementById('emailPainel').innerText=usuarioAtual.email+' • Plano '+tipo+' ATIVO';document.getElementById('menuPlanoBadge').innerText='PLANO '+tipo;renderPlanosBoleira();atualizarMarcaAgua();fecharTela();
+}
+function abrirPlanosADM(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));document.getElementById('tela-planosADM').classList.add('show');renderPlanosADM();}
+function fecharTelaADMPlanos(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
+function renderPlanosADM(){
+  document.getElementById('tagMensalADM').innerText='MENSAL '+planos.mensal.precoTexto;
+  document.getElementById('tagAnualADM').innerText='ANUAL '+planos.anual.precoTexto;
+  let html='';
+  [['gratis','🆓 GRÁTIS'],['mensal','📅 MENSAL'],['anual','🏆 ANUAL']].forEach(([key,titulo])=>{
+    let p=planos[key];
+    html+=`<div class="card"><h3>${titulo} - Editável</h3><label>Preço</label><input id="admPreco_${key}" type="number" step="0.01" value="${p.preco}"><label>Texto do preço</label><input id="admPrecoTexto_${key}" value="${p.precoTexto}"><label>Período</label><input id="admPeriodo_${key}" value="${p.periodo}"><label>Descrição</label><input id="admDesc_${key}" value="${p.desc}"><label>Limite Bolos</label><input id="admLimBolos_${key}" type="number" value="${p.limiteBolos}"><label>Limite Pedidos</label><input id="admLimPedidos_${key}" type="number" value="${p.limitePedidos}"><label>Recursos</label><textarea id="admRec_${key}" rows="6">${p.recursos}</textarea><button class="btn btn-green" onclick="salvarPlanoADM('${key}')">✅ SALVAR ${titulo}</button></div>`;
+  });
+  document.getElementById('listaPlanosADM').innerHTML=html;
+}
+async function salvarPlanoADM(key){
+  let preco=parseFloat(document.getElementById('admPreco_'+key).value)||0;
+  planos[key]={nome:key=='gratis'?'GRÁTIS':key=='mensal'?'MENSAL':'ANUAL',preco,precoTexto:document.getElementById('admPrecoTexto_'+key).value,periodo:document.getElementById('admPeriodo_'+key).value,desc:document.getElementById('admDesc_'+key).value,limiteBolos:parseInt(document.getElementById('admLimBolos_'+key).value)||999,limitePedidos:parseInt(document.getElementById('admLimPedidos_'+key).value)||999,recursos:document.getElementById('admRec_'+key).value};
+  await salvarNoFirebase('planos_config',{plano:key,...planos[key]});
+  alert('✅ Plano '+planos[key].nome+' salvo!');renderPlanosADM();renderPlanosBoleira();
+}
+function filtroADM(f,btn){filtroAtual=f;document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoleirasADM();}
+function renderBoleirasADM(){
+  let busca=(document.getElementById('buscaBoleira').value||'').toLowerCase();
+  let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!(b.nome.toLowerCase().includes(busca)||b.email.toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;});
+  document.getElementById('qtdMostra').innerText=lista.length;document.getElementById('admTotal').innerText=boleiras.length;document.getElementById('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length;
+  document.getElementById('admFatura').innerText='R$ '+boleiras.reduce((s,b)=>s+(b.fatura||0),0);
+  document.getElementById('codigoBoleira').innerHTML='<option>Qualquer boleira - Código genérico</option>'+boleiras.map(b=>`<option>${b.nome} - ${b.email}</option>`).join('');
+  let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+=`<div class="boleiraRow" onclick="verBoleira(${b.id})"><img src="${b.img}"><div class="info"><b>${b.nome}</b> <span class="tag ${tagCls}">${b.plano}</span> ${b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':''}<p>📧 ${b.email}<br>📱 ${b.zap||''} • 📍 ${b.cidade||''}<br>📦 ${b.pedidos||0} pedidos • 💰 R$ ${b.fatura||0}</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO(${b.id},'MENSAL')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO(${b.id},'ANUAL')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira(${b.id})">${b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear'}</button><button class="btn btn-sm btn-outline" onclick="mandarZap(${b.id})">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira(${b.id})">🗑️ Excluir</button></div></div></div>`;});
+  if(!html)html='<div class="card"><p>Nenhuma boleira cadastrada ainda.</p></div>';
+  document.getElementById('listaBoleirasADM').innerHTML=html;
+}
+function verBoleira(id){let b=boleiras.find(x=>x.id==id);if(!b)return;document.getElementById('verBoleiraTitulo').innerText='👩‍🍳 '+b.nome;document.getElementById('verBoleiraConteudo').innerHTML=`<p><b>🏪 Loja:</b> ${b.nome}<br><b>📧 E-mail:</b> ${b.email}<br><b>📱 WhatsApp:</b> ${b.zap||''}<br><b>📍 Cidade:</b> ${b.cidade||''}<br><b>💎 Plano:</b> ${b.plano}<br><b>📌 Status:</b> ${b.status}<br><b>📦 Pedidos:</b> ${b.pedidos||0}<br><b>🔒 Senha:</b> ••••••••</p><button class="btn btn-green" onclick="copiarTextoSeguro('https://bolopro.com.br/loja?loja=${slugify(b.nome)}','✅ Link copiado!')">📋 Copiar Link</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));document.getElementById('tela-verBoleira').classList.add('show');}
+function virarPRO(id,tipo){let b=boleiras.find(x=>x.id==id);b.plano=tipo||'MENSAL';alert(b.nome+' agora é '+b.plano);renderBoleirasADM();}
+function bloquearBoleira(id){let b=boleiras.find(x=>x.id==id);b.status=b.status=='BLOQUEADA'?'ATIVA':'BLOQUEADA';alert(b.nome+' está '+b.status);renderBoleirasADM();}
+function mandarZap(id){let b=boleiras.find(x=>x.id==id);window.open(`https://wa.me/55${b.zap}?text=Oi ${b.nome}! Aqui é do BoloPro!`,'_blank');}
+function excluirBoleira(id){if(confirm('Excluir essa boleira?')){boleiras=boleiras.filter(x=>x.id!=id);renderBoleirasADM();}}
+function toggleMenuTop(){document.getElementById('menuTop').classList.toggle('show');document.getElementById('overlay').classList.toggle('show');}
+function fecharTudo(){document.getElementById('menuTop').classList.remove('show');document.getElementById('overlay').classList.remove('show');}
+function abrirTela(nome){document.getElementById('menuTop').classList.remove('show');document.getElementById('overlay').classList.remove('show');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));document.getElementById('tela-'+nome).classList.add('show');if(nome=='catalogoEdit')renderCatalogoEdit();if(nome=='perfil')atualizarPerfilView();if(nome=='pedidos')renderPedidosCompleta();if(nome=='notificacoes')abrirNotificacoes();if(nome=='plano')renderPlanosBoleira();if(nome=='clientes')renderClientes();if(nome=='calendario')renderCalendarioTela();if(nome=='comoUsar'||nome=='suporte'||nome=='termos'||nome=='quemSomos'||nome=='proxima')aplicarConfigApp();window.scrollTo(0,0);}
+function fecharTela(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
+function atualizarPerfilView(){
+  document.getElementById('perfilTitulo').innerText=usuarioAtual.loja;
+  document.getElementById('viewLoja').innerText=usuarioAtual.loja;document.getElementById('viewEmail').innerText=usuarioAtual.email;document.getElementById('viewZap').innerText=usuarioAtual.zap||'Não informado';document.getElementById('viewCidade').innerText=usuarioAtual.cidade||'Não informada';document.getElementById('viewSobre').innerText=usuarioAtual.sobre;document.getElementById('viewPlano').innerText=usuarioAtual.plano;document.getElementById('viewData').innerText=usuarioAtual.dataCadastro||new Date().toLocaleDateString('pt-BR');document.getElementById('viewLink').innerText=linkLojaAtual;
+  document.getElementById('perfilView').classList.remove('hidden');document.getElementById('perfilEdit').classList.add('hidden');
+}
+function editarPerfil(){document.getElementById('perfilView').classList.add('hidden');document.getElementById('perfilEdit').classList.remove('hidden');document.getElementById('perfilLoja').value=usuarioAtual.loja;document.getElementById('perfilEmail').value=usuarioAtual.email;document.getElementById('perfilZap').value=usuarioAtual.zap;document.getElementById('perfilCidade').value=usuarioAtual.cidade;document.getElementById('perfilSobre').value=usuarioAtual.sobre;}
+function cancelarEditPerfil(){document.getElementById('perfilView').classList.remove('hidden');document.getElementById('perfilEdit').classList.add('hidden');}
+async function salvarPerfil(){let n=document.getElementById('perfilLoja').value.trim();if(!n){alert('Nome da loja é obrigatório!');return;}usuarioAtual.loja=n;usuarioAtual.zap=document.getElementById('perfilZap').value;usuarioAtual.cidade=document.getElementById('perfilCidade').value;usuarioAtual.sobre=document.getElementById('perfilSobre').value;
+  document.getElementById('nomeLojaPainel').innerText=n;document.getElementById('tituloLoja').innerText=n;document.getElementById('topNome').innerText=n;document.getElementById('menuNome').innerText=n;
+  linkLojaAtual='https://bolopro.com.br/loja?loja='+slugify(n);document.getElementById('meuLink').innerText=linkLojaAtual;
+  await salvarNoFirebase('perfil',{loja:n,zap:usuarioAtual.zap,cidade:usuarioAtual.cidade,sobre:usuarioAtual.sobre});
+  alert('Perfil salvo!');atualizarPerfilView();renderHome();}
+async function enviarFeedback(){await salvarNoFirebase('feedbacks',{texto:document.getElementById('feedText').value,email:usuarioAtual.email});alert('Obrigado!');fecharTela();}
+async function enviarSuporte(){await salvarNoFirebase('suporte',{duvida:document.getElementById('duvidaSuporte').value,email:usuarioAtual.email});alert('Enviado! Te respondemos no WhatsApp 15 99764-3116!');fecharTela();}
+function perguntarIA(){
+  let tipo=document.getElementById('iaTipo').value;let desc=document.getElementById('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r='';
+  if(tipo=='preco')r=`🤖 <b>Preço ideal:</b> ${desc}<br>💰 Custo: R$ 55 • Preço: <b>R$ 160</b> • Lucro: R$ 105`;
+  if(tipo=='descricao')r=`🤖 "${desc} feito com massa fofinha, recheio cremoso e muito amor! 😍🎂"`;
+  if(tipo=='legenda')r=`🤖 🎂 Olha esse ${desc}! 😍 Quem quer? Comenta EU QUERO! 👇`;
+  if(tipo=='nome')r=`🤖 Nomes: ${desc} Supreme • Delícia de ${desc} • ${desc} da Casa`;
+  if(tipo=='kit')r=`🤖 Kit Festa 20 pessoas - Bolo ${desc} 2kg + 100 brigadeiros - <b>R$ 299</b>`;
+  document.getElementById('iaResposta').innerHTML=`<div class="iaBox">${r}<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById('iaResposta').innerText,'✅ Copiado!')">📋 Copiar</button></div>`;
+}
+function renderCatalogo(){let html='';catalogo.forEach((c,i)=>{if(c.ativo=='NAO')return;html+=`<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="${c.img}" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">${c.nome}</b><br><span style="font-size:12px;color:#FF4D8D">R$ ${c.preco}/kg</span></div><button onclick="excluirBolo(${i})" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>`;});document.getElementById('catalogoPainel').innerHTML=html;document.getElementById('qtdCatalogo').innerText=catalogo.length+' bolos';document.getElementById('catalogoVazio').style.display=catalogo.length?'none':'block';
+  let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach((c,i)=>{if(c.ativo=='NAO')return;h2+=`<div class="bolo ${i==0?'sel':''}" onclick="selBolo(this,${i})"><img src="${c.img}"><b>${c.nome}</b><br><span>R$ ${c.preco}/kg</span></div>`;});document.getElementById('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
+function renderCatalogoEdit(){let h='';catalogo.forEach((c,i)=>{h+=`<p style="font-size:13px">• ${c.nome} - R$ ${c.preco}/kg <button onclick="excluirBolo(${i});renderCatalogoEdit()">Excluir</button></p>`;});document.getElementById('listaCatalogoEdit').innerHTML=h||'<p>Nenhum bolo ainda.</p>';}
+async function salvarCatalogoCompleto(){
+  let nome=document.getElementById('catNome').value.trim();let preco=parseInt(document.getElementById('catPreco').value)||0;
+  if(!nome||!preco){alert('Preencha nome e preço por kg!');return;}
+  let tamanhos=[...document.querySelectorAll('#catTamanhos button.sel')].map(b=>b.innerText).join(', ');
+  let recheios=[...document.querySelectorAll('#catRecheios button.sel')].map(b=>b.innerText).join(', ');
+  let coberturas=[...document.querySelectorAll('#catCoberturas button.sel')].map(b=>b.innerText).join(', ');
+  let novo={nome,preco,categoria:document.getElementById('catCategoria').value,img:document.getElementById('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:document.getElementById('catDesc').value||'Delicioso!',tamanhos,recheios,coberturas,prazo:document.getElementById('catPrazo').value,alerg:document.getElementById('catAlerg').value||'Consulte',ativo:document.getElementById('catAtivo').value};
+  catalogo.push(novo);await salvarNoFirebase('catalogo',{...novo,loja:usuarioAtual.loja});
+  alert('🎉 Bolo salvo!');document.getElementById('catNome').value='';document.getElementById('catPreco').value='';document.getElementById('catDesc').value='';document.getElementById('catFoto').value='';
+  fecharTela();renderCatalogo();renderHome();
+}
+function excluirBolo(i){catalogo.splice(i,1);renderCatalogo();renderHome();}
+function salvarKit(){let nome=document.getElementById('kitNome').value||'Kit Festa 20 pessoas';let preco=document.getElementById('kitPreco').value||299;alert('✅ '+nome+' salvo! Preço R$ '+preco+' - Já aparece pra cliente!');fecharTela();}
+function selKit(nome,preco){kitSel={nome,preco};document.getElementById('resumo').innerText=nome;document.getElementById('totalVal').innerText='R$ '+preco+',00';document.getElementById('sinalVal').innerText='Sinal: R$ '+(preco/2)+',00';alert(nome+' selecionado!');}
+function renderPedidos(){
+  let total=0;pedidos.forEach(p=>total+=p.valor);
+  document.getElementById('statHoje').innerText='R$ '+total;document.getElementById('statMes').innerText='R$ '+(total*4);document.getElementById('statPedidos').innerText=pedidos.length;
+  document.getElementById('listaPedidosResumo').innerHTML='';
+  renderCalendario();renderHome();
+}
+function renderPedidosCompleta(){
+  if(!pedidos.length){document.getElementById('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda.</p></div>';return;}
+  let html='';pedidos.forEach((p,i)=>{let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+=`<div class="pedido" onclick="verPedido(${i})"><b>${p.cliente}</b> <span class="badge ${cor}">${p.status}</span><p>🍰 ${p.bolo} - ${p.kg||''}kg - ${p.recheio||''}</p><p>📅 ${p.data} ${p.hora||''} • 🚚 ${p.entrega} • 💳 ${p.pagamento}</p><p><b>R$ ${p.valor},00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus(${i})">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente(${i})">💰 Cobrar</button></div></div>`;});
+  document.getElementById('listaPedidosCompleta').innerHTML=html;
+}
+function verPedido(i){let p=pedidos[i];if(!p)return;document.getElementById('verPedidoConteudo').innerHTML=`<h3>📦 Pedido de ${p.cliente}</h3><p><b>👩 Cliente:</b> ${p.cliente}<br><b>📱 WhatsApp:</b> ${p.zap||''}<br><b>🍰 Bolo:</b> ${p.bolo}<br><b>⚖️ Kg:</b> ${p.kg||''}<br><b>🍫 Recheio:</b> ${p.recheio||''}<br><b>🎂 Cobertura:</b> ${p.cobertura||''}<br><b>🔲 Formato:</b> ${p.formato||''}<br><b>🎉 Tema:</b> ${p.tema||''}<br><b>💬 Frase:</b> ${p.frase||''}<br><b>📅 Data:</b> ${p.data} ${p.hora||''}<br><b>🚚 Entrega:</b> ${p.entrega}<br><b>📍 Endereço:</b> ${p.endereco||''}<br><b>🎂 Para quem:</b> ${p.paraQuem||''}<br><b>💳 Pagamento:</b> ${p.pagamento}<br><b>💰 Sinal:</b> ${p.sinal||''}<br><b>📝 Obs:</b> ${p.obs||''}<br><b>💵 Total:</b> R$ ${p.valor},00<br><b>📌 Status:</b> ${p.status}<br><b>🕐 Pedido às:</b> ${p.horaPedido||''}</p><button class="btn btn-green" onclick="mudarStatus(${i});verPedido(${i})">🔄 Mudar Status</button><button class="btn btn-outline" onclick="window.open('https://wa.me/55${p.zap||''}?text=Oi ${p.cliente}! Sobre seu pedido!','_blank')">💬 Chamar Cliente</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));document.getElementById('tela-verPedido').classList.add('show');}
+function mudarStatus(i){let s=pedidos[i].status;pedidos[i].status=s=='PAGO'?'PENDENTE':s=='PENDENTE'?'FAZENDO':'PAGO';renderPedidos();renderPedidosCompleta();}
+function renderCalendario(){
+  let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();let nomeMes=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  document.getElementById('mesCal').innerText=nomeMes;
+  let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];
+  pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}});
+  let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
+  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
+  document.getElementById('calGrid').innerHTML=h;
+}
+async function copiarLink(){
+  let link='https://bolopro.com.br/loja?loja='+slugify(usuarioAtual.loja);
+  linkLojaAtual=link;document.getElementById('meuLink').innerText=link;
+  await copiarTextoSeguro(link,'✅ Link copiado! Manda pra cliente!');
+}
+function verComoCliente(){document.getElementById('painelPage').classList.add('hidden');document.getElementById('clientePage').classList.remove('hidden');fecharTudo();aplicarConfigApp();atualizarMarcaAgua();window.scrollTo(0,0);}
+function voltarPainel(){document.getElementById('clientePage').classList.add('hidden');document.getElementById('painelPage').classList.remove('hidden');atualizarMarcaAgua();window.scrollTo(0,0);}
+function sair(){fecharTudo();fecharTela();document.getElementById('painelPage').classList.add('hidden');document.getElementById('clientePage').classList.add('hidden');document.getElementById('topBar').classList.add('hidden');document.getElementById('authPage').classList.remove('hidden');document.getElementById('marcaAgua').classList.remove('show');document.getElementById('marcaAguaCliente').classList.remove('show');}
+function selBolo(el,idx){document.querySelectorAll('#bolosCliente .bolo').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');boloAtual=catalogo[idx];kitSel=null;atualiza();}
+function selTam(el,v){document.querySelectorAll('#tamanhos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');kg=v;atualiza();}
+function selRec(el){document.querySelectorAll('#recheios button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');recheio=el.innerText;atualiza();}
+function selCob(el){document.querySelectorAll('#coberturas button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');cobertura=el.innerText;}
+function selForm(el){document.querySelectorAll('#formatos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');formato=el.innerText;}
+function selEnt(el,v){document.querySelectorAll('#entregas button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');entrega=v;atualiza();}
+function selPag(el){document.querySelectorAll('#pagamentos button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');pagamento=el.innerText;}
+function selSinal(el){document.querySelectorAll('#sinais button').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');sinal=el.innerText;}
+function atualiza(){if(kitSel)return;if(!boloAtual){document.getElementById('resumo').innerText='Escolha um bolo';return;}let ev=entrega.includes('Entrega')?15:0;let t=boloAtual.preco*kg+ev;document.getElementById('resumo').innerText=`${boloAtual.nome} - ${kg}kg - ${recheio} - ${formato}`;document.getElementById('totalVal').innerText='R$ '+t.toFixed(2).replace('.',',');document.getElementById('sinalVal').innerText='Sinal: R$ '+(t/2).toFixed(2).replace('.',',');}
+function atualizarSino(){let qtd=notificacoes.filter(n=>!n.lida).length;let sino=document.getElementById('sinoNoti');if(sino){sino.innerText=qtd>0?'🔔 '+qtd:'🔔';sino.style.background=qtd>0?'#DC2626':'#fff';sino.style.color=qtd>0?'#fff':'#111';}}
+function mostrarPopupNotificacao(noti){let div=document.createElement('div');div.style.cssText='position:fixed;top:70px;left:12px;right:12px;background:#111;color:#fff;padding:14px;border-radius:14px;z-index:999;box-shadow:0 10px 30px rgba(0,0,0,.3)';div.innerHTML=`<b>${noti.titulo}</b><br><span style="font-size:13px">${noti.texto}</span><br><button onclick="this.parentElement.remove();abrirTela('pedidos')" style="background:#FF4D8D;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px;font-weight:800">VER PEDIDO →</button> <button onclick="this.parentElement.remove()" style="background:#333;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px">Fechar</button>`;document.body.appendChild(div);setTimeout(()=>div.remove(),8000);}
+function abrirNotificacoes(){let html=notificacoes.length?'':'<div class="card"><p>Nenhuma notificação ainda.</p></div>';notificacoes.forEach(n=>{html+=`<div style="background:#fff;padding:12px;border-radius:12px;margin-bottom:8px;border:1px solid #EFEFEF"><b>${n.titulo}</b><br><span style="font-size:13px">${n.texto}</span><br><small style="color:#888">${n.hora}</small></div>`;});document.getElementById('listaNotificacoes').innerHTML=html;notificacoes.forEach(n=>n.lida=true);atualizarSino();}
+async function pedir(){
+  let nome=document.getElementById('nomeCliente').value.trim();let zapC=document.getElementById('zapCliente').value.trim();
+  if(!nome||!zapC){alert('Preencha seu Nome e WhatsApp!');return;}
+  let dataInput=document.getElementById('dataEntrega').value||'';let data=dataInput?new Date(dataInput+'T12:00:00').toLocaleDateString('pt-BR'):'A combinar';let hora=document.getElementById('horaEntrega').value||'A combinar';let tema=document.getElementById('tema').value||'Sem tema';let frase=document.getElementById('frase').value||'Sem frase';let endereco=document.getElementById('endereco').value||'Retirada na loja';let paraQuem=document.getElementById('paraQuem').value||nome;let obs=document.getElementById('obs').value||'Sem observação';let como=document.getElementById('comoConheceu').value;
+  let total=kitSel?kitSel.preco:(boloAtual?boloAtual.preco*kg+(entrega.includes('Entrega')?15:0):0);
+  let horaPedido=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  let novo={cliente:nome,zap:zapC,bolo:kitSel?kitSel.nome:(boloAtual?boloAtual.nome:'Bolo'),kg,recheio,cobertura,formato,tema,frase,data,dataISO:dataInput,hora,entrega,endereco,paraQuem,pagamento,sinal,obs,como,valor:total,status:'PENDENTE',horaPedido};
+  pedidos.unshift(novo);await salvarNoFirebase('pedidos',{...novo,loja:usuarioAtual.loja});
+  let ehGratis=(usuarioAtual.plano||'GRATIS')=='GRATIS';
+  let marca = ehGratis ? '\n━━━━━━━━━━━━━━━\n🎂 Feito com BoloPro - Faça seu pedido também em bolopro.com.br\n✨ Baixe o BoloPro e venda mais!' : '';
+  let msg=`🎂 *NOVO PEDIDO - ${usuarioAtual.loja}* 🎂\n━━━━━━━━━━━━━━━\n👩 *CLIENTE*\nNome: ${nome}\nWhatsApp: ${zapC}\n━━━━━━━━━━━━━━━\n📅 *DATA E HORÁRIO DO PEDIDO*\nData da entrega: ${data}\nHorário: ${hora}\nPedido feito às: ${horaPedido}\n━━━━━━━━━━━━━━━\n🍰 *RESUMO DO PEDIDO*\nBolo: ${novo.bolo}\nTamanho: ${kg}kg\nRecheio: ${recheio}\nCobertura: ${cobertura}\nFormato: ${formato}\nTema: ${tema}\nFrase no bolo: ${frase}\nPara quem é: ${paraQuem}\n━━━━━━━━━━━━━━━\n🚚 *ENTREGA*\nTipo: ${entrega}\nEndereço: ${endereco}\n━━━━━━━━━━━━━━━\n💳 *PAGAMENTO*\nForma: ${pagamento}\nSinal: ${sinal}\n💰 *TOTAL: R$ ${total},00*\n━━━━━━━━━━━━━━━\n📝 *OBS / ALERGIA*\n${obs}\n```javascript
+📣 Como conheceu: ${como}${marca}`;
+  let noti={titulo:'🎂 Novo Pedido!',texto:`${nome} pediu ${novo.bolo} - R$ ${total} - Entrega ${data} ${hora}`,hora:horaPedido,lida:false};
+  notificacoes.unshift(noti);await salvarNoFirebase('notificacoes',{...noti,loja:usuarioAtual.loja});
+  atualizarSino();mostrarPopupNotificacao(noti);
+  window.open(`https://wa.me/55${usuarioAtual.zap}?text=${encodeURIComponent(msg)}`,'_blank');
+  alert('✅ Pedido enviado!');
+  voltarPainel();renderPedidos();
+}
+renderCatalogo();renderPedidos();renderCalendario();renderPlanosBoleira();aplicarConfigApp();
+</script>
+</body>
+</html>
