@@ -5,7 +5,17 @@
 <title>BoloPro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
-body{background:#F6F7FB;color:#111;padding-top:56px}
+body{background:#FFF5F7;color:#111;padding-top:56px}
+
+/* ===== TELA DE CARREGAMENTO - NOVO ===== */
+#splash{position:fixed;inset:0;background:linear-gradient(180deg,#FF4D8D,#FF8FB8);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;transition:opacity .5s}
+#splash.hide{opacity:0;pointer-events:none}
+#splash .logoSplash{font-family:Georgia,serif;font-size:58px;font-weight:700;line-height:1}
+#splash .logoSplash i{font-style:italic;font-weight:400}
+#splash .subSplash{font-size:14px;font-weight:700;letter-spacing:2px;margin-top:8px;opacity:.9}
+#splash .loader{width:42px;height:42px;border:4px solid rgba(255,255,255,.3);border-top:4px solid #fff;border-radius:50%;animation:spin 0.9s linear infinite;margin-top:22px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .topBar{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-shadow:0 1px 10px rgba(0,0,0,.08);z-index:99}
 .topBar b{color:#FF4D8D;font-size:19px}
 .iconBtn{border:1px solid #EDEDEF;background:#fff;padding:8px 12px;border-radius:999px;font-weight:700;cursor:pointer;font-size:13px}
@@ -27,7 +37,7 @@ input:focus{border-color:#FF4D8D}
 .pedido{border:1px solid #EFEFEF;border-radius:14px;padding:12px;margin-bottom:10px;background:#fff}.pedido b{font-size:14px}.pedido p{font-size:12px;color:#666;margin:3px 0}
 .badge{display:inline-block;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}
 .pendente{background:#FEF3C7;color:#92400E}.pago{background:#DCFCE7;color:#166534}.fazendo{background:#DBEAFE;color:#1E40AF}
-.linkBox{background:#FFFBEB;border:1px dashed #F59E0B;padding:11px;border-radius:12px;font-size:13px;word-break:break-all;margin-top:8px}
+.linkBox{background:#FFFBEB;border:1px dashed #F59E0B;padding:11px;border-radius:12px;font-size:12px;word-break:break-all;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bolos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bolo{border:1.5px solid #EDEDEF;border-radius:14px;padding:9px;text-align:center;cursor:pointer;background:#fff}.bolo.sel{border-color:#FF4D8D;background:#FFF5F8}.bolo img{width:100%;height:78px;object-fit:cover;border-radius:10px}.bolo b{font-size:12px}
 .opt{display:flex;gap:7px;flex-wrap:wrap}.opt button{padding:9px 12px;border:1.5px solid #EDEDEF;background:#fff;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px}.opt button.sel{background:#FF4D8D;color:#fff;border-color:#FF4D8D}
 .total{background:#111;color:#fff;padding:14px;border-radius:14px;text-align:center;margin-top:12px}
@@ -41,7 +51,7 @@ input:focus{border-color:#FF4D8D}
 .menuList a span{font-size:20px;width:28px;text-align:center}
 .menuList a.danger{color:#DC2626}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;z-index:90}.overlay.show{display:block}
-.fullPage{position:fixed;inset:0;background:#F6F7FB;z-index:100;display:none;overflow:auto;padding-top:56px}
+.fullPage{position:fixed;inset:0;background:#FFF5F7;z-index:100;display:none;overflow:auto;padding-top:56px}
 .fullPage.show{display:block}
 .fullHeader{position:fixed;top:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;gap:12px;padding:0 14px;box-shadow:0 1px 10px rgba(0,0,0,.08);z-index:101}
 .fullHeader b{font-size:17px}
@@ -66,13 +76,15 @@ input:focus{border-color:#FF4D8D}
 .planoPreco small{font-size:13px;color:#888;font-weight:400}
 .selo{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#FF4D8D;color:#fff;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:800}
 .seloAnual{background:#FFB800;color:#111}
-.homeBg{background:linear-gradient(180deg,#FF8FB8 0%,#FFC0D6 45%,#FFE4EF 100%);min-height:100vh;padding:14px 12px 20px;margin-top:-56px;padding-top:14px}
-.homeLogo{text-align:center;color:#fff;margin:6px 0 2px}
-.homeLogo .marca{font-family:Georgia,serif;font-size:42px;font-weight:700;line-height:1}
-.homeLogo .marca i{font-style:italic;color:#FFF5F8}
-.homeLogo h1{font-size:30px;line-height:1.05;margin:8px 0 6px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
-.homeLogo p{font-size:13px;font-weight:700}
-.homeCard{background:#fff;border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.12);margin-top:14px}
+
+/* ===== HOME NOVA - PRONTA PRA LANÇAR ===== */
+.homeBg{background:#FFF5F7;min-height:100vh;padding:14px 12px 20px;margin-top:-56px;padding-top:14px}
+.homeLogo{text-align:center;color:#111;margin:6px 0 2px}
+.homeLogo .marca{font-family:Georgia,serif;font-size:44px;font-weight:700;line-height:1;color:#FF4D8D}
+.homeLogo .marca i{font-style:italic;color:#FF8FB8}
+.homeLogo h1{font-size:26px;line-height:1.1;margin:8px 0 4px;color:#111}
+.homeLogo p{font-size:13px;font-weight:700;color:#666}
+.homeCard{background:#fff;border-radius:22px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.08);margin-top:14px}
 .homeGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .homeBtn{background:#E91E7F;color:#fff;border:none;border-radius:14px;padding:16px 8px;cursor:pointer;text-align:center;box-shadow:0 4px 14px rgba(233,30,127,.25)}
 .homeBtn:active{transform:scale(.97)}
@@ -88,9 +100,10 @@ input:focus{border-color:#FF4D8D}
 .btnRowHome button{border:none;padding:10px 12px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;color:#fff}
 .btnVerde{background:#16A34A}.btnLaranja{background:#F97316}.btnVermelho{background:#EF4444}.btnRosa{background:#E91E7F}
 .ctaWhats{background:#16A34A;color:#fff;border:none;width:100%;padding:15px;border-radius:999px;font-weight:900;font-size:17px;cursor:pointer;margin-top:12px;box-shadow:0 8px 20px rgba(22,163,74,.35)}
-.marcaAgua{position:fixed;bottom:14px;right:14px;z-index:999;pointer-events:none;opacity:.18;font-weight:900;font-size:18px;color:#E91E7F;background:#fff;padding:6px 12px;border-radius:999px;border:1.5px solid #E91E7F;display:none}
+/* MARCA D'AGUA CORRIGIDA - BEM FRACA, NÃO COBRE TEXTO */
+.marcaAgua{position:fixed;bottom:14px;right:14px;z-index:2;pointer-events:none;opacity:.07;font-weight:900;font-size:14px;color:#E91E7F;background:transparent;padding:6px 12px;border-radius:999px;border:none;display:none}
 .marcaAgua.show{display:block}
-.marcaAguaCliente{position:fixed;bottom:14px;right:14px;z-index:999;pointer-events:none;opacity:.18;font-weight:900;font-size:15px;color:#E91E7F;background:#fff;padding:6px 12px;border-radius:999px;border:1.5px solid #E91E7F;display:none}
+.marcaAguaCliente{position:fixed;bottom:14px;right:14px;z-index:2;pointer-events:none;opacity:.07;font-weight:900;font-size:12px;color:#E91E7F;background:transparent;padding:6px 12px;border-radius:999px;border:none;display:none}
 .marcaAguaCliente.show{display:block}
 .faixaGratis{background:#FFF3CD;border:1.5px dashed #F59E0B;border-radius:12px;padding:10px;text-align:center;font-size:13px;margin-bottom:12px}
 .faixaKitPago{background:#FFFBEB;border:1.5px dashed #FFB800;border-radius:12px;padding:12px;text-align:center;font-size:13px;margin-bottom:12px}
@@ -104,6 +117,7 @@ input:focus{border-color:#FF4D8D}
 </style>
 </head>
 <body>
+<div id="splash"><div style="font-size:64px">🎂</div><div class="logoSplash">Bolo<i>Pro</i></div><div class="subSplash">VENDA MAIS BOLOS</div><div class="loader"></div><p style="font-size:12px;margin-top:14px;opacity:.85">Carregando sua loja...</p></div>
 <div id="copyToast" class="copyToast">✅ Copiado!</div>
 <div id="syncBadge" class="syncBadge">☁️ Firebase bolopro-2949f</div>
 <div id="marcaAgua" class="marcaAgua">🎂 BoloPro</div>
@@ -125,7 +139,7 @@ input:focus{border-color:#FF4D8D}
 <div id="authPage" class="center">
   <div class="loginWrap card">
     <button class="lockBtn" onclick="abrirLoginADM()">🔒</button>
-    <h1>🎂 BoloPro</h1><p style="text-align:center;color:#666;font-size:14px">Login da Boleira - Firebase bolopro-2949f</p>
+    <div style="text-align:center"><div style="font-size:48px">🎂</div><div style="font-family:Georgia,serif;font-size:42px;font-weight:700;color:#FF4D8D">Bolo<i style="color:#FF8FB8">Pro</i></div><p style="text-align:center;color:#666;font-size:13px">Login da Boleira - Venda mais bolos</p></div>
     <div class="tabs"><button id="tabLogin" class="active" onclick="mudaAba('login')">ENTRAR</button><button id="tabCad" onclick="mudaAba('cad')">CADASTRAR</button></div>
     <div id="formLogin">
       <label>Email</label><input id="loginEmail" type="email" placeholder="Ex: ana@gmail.com">
@@ -184,7 +198,7 @@ input:focus{border-color:#FF4D8D}
           <button class="homeBtn" onclick="abrirTela('pedidos')"><span>📦</span><b>Pedidos</b><small id="homeQtdPedidos">Ver todos</small></button>
           <button class="homeBtn" onclick="abrirTela('clientes')"><span>👥</span><b>Clientes</b><small id="homeQtdClientes">Ver todos</small></button>
           <button class="homeBtn" onclick="abrirTela('calendario')"><span>📅</span><b>Calendário</b><small>Entregas</small></button>
-          <button class="homeBtn full" onclick="abrirTela('linkVendas')"><span>🔗</span><b>Link de Vendas</b><small id="meuLinkResumo">Copiar link da loja</small></button>
+          <button class="homeBtn full" onclick="abrirTela('linkVendas')"><span>🔗</span><b>Link de Vendas</b><small>Copiar link da loja</small></button>
         </div>
         <div class="ultPedTitle">📦 Últimos Pedidos</div>
         <div id="ultimosPedidosHome"></div>
@@ -192,7 +206,7 @@ input:focus{border-color:#FF4D8D}
         <div class="card" style="margin:12px 0 0;box-shadow:none;border:1.5px solid #EFEFEF"><h3>📅 Calendário - <span id="mesCal"></span></h3><div class="calGrid" id="calGrid"></div><p class="small">Dias em rosa = tem entrega!</p></div>
       </div>
       <button class="ctaWhats" onclick="copiarLink()">💬 COPIAR LINK DA LOJA</button>
-      <p style="text-align:center;color:#fff;font-size:12px;font-weight:700;margin-top:8px">Manda o link pra cliente e ela monta o bolo sozinha!</p>
+      <p style="text-align:center;color:#888;font-size:12px;font-weight:700;margin-top:8px">Manda o link pra cliente e ela monta o bolo sozinha!</p>
     </div>
   </div>
 </div>
@@ -231,7 +245,7 @@ input:focus{border-color:#FF4D8D}
 <div id="tela-pedidos" class="fullPage"><div class="fullHeader"><b>📦 Pedidos</b></div><div class="wrap"><div class="card"><h3>Todos os pedidos - do Firebase</h3><p>Clique em um pedido para ver TODAS as informações.</p></div><div id="listaPedidosCompleta"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-clientes" class="fullPage"><div class="fullHeader"><b>👥 Clientes</b></div><div class="wrap"><div class="card"><h3>👥 Seus Clientes</h3><input id="buscaCliente" placeholder="🔍 Buscar cliente..." oninput="renderClientes()"></div><div id="listaClientes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-calendario" class="fullPage"><div class="fullHeader"><b>📅 Calendário</b></div><div class="wrap"><div class="card"><h3>📅 Calendário de Entregas</h3><p id="mesCal2" style="font-weight:800"></p><div class="calGrid" id="calGrid2"></div><p class="small">Dias em rosa = tem entrega!</p></div><div id="listaCalendario"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
-<div id="tela-linkVendas" class="fullPage"><div class="fullHeader"><b>🔗 Link de Vendas</b></div><div class="wrap"><div class="card"><h3>🔗 Seu link de vendas</h3><p>Mande esse link pra cliente. Ela abre e faz o pedido sozinha!</p><div class="linkBox" id="meuLink">https://bolopro.com.br/loja</div><button class="btn btn-green" onclick="copiarLink()">📋 COPIAR LINK DA MINHA LOJA</button><button class="btn btn-outline" onclick="verComoCliente()">👀 VER COMO A CLIENTE VÊ</button><button class="btn btn-dark" onclick="compartilharWhats()">💬 MANDAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+<div id="tela-linkVendas" class="fullPage"><div class="fullHeader"><b>🔗 Link de Vendas</b></div><div class="wrap"><div class="card"><h3>🔗 Seu link de vendas</h3><p>Mande esse link pra cliente. Ela abre e faz o pedido sozinha!</p><div class="linkBox" id="meuLink">Seu link vai aparecer aqui</div><button class="btn btn-green" onclick="copiarLink()">📋 COPIAR LINK DA MINHA LOJA</button><button class="btn btn-outline" onclick="verComoCliente()">👀 VER COMO A CLIENTE VÊ</button><button class="btn btn-dark" onclick="compartilharWhats()">💬 MANDAR NO WHATSAPP</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-notificacoes" class="fullPage"><div class="fullHeader"><b>🔔 Notificações</b></div><div class="wrap"><div id="listaNotificacoes"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-ia" class="fullPage"><div class="fullHeader"><b>🤖 BoloPro IA</b></div><div class="wrap"><div class="card"><h3>🤖 Sua assistente inteligente</h3><label>O que você quer que a IA faça?</label><select id="iaTipo"><option value="preco">💰 Calcular preço ideal do bolo</option><option value="descricao">📝 Criar descrição pro bolo</option><option value="legenda">📸 Criar legenda pro Instagram</option><option value="nome">🎂 Inventar nome de bolo novo</option><option value="kit">🎉 Montar um Kit Aniversário</option></select><label>Descreva seu bolo</label><input id="iaPergunta" placeholder="Ex: Bolo de chocolate 2kg com Ninho"><button class="btn btn-dark" onclick="perguntarIA()">🤖 PERGUNTAR PRA IA</button><div id="iaResposta"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-feedback" class="fullPage"><div class="fullHeader"><b>⭐ Feedback</b></div><div class="wrap">
@@ -277,242 +291,70 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebas
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDoc, addDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAnG2Zh2xlCpWZPStMI8Md15F77LI0N3XY",
-  authDomain: "bolopro-2949f.firebaseapp.com",
-  projectId: "bolopro-2949f",
-  storageBucket: "bolopro-2949f.firebasestorage.app",
-  messagingSenderId: "939937281099",
-  appId: "1:939937281099:web:74683a4681f63767a749ce",
-  measurementId: "G-43QYH6ZF11"
-};
+const firebaseConfig = { apiKey: "AIzaSyAnG2Zh2xlCpWZPStMI8Md15F77LI0N3XY", authDomain: "bolopro-2949f.firebaseapp.com", projectId: "bolopro-2949f", storageBucket: "bolopro-2949f.firebasestorage.app", messagingSenderId: "939937281099", appId: "1:939937281099:web:74683a4681f63767a749ce", measurementId: "G-43QYH6ZF11" };
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
 let usuarioAtual={uid:'',loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:'',isAdmin:false};
 let catalogo=[]; let pedidos=[]; let boleiras=[]; let notificacoes=[];
 let filtroAtual='todas';
 let boloAtual=null; let kg=2; let recheio='Ninho'; let cobertura='Chantilly'; let formato='Redondo'; let entrega='Retirada'; let pagamento='Pix'; let sinal='Sim, vou pixar sinal'; let kitSel=null;
 let linkLojaAtual='';
 let kitGlobal={nome:'Kit Festa 20 pessoas',itens:'Bolo 2kg + 100 brigadeiros + 50 beijinhos',preco:299};
-let planos={
-  gratis:{nome:'GRATIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para começar a testar',recursos:'✅ Até 3 bolos\n✅ Até 10 pedidos/mês\n✅ Link da loja\n✅ Calendário\n❌ Sem IA\n❌ Sem Kit Festa\n💧 Com marca d\'água'},
-  mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mês',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'✅ Bolos ilimitados\n✅ Pedidos ilimitados\n✅ BoloPro IA\n✅ Kit Festa liberado\n✅ SEM marca d\'água\n✅ Suporte prioritário'},
-  anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses grátis!',recursos:'✅ TUDO do Mensal\n✅ Kit Festa liberado\n✅ 2 meses GRÁTIS\n✅ Selo ⭐ Destaque\n✅ SEM marca d\'água'}
-};
+let planos={ gratis:{nome:'GRATIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para começar a testar',recursos:'✅ Até 3 bolos\n✅ Até 10 pedidos/mês\n✅ Link da loja\n✅ Calendário\n❌ Sem IA\n❌ Sem Kit Festa\n💧 Com marca d\'água'}, mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mês',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'✅ Bolos ilimitados\n✅ Pedidos ilimitados\n✅ BoloPro IA\n✅ Kit Festa liberado\n✅ SEM marca d\'água\n✅ Suporte prioritário'}, anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses grátis!',recursos:'✅ TUDO do Mensal\n✅ Kit Festa liberado\n✅ 2 meses GRÁTIS\n✅ Selo ⭐ Destaque\n✅ SEM marca d\'água'} };
 const planoPago=()=> usuarioAtual.plano && usuarioAtual.plano!=='GRATIS';
 const $=id=>document.getElementById(id);
 function mostrarToast(m){let t=$('copyToast');t.innerText=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
 function setSync(t){let s=$('syncBadge');if(s){s.innerText=t;s.classList.add('show');}}
 function slugify(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
-async function copiarTextoSeguro(texto,msgOk){
-  texto=String(texto||'');if(!texto){alert('Nada para copiar!');return false;}
-  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(texto); mostrarToast(msgOk||'✅ Copiado!'); return true; } }catch(e){}
-  try{let ta=document.createElement('textarea');ta.value=texto;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=document.execCommand('copy');document.body.removeChild(ta);if(ok){mostrarToast(msgOk||'✅ Copiado!');return true;}}catch(e){}
-  alert(texto);return true;
-}
+async function copiarTextoSeguro(texto,msgOk){ texto=String(texto||'');if(!texto){alert('Nada para copiar!');return false;} try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(texto); mostrarToast(msgOk||'✅ Copiado!'); return true; } }catch(e){} try{let ta=document.createElement('textarea');ta.value=texto;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();let ok=document.execCommand('copy');document.body.removeChild(ta);if(ok){mostrarToast(msgOk||'✅ Copiado!');return true;}}catch(e){} alert(texto);return true; }
 async function salvarNoFirebase(c,d){try{let doc=await addDoc(collection(db,c),Object.assign({},d,{criadoEm:serverTimestamp()}));setSync('☁️ Salvo no Firebase 2949f');return doc.id;}catch(e){alert('Erro ao salvar no Firebase: '+e.message);return null;}}
-async function salvarBoleiraNoBanco(){
-  if(!usuarioAtual.uid) return;
-  await setDoc(doc(db,'boleiras',usuarioAtual.uid),{loja:usuarioAtual.loja,email:usuarioAtual.email,zap:usuarioAtual.zap,cidade:usuarioAtual.cidade,sobre:usuarioAtual.sobre,plano:usuarioAtual.plano,dataCadastro:usuarioAtual.dataCadastro,isAdmin:usuarioAtual.isAdmin||false,kit:kitGlobal,atualizadoEm:serverTimestamp()},{merge:true});
-  setSync('☁️ Salvo no Firebase 2949f');
-}
-async function carregarDadosDaBoleira(){
-  if(!usuarioAtual.uid) return;
-  let d=await getDoc(doc(db,'boleiras',usuarioAtual.uid));
-  if(d.exists()){let x=d.data();usuarioAtual.loja=x.loja||usuarioAtual.loja;usuarioAtual.zap=x.zap||'';usuarioAtual.cidade=x.cidade||'';usuarioAtual.sobre=x.sobre||usuarioAtual.sobre;usuarioAtual.plano=x.plano||'GRATIS';usuarioAtual.isAdmin=x.isAdmin||false;if(x.kit)kitGlobal=x.kit;}
-  let s1=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));
-  catalogo=[];s1.forEach(doc=>catalogo.push(Object.assign({id:doc.id},doc.data())));
-  let s2=await getDocs(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)));
-  pedidos=[];s2.forEach(doc=>pedidos.push(Object.assign({id:doc.id},doc.data())));
-  pedidos.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));
-  let s3=await getDocs(collection(db,'planos_config'));
-  s3.forEach(doc=>{let x=doc.data();if(planos[x.key])planos[x.key]=Object.assign(planos[x.key],x);});
-  onSnapshot(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));lista.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));pedidos=lista;renderPedidos();renderHome();});
-  onSnapshot(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));catalogo=lista;renderCatalogo();});
-  renderTudo();
-}
+async function salvarBoleiraNoBanco(){ if(!usuarioAtual.uid) return; await setDoc(doc(db,'boleiras',usuarioAtual.uid),{loja:usuarioAtual.loja,email:usuarioAtual.email,zap:usuarioAtual.zap,cidade:usuarioAtual.cidade,sobre:usuarioAtual.sobre,plano:usuarioAtual.plano,dataCadastro:usuarioAtual.dataCadastro,isAdmin:usuarioAtual.isAdmin||false,kit:kitGlobal,atualizadoEm:serverTimestamp()},{merge:true}); setSync('☁️ Salvo no Firebase 2949f'); }
+async function carregarDadosDaBoleira(){ if(!usuarioAtual.uid) return; let d=await getDoc(doc(db,'boleiras',usuarioAtual.uid)); if(d.exists()){let x=d.data();usuarioAtual.loja=x.loja||usuarioAtual.loja;usuarioAtual.zap=x.zap||'';usuarioAtual.cidade=x.cidade||'';usuarioAtual.sobre=x.sobre||usuarioAtual.sobre;usuarioAtual.plano=x.plano||'GRATIS';usuarioAtual.isAdmin=x.isAdmin||false;if(x.kit)kitGlobal=x.kit;} let s1=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid))); catalogo=[];s1.forEach(doc=>catalogo.push(Object.assign({id:doc.id},doc.data()))); let s2=await getDocs(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid))); pedidos=[];s2.forEach(doc=>pedidos.push(Object.assign({id:doc.id},doc.data()))); pedidos.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0)); let s3=await getDocs(collection(db,'planos_config')); s3.forEach(doc=>{let x=doc.data();if(planos[x.key])planos[x.key]=Object.assign(planos[x.key],x);}); onSnapshot(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));lista.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));pedidos=lista;renderPedidos();renderHome();}); onSnapshot(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));catalogo=lista;renderCatalogo();}); renderTudo(); }
 function renderTudo(){renderCatalogo();renderPedidos();renderCalendario();atualizarSino();renderPlanosBoleira();renderHome();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();}
-function atualizarKitUI(){
-  if($('kitNome'))$('kitNome').value=kitGlobal.nome;
-  if($('kitItens'))$('kitItens').value=kitGlobal.itens;
-  if($('kitPreco'))$('kitPreco').value=kitGlobal.preco;
-  if($('kitClienteNome'))$('kitClienteNome').innerText=kitGlobal.nome+' - R$ '+kitGlobal.preco;
-  if($('kitClienteItens'))$('kitClienteItens').innerText=kitGlobal.itens;
-  if($('homeKitTxt'))$('homeKitTxt').innerText=kitGlobal.nome;
-}
-function atualizarVisibilidadeKit(){
-  let pago=planoPago();
-  if($('cardKitCliente'))$('cardKitCliente').style.display=pago?'block':'none';
-  if($('btnKitHome'))$('btnKitHome').style.display=pago?'block':'none';
-  if($('avisoKitGratis'))$('avisoKitGratis').style.display=pago?'none':'block';
-}
+function atualizarKitUI(){ if($('kitNome'))$('kitNome').value=kitGlobal.nome; if($('kitItens'))$('kitItens').value=kitGlobal.itens; if($('kitPreco'))$('kitPreco').value=kitGlobal.preco; if($('kitClienteNome'))$('kitClienteNome').innerText=kitGlobal.nome+' - R$ '+kitGlobal.preco; if($('kitClienteItens'))$('kitClienteItens').innerText=kitGlobal.itens; if($('homeKitTxt'))$('homeKitTxt').innerText=kitGlobal.nome; }
+function atualizarVisibilidadeKit(){ let pago=planoPago(); if($('cardKitCliente'))$('cardKitCliente').style.display=pago?'block':'none'; if($('btnKitHome'))$('btnKitHome').style.display=pago?'block':'none'; if($('avisoKitGratis'))$('avisoKitGratis').style.display=pago?'none':'block'; }
 let notaFeedback=5;
 function selecionarNota(n){notaFeedback=n;document.querySelectorAll('.estrela').forEach((el,i)=>el.classList.toggle('sel',i<n));$('notaTexto').innerText=n+'/5 - '+['','Péssimo','Ruim','Ok','Bom','Perfeito!'][n];}
-function atualizarMarcaAgua(){
-  let gratis=(usuarioAtual.plano||'GRATIS')=='GRATIS';
-  $('marcaAgua').classList.toggle('show',gratis && !$('painelPage').classList.contains('hidden'));
-  $('marcaAguaCliente').classList.toggle('show',gratis && !$('clientePage').classList.contains('hidden'));
-  if($('faixaGratis'))$('faixaGratis').classList.toggle('hidden',!gratis || $('painelPage').classList.contains('hidden'));
-  if($('textoMarcaAgua'))$('textoMarcaAgua').innerText=gratis?'💧 No Grátis aparece marca d\'água BoloPro. No Pago, some!':'✅ Você está no Plano Pago - SEM marca d\'água!';
-  if($('textoKitPlano'))$('textoKitPlano').innerText=gratis?'🎉 Kit Festa: invisível no Grátis - só no Plano Pago':'✅ Kit Festa liberado!';
-  atualizarVisibilidadeKit();
-}
+function atualizarMarcaAgua(){ let gratis=(usuarioAtual.plano||'GRATIS')=='GRATIS'; $('marcaAgua').classList.toggle('show',gratis && !$('painelPage').classList.contains('hidden')); $('marcaAguaCliente').classList.toggle('show',gratis && !$('clientePage').classList.contains('hidden')); if($('faixaGratis'))$('faixaGratis').classList.toggle('hidden',!gratis || $('painelPage').classList.contains('hidden')); if($('textoMarcaAgua'))$('textoMarcaAgua').innerText=gratis?'💧 No Grátis aparece marca d\'água BoloPro. No Pago, some!':'✅ Você está no Plano Pago - SEM marca d\'água!'; if($('textoKitPlano'))$('textoKitPlano').innerText=gratis?'🎉 Kit Festa: invisível no Grátis - só no Plano Pago':'✅ Kit Festa liberado!'; atualizarVisibilidadeKit(); }
 let params=new URLSearchParams(window.location.search);
 let lojaUidParam=params.get('uid');
 let lojaParam=params.get('loja');
-async function carregarLojaPublica(){
-  if(!lojaUidParam && !lojaParam) return;
-  $('authPage').classList.add('hidden');$('clientePage').classList.remove('hidden');
-  try{
-    if(lojaUidParam){
-      let snap=await getDoc(doc(db,'boleiras',lojaUidParam));
-      if(snap.exists()){let x=snap.data();usuarioAtual={uid:snap.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;$('cidadeLoja').innerText=x.cidade||'';}
-    } else {
-      let snap=await getDocs(query(collection(db,'boleiras'),where('loja','==',lojaParam)));
-      if(!snap.empty){let d=snap.docs[0];let x=d.data();usuarioAtual={uid:d.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;} else {$('tituloLoja').innerText=lojaParam;}
-    }
-    if(usuarioAtual.uid){let s=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));catalogo=[];s.forEach(d=>catalogo.push(Object.assign({id:d.id},d.data())));renderCatalogo();}
-    atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();
-  }catch(e){$('tituloLoja').innerText=lojaParam||'Minha Loja';}
-}
+async function carregarLojaPublica(){ if(!lojaUidParam && !lojaParam) return; $('authPage').classList.add('hidden');$('clientePage').classList.remove('hidden'); try{ if(lojaUidParam){ let snap=await getDoc(doc(db,'boleiras',lojaUidParam)); if(snap.exists()){let x=snap.data();usuarioAtual={uid:snap.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;$('cidadeLoja').innerText=x.cidade||'';} } else { let snap=await getDocs(query(collection(db,'boleiras'),where('loja','==',lojaParam))); if(!snap.empty){let d=snap.docs[0];let x=d.data();usuarioAtual={uid:d.id,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:false};if(x.kit)kitGlobal=x.kit;$('tituloLoja').innerText=x.loja;} else {$('tituloLoja').innerText=lojaParam;} } if(usuarioAtual.uid){let s=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));catalogo=[];s.forEach(d=>catalogo.push(Object.assign({id:d.id},d.data())));renderCatalogo();} atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit(); }catch(e){$('tituloLoja').innerText=lojaParam||'Minha Loja';} }
 function toggleOlho(id,btn){let i=$(id);i.type=i.type=='password'?'text':'password';btn.innerText=i.type=='password'?'👁️':'🙈';}
 function mudaAba(t){$('tabLogin').classList.toggle('active',t=='login');$('tabCad').classList.toggle('active',t=='cad');$('formLogin').classList.toggle('hidden',t!='login');$('formCad').classList.toggle('hidden',t!='cad');}
 async function recuperarSenha(){let email=$('loginEmail').value.trim();if(!email){alert('Digite seu e-mail!');return;}try{await sendPasswordResetEmail(auth,email);alert('E-mail de recuperação enviado!');}catch(e){alert('Erro: '+e.message);}}
-async function fazerCadastro(){
-  let loja=$('cadLoja').value.trim();let email=$('cadEmail').value.trim().toLowerCase();let senha=$('cadSenha').value;let senha2=$('cadSenha2').value;let zap=$('cadZap').value.trim();let cidade=$('cadCidade').value.trim();
-  if(!loja||!email){alert('Preencha nome da loja e email!');return;}
-  if(!senha||senha.length<6){alert('Senha mínimo 6 letras!');return;}
-  if(senha!==senha2){alert('As senhas não são iguais!');return;}
-  try{
-    let cred=await createUserWithEmailAndPassword(auth,email,senha);
-    usuarioAtual={uid:cred.user.uid,loja,email,zap,cidade,sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:new Date().toLocaleDateString('pt-BR'),isAdmin:false};
-    await setDoc(doc(db,'boleiras',cred.user.uid),{loja,email,zap,cidade,sobre:usuarioAtual.sobre,plano:'GRATIS',dataCadastro:usuarioAtual.dataCadastro,isAdmin:false,kit:kitGlobal,criadoEm:serverTimestamp()});
-    setSync('☁️ Conta criada no bolopro-2949f');abrirPainel(loja,email);await carregarDadosDaBoleira();
-  }catch(e){if(e.code=='auth/email-already-in-use')alert('E-mail já cadastrado! Faça login.');else alert('Erro: '+e.message);}
-}
-async function fazerLogin(){
-  let email=$('loginEmail').value.trim().toLowerCase();let senha=$('loginSenha').value;
-  if(!email||!senha){alert('Digite e-mail e senha!');return;}
-  try{
-    let cred=await signInWithEmailAndPassword(auth,email,senha);
-    let d=await getDoc(doc(db,'boleiras',cred.user.uid));
-    if(!d.exists()){alert('Perfil não encontrado no Firestore.');return;}
-    let x=d.data();if(x.status=='BLOQUEADA'){alert('Conta bloqueada! Suporte: 15 99764-3116');await signOut(auth);return;}
-    usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre||'Bolos artesanais feitos com amor!',plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false};
-    if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,email);await carregarDadosDaBoleira();
-  }catch(e){alert('Erro no login: '+e.message);}
-}
-onAuthStateChanged(auth,async(user)=>{
-  if(user && !lojaParam && !lojaUidParam && !usuarioAtual.uid){
-    let d=await getDoc(doc(db,'boleiras',user.uid));
-    if(d.exists()){let x=d.data();usuarioAtual={uid:user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false};if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,x.email);await carregarDadosDaBoleira();}
-  }
-});
-function abrirPainel(loja,email){
-  $('authPage').classList.add('hidden');$('admLoginPage').classList.add('hidden');$('clientePage').classList.add('hidden');
-  $('painelPage').classList.remove('hidden');$('topBar').classList.remove('hidden');
-  $('nomeLojaPainel').innerText=loja;$('emailPainel').innerText=email+' • Plano '+usuarioAtual.plano;
-  $('tituloLoja').innerText=loja;$('topNome').innerText=loja;$('menuNome').innerText=loja;$('menuEmail').innerText=email;$('avatarLetra').innerText=loja.charAt(0).toUpperCase();
-  $('cidadeLoja').innerText=usuarioAtual.cidade||'';$('menuPlanoBadge').innerText='PLANO '+usuarioAtual.plano;
-  linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual;
-  atualizarPerfilView();renderTudo();
-}
+async function fazerCadastro(){ let loja=$('cadLoja').value.trim();let email=$('cadEmail').value.trim().toLowerCase();let senha=$('cadSenha').value;let senha2=$('cadSenha2').value;let zap=$('cadZap').value.trim();let cidade=$('cadCidade').value.trim(); if(!loja||!email){alert('Preencha nome da loja e email!');return;} if(!senha||senha.length<6){alert('Senha mínimo 6 letras!');return;} if(senha!==senha2){alert('As senhas não são iguais!');return;} try{ let cred=await createUserWithEmailAndPassword(auth,email,senha); usuarioAtual={uid:cred.user.uid,loja,email,zap,cidade,sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:new Date().toLocaleDateString('pt-BR'),isAdmin:false}; await setDoc(doc(db,'boleiras',cred.user.uid),{loja,email,zap,cidade,sobre:usuarioAtual.sobre,plano:'GRATIS',dataCadastro:usuarioAtual.dataCadastro,isAdmin:false,kit:kitGlobal,criadoEm:serverTimestamp()}); setSync('☁️ Conta criada no bolopro-2949f');abrirPainel(loja,email);await carregarDadosDaBoleira(); }catch(e){if(e.code=='auth/email-already-in-use')alert('E-mail já cadastrado! Faça login.');else alert('Erro: '+e.message);} }
+async function fazerLogin(){ let email=$('loginEmail').value.trim().toLowerCase();let senha=$('loginSenha').value; if(!email||!senha){alert('Digite e-mail e senha!');return;} try{ let cred=await signInWithEmailAndPassword(auth,email,senha); let d=await getDoc(doc(db,'boleiras',cred.user.uid)); if(!d.exists()){alert('Perfil não encontrado no Firestore.');return;} let x=d.data();if(x.status=='BLOQUEADA'){alert('Conta bloqueada! Suporte: 15 99764-3116');await signOut(auth);return;} usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre||'Bolos artesanais feitos com amor!',plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false}; if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,email);await carregarDadosDaBoleira(); }catch(e){alert('Erro no login: '+e.message);} }
+onAuthStateChanged(auth,async(user)=>{ if(user && !lojaParam && !lojaUidParam && !usuarioAtual.uid){ let d=await getDoc(doc(db,'boleiras',user.uid)); if(d.exists()){let x=d.data();usuarioAtual={uid:user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:x.isAdmin||false};if(x.kit)kitGlobal=x.kit;abrirPainel(x.loja,x.email);await carregarDadosDaBoleira();} } });
+function abrirPainel(loja,email){ $('authPage').classList.add('hidden');$('admLoginPage').classList.add('hidden');$('clientePage').classList.add('hidden'); $('painelPage').classList.remove('hidden');$('topBar').classList.remove('hidden'); $('nomeLojaPainel').innerText=loja;$('emailPainel').innerText=email+' • Plano '+usuarioAtual.plano; $('tituloLoja').innerText=loja;$('topNome').innerText=loja;$('menuNome').innerText=loja;$('menuEmail').innerText=email;$('avatarLetra').innerText=loja.charAt(0).toUpperCase(); $('cidadeLoja').innerText=usuarioAtual.cidade||'';$('menuPlanoBadge').innerText='PLANO '+usuarioAtual.plano; linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual; atualizarPerfilView();renderTudo(); }
 function abrirLoginADM(){$('authPage').classList.add('hidden');$('admLoginPage').classList.remove('hidden');}
 function voltarLoginBoleira(){$('admLoginPage').classList.add('hidden');$('authPage').classList.remove('hidden');}
-async function fazerLoginADM(){
-  let email=$('admEmail').value.trim().toLowerCase();let senha=$('admSenha').value;
-  if(!email||!senha){alert('Digite e-mail e senha do ADM!');return;}
-  try{
-    let cred=await signInWithEmailAndPassword(auth,email,senha);
-    let d=await getDoc(doc(db,'boleiras',cred.user.uid));
-    if(!d.exists()||!d.data().isAdmin){alert('Essa conta não é ADM!');await signOut(auth);return;}
-    let x=d.data();usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:true};
-    $('admLoginPage').classList.add('hidden');$('admPage').classList.remove('hidden');await carregarBoleirasADM();renderPlanosADM();
-  }catch(e){alert('Erro ADM: '+e.message+'\n\nNo Firestore em boleiras/{seu uid} coloque isAdmin: true');}
-}
+async function fazerLoginADM(){ let email=$('admEmail').value.trim().toLowerCase();let senha=$('admSenha').value; if(!email||!senha){alert('Digite e-mail e senha do ADM!');return;} try{ let cred=await signInWithEmailAndPassword(auth,email,senha); let d=await getDoc(doc(db,'boleiras',cred.user.uid)); if(!d.exists()||!d.data().isAdmin){alert('Essa conta não é ADM!');await signOut(auth);return;} let x=d.data();usuarioAtual={uid:cred.user.uid,loja:x.loja,email:x.email,zap:x.zap,cidade:x.cidade,sobre:x.sobre,plano:x.plano||'GRATIS',dataCadastro:x.dataCadastro,isAdmin:true}; $('admLoginPage').classList.add('hidden');$('admPage').classList.remove('hidden');await carregarBoleirasADM();renderPlanosADM(); }catch(e){alert('Erro ADM: '+e.message+'\n\nNo Firestore em boleiras/{seu uid} coloque isAdmin: true');} }
 function sairADM(){$('admPage').classList.add('hidden');$('authPage').classList.remove('hidden');}
 async function carregarBoleirasADM(){let snap=await getDocs(collection(db,'boleiras'));boleiras=[];snap.forEach(d=>boleiras.push(Object.assign({id:d.id},d.data())));renderBoleirasADM();renderCodigos();}
-async function gerarCodigo(){
-  let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let rand='';for(let i=0;i<6;i++)rand+=chars.charAt(Math.floor(Math.random()*chars.length));let codigo='BOLOPRO-'+rand;
-  let para=$('codigoBoleira').value;let validade=$('codigoValidade').value;let tipoPlano=$('codigoPlanoTipo').value;
-  await setDoc(doc(db,'codigos_pro',codigo),{codigo,para,validade:parseInt(validade),tipoPlano,usado:false,criadoEm:serverTimestamp(),criadoPor:usuarioAtual.uid});
-  $('codigoGerado').innerText=codigo;$('codigoGerado').classList.remove('hidden');$('btnCopiarCodigo').classList.remove('hidden');setSync('☁️ Código salvo no Firebase');renderCodigos();
-}
+async function gerarCodigo(){ let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let rand='';for(let i=0;i<6;i++)rand+=chars.charAt(Math.floor(Math.random()*chars.length));let codigo='BOLOPRO-'+rand; let para=$('codigoBoleira').value;let validade=$('codigoValidade').value;let tipoPlano=$('codigoPlanoTipo').value; await setDoc(doc(db,'codigos_pro',codigo),{codigo,para,validade:parseInt(validade),tipoPlano,usado:false,criadoEm:serverTimestamp(),criadoPor:usuarioAtual.uid}); $('codigoGerado').innerText=codigo;$('codigoGerado').classList.remove('hidden');$('btnCopiarCodigo').classList.remove('hidden');setSync('☁️ Código salvo no Firebase');renderCodigos(); }
 async function renderCodigos(){let snap=await getDocs(query(collection(db,'codigos_pro'),orderBy('criadoEm','desc'),limit(20)));let h='';snap.forEach(d=>{let c=d.data();h+=`<div style="background:#F6F7FB;padding:10px;border-radius:10px;margin-top:8px;font-size:13px"><b>${c.codigo}</b> • ${c.tipoPlano} • ${c.para||'Genérico'} • ${c.validade} dias • ${c.usado?'✅ USADO':'🟢 DISPONÍVEL'} <button class="btn btn-sm btn-green" onclick="copiarCodigoEspecifico('${c.codigo}')">📋 Copiar</button></div>`;});$('listaCodigos').innerHTML=h||'<p>Nenhum código ainda.</p>';}
 async function copiarCodigo(){let cod=$('codigoGerado').innerText.trim();if(!cod||cod=='BOLOPRO-XXXX'){alert('Gere um código primeiro!');return;}await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
 async function copiarCodigoEspecifico(cod){await copiarTextoSeguro(`Seu código PRO do BoloPro é: ${cod} - Cole no app em Planos > Desbloquear!`,'✅ Código copiado!');}
-function renderHome(){
-  let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length;
-  $('homeQtdClientes').innerText=clientesUnicos+' clientes';$('homeQtdPedidos').innerText=pedidos.length+' pedidos';$('homeQtdCatalogo').innerText=catalogo.length+' bolos';$('homeKitTxt').innerText=kitGlobal.nome;
-  $('meuLinkResumo').innerText=linkLojaAtual?linkLojaAtual.replace('https://',''):'Copiar link da loja';
-  let html='';if(!pedidos.length)html='<div class="pedidoHome"><p>Nenhum pedido ainda. Manda seu link pra cliente!</p></div>';
-  pedidos.slice(0,5).forEach(p=>{let pago=p.status=='PAGO';html+=`<div class="pedidoHome"><b>👤 ${p.cliente} - ${pago?'✅ PAGO':'💸 DEVENDO'}</b><p>🍰 ${p.bolo} | 💰 R$ ${p.valor},00 | 📅 ${p.data}</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago('${p.id}')">${pago?'Marcar Devendo':'Marcar Pago'}</button><button class="btnLaranja" onclick="cobrarCliente('${p.id}')">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido('${p.id}')">🗑️</button><button class="btnRosa" onclick="verPedido('${p.id}')">Ver</button></div></div>`;});
-  $('ultimosPedidosHome').innerHTML=html;atualizarVisibilidadeKit();
-}
+function renderHome(){ let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length; $('homeQtdClientes').innerText=clientesUnicos+' clientes';$('homeQtdPedidos').innerText=pedidos.length+' pedidos';$('homeQtdCatalogo').innerText=catalogo.length+' bolos';$('homeKitTxt').innerText=kitGlobal.nome; let html='';if(!pedidos.length)html='<div class="pedidoHome"><p>Nenhum pedido ainda. Manda seu link pra cliente!</p></div>'; pedidos.slice(0,5).forEach(p=>{let pago=p.status=='PAGO';html+=`<div class="pedidoHome"><b>👤 ${p.cliente} - ${pago?'✅ PAGO':'💸 DEVENDO'}</b><p>🍰 ${p.bolo} | 💰 R$ ${p.valor},00 | 📅 ${p.data}</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago('${p.id}')">${pago?'Marcar Devendo':'Marcar Pago'}</button><button class="btnLaranja" onclick="cobrarCliente('${p.id}')">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido('${p.id}')">🗑️</button><button class="btnRosa" onclick="verPedido('${p.id}')">Ver</button></div></div>`;}); $('ultimosPedidosHome').innerHTML=html;atualizarVisibilidadeKit(); }
 async function alternarPago(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let novo=p.status=='PAGO'?'PENDENTE':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderHome();renderPedidosCompleta();}
 function cobrarCliente(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let msg=`Oi ${p.cliente}! Tudo bem? 😊 Aqui é da ${usuarioAtual.loja}! Passando pra lembrar do seu pedido de ${p.bolo} - R$ ${p.valor},00 - Entrega ${p.data}. Pode confirmar o pagamento? Obrigada! 💖`;window.open(`https://wa.me/55${p.zap}?text=${encodeURIComponent(msg)}`,'_blank');}
 async function excluirPedido(id){if(confirm('Excluir esse pedido do Firebase?')){await deleteDoc(doc(db,'pedidos',id));pedidos=pedidos.filter(x=>x.id!=id);renderPedidos();renderHome();renderPedidosCompleta();}}
-function renderClientes(){
-  let busca=($('buscaCliente')?.value||'').toLowerCase();let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});
-  let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';
-  lista.forEach(c=>{html+=`<div class="card"><b>👤 ${c.nome}</b><p>📱 ${c.zap||''}<br>📦 ${c.qtd} pedidos • 💰 R$ ${c.total},00 • Último: ${c.ultimo}</p><button class="btn btn-green" onclick="window.open('https://wa.me/55${c.zap}?text=Oi ${c.nome}! Aqui é da ${usuarioAtual.loja}! Quer encomendar um bolo?','_blank')">💬 Chamar no WhatsApp</button></div>`;});
-  $('listaClientes').innerHTML=html;
-}
-function renderCalendarioTela(){
-  let hoje=new Date();$('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[];
-  pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}});
-  let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
-  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
-  $('calGrid2').innerHTML=h;let html='';pedidos.forEach(p=>{html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> - ${p.bolo}<p>📅 ${p.data} ${p.hora||''} • R$ ${p.valor},00</p></div>`;});
-  $('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>';
-}
+function renderClientes(){ let busca=($('buscaCliente')?.value||'').toLowerCase();let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;}); let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>'; lista.forEach(c=>{html+=`<div class="card"><b>👤 ${c.nome}</b><p>📱 ${c.zap||''}<br>📦 ${c.qtd} pedidos • 💰 R$ ${c.total},00 • Último: ${c.ultimo}</p><button class="btn btn-green" onclick="window.open('https://wa.me/55${c.zap}?text=Oi ${c.nome}! Aqui é da ${usuarioAtual.loja}! Quer encomendar um bolo?','_blank')">💬 Chamar no WhatsApp</button></div>`;}); $('listaClientes').innerHTML=html; }
+function renderCalendarioTela(){ let hoje=new Date();$('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[]; pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}}); let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>'; for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;} $('calGrid2').innerHTML=h;let html='';pedidos.forEach(p=>{html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> - ${p.bolo}<p>📅 ${p.data} ${p.hora||''} • R$ ${p.valor},00</p></div>`;}); $('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>'; }
 function compartilharWhats(){window.open(`https://wa.me/?text=${encodeURIComponent('Oi! Conheça minha loja de bolos! 😍🎂 '+linkLojaAtual)}`,'_blank');}
-function renderPlanosBoleira(){
-  let atual=usuarioAtual.plano||'GRATIS';let html='';
-  let p=planos.gratis;html+=`<div class="planoCard ${atual=='GRATIS'?'atual':''}"><h3>🆓 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='GRATIS'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Grátis</button>'}</div>`;
-  p=planos.mensal;html+=`<div class="planoCard destaque"><div class="selo">⭐ MAIS ESCOLHIDO</div><h3>📅 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='MENSAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">💎 QUERO O MENSAL</button>'}</div>`;
-  p=planos.anual;html+=`<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">🏆 MELHOR VALOR</div><h3>🏆 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='ANUAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">🏆 QUERO O ANUAL - R$ 199</button>'}</div>`;
-  $('listaPlanosBoleira').innerHTML=html;$('planoAtualTexto').innerHTML='Você está no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'💧 Com marca d\'água':'✅ SEM marca d\'água');
-}
+function renderPlanosBoleira(){ let atual=usuarioAtual.plano||'GRATIS';let html=''; let p=planos.gratis;html+=`<div class="planoCard ${atual=='GRATIS'?'atual':''}"><h3>🆓 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='GRATIS'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Grátis</button>'}</div>`; p=planos.mensal;html+=`<div class="planoCard destaque"><div class="selo">⭐ MAIS ESCOLHIDO</div><h3>📅 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='MENSAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">💎 QUERO O MENSAL</button>'}</div>`; p=planos.anual;html+=`<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">🏆 MELHOR VALOR</div><h3>🏆 ${p.nome}</h3><p>${p.desc}</p><div class="planoPreco">${p.precoTexto} <small>${p.periodo}</small></div><p style="text-align:left;white-space:pre-line">${p.recursos}</p>${atual=='ANUAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">🏆 QUERO O ANUAL - R$ 199</button>'}</div>`; $('listaPlanosBoleira').innerHTML=html;$('planoAtualTexto').innerHTML='Você está no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'💧 Com marca d\'água':'✅ SEM marca d\'água'); }
 function queroPlano(tipo){let p=tipo=='MENSAL'?planos.mensal:planos.anual;window.open(`https://wa.me/5515997643116?text=Oi! Quero assinar o BoloPro ${tipo} - ${p.precoTexto}! Me manda o código!`,'_blank');}
 async function voltarPlanoGratis(){usuarioAtual.plano='GRATIS';await salvarBoleiraNoBanco();alert('Você voltou para o Plano Grátis');renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();$('emailPainel').innerText=usuarioAtual.email+' • Plano GRATIS';$('menuPlanoBadge').innerText='PLANO GRÁTIS';}
-async function usarCodigo(){
-  let cod=$('codigoPlano').value.trim().toUpperCase();if(!cod){alert('Cole seu código!');return;}
-  try{
-    let d=await getDoc(doc(db,'codigos_pro',cod));if(!d.exists()){alert('Código inválido! Peça pro ADM: 15 99764-3116');return;}
-    let c=d.data();if(c.usado){alert('Esse código já foi usado!');return;}
-    let tipo=c.tipoPlano||'MENSAL';
-    await updateDoc(doc(db,'codigos_pro',cod),{usado:true,usadoPor:usuarioAtual.uid,usadoEm:serverTimestamp()});
-    usuarioAtual.plano=tipo;await salvarBoleiraNoBanco();
-    await salvarNoFirebase('assinaturas',{codigo:cod,plano:tipo,uid:usuarioAtual.uid,loja:usuarioAtual.loja,email:usuarioAtual.email});
-    alert('🎉 '+tipo+' desbloqueado no Firebase! Kit liberado + Marca removida!');$('emailPainel').innerText=usuarioAtual.email+' • Plano '+tipo+' ATIVO';$('menuPlanoBadge').innerText='PLANO '+tipo;renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();fecharTela();
-  }catch(e){alert('Erro: '+e.message);}
-}
+async function usarCodigo(){ let cod=$('codigoPlano').value.trim().toUpperCase();if(!cod){alert('Cole seu código!');return;} try{ let d=await getDoc(doc(db,'codigos_pro',cod));if(!d.exists()){alert('Código inválido! Peça pro ADM: 15 99764-3116');return;} let c=d.data();if(c.usado){alert('Esse código já foi usado!');return;} let tipo=c.tipoPlano||'MENSAL'; await updateDoc(doc(db,'codigos_pro',cod),{usado:true,usadoPor:usuarioAtual.uid,usadoEm:serverTimestamp()}); usuarioAtual.plano=tipo;await salvarBoleiraNoBanco(); await salvarNoFirebase('assinaturas',{codigo:cod,plano:tipo,uid:usuarioAtual.uid,loja:usuarioAtual.loja,email:usuarioAtual.email}); alert('🎉 '+tipo+' desbloqueado no Firebase! Kit liberado + Marca removida!');$('emailPainel').innerText=usuarioAtual.email+' • Plano '+tipo+' ATIVO';$('menuPlanoBadge').innerText='PLANO '+tipo;renderPlanosBoleira();atualizarMarcaAgua();atualizarVisibilidadeKit();fecharTela(); }catch(e){alert('Erro: '+e.message);} }
 function abrirPlanosADM(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-planosADM').classList.add('show');renderPlanosADM();}
 function fecharTelaADMPlanos(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
-function renderPlanosADM(){
-  $('tagMensalADM').innerText='MENSAL '+planos.mensal.precoTexto;$('tagAnualADM').innerText='ANUAL '+planos.anual.precoTexto;let html='';
-  [['gratis','🆓 GRÁTIS'],['mensal','📅 MENSAL'],['anual','🏆 ANUAL']].forEach(([key,titulo])=>{let p=planos[key];html+=`<div class="card"><h3>${titulo} - Editável - Salva no Firebase</h3><label>Preço</label><input id="admPreco_${key}" type="number" step="0.01" value="${p.preco}"><label>Texto do preço</label><input id="admPrecoTexto_${key}" value="${p.precoTexto}"><label>Período</label><input id="admPeriodo_${key}" value="${p.periodo}"><label>Descrição</label><input id="admDesc_${key}" value="${p.desc}"><label>Recursos</label><textarea id="admRec_${key}" rows="6">${p.recursos}</textarea><button class="btn btn-green" onclick="salvarPlanoADM('${key}')">✅ SALVAR ${titulo} NO FIREBASE</button></div>`;});
-  $('listaPlanosADM').innerHTML=html;
-}
-async function salvarPlanoADM(key){
-  let preco=parseFloat($('admPreco_'+key).value)||0;
-  let dados={key,nome:key=='gratis'?'GRATIS':key=='mensal'?'MENSAL':'ANUAL',preco,precoTexto:$('admPrecoTexto_'+key).value,periodo:$('admPeriodo_'+key).value,desc:$('admDesc_'+key).value,recursos:$('admRec_'+key).value};
-  planos[key]=Object.assign(planos[key],dados);await setDoc(doc(db,'planos_config',key),dados,{merge:true});alert('✅ Plano '+dados.nome+' salvo no Firebase!');renderPlanosADM();renderPlanosBoleira();
-}
+function renderPlanosADM(){ $('tagMensalADM').innerText='MENSAL '+planos.mensal.precoTexto;$('tagAnualADM').innerText='ANUAL '+planos.anual.precoTexto;let html=''; [['gratis','🆓 GRÁTIS'],['mensal','📅 MENSAL'],['anual','🏆 ANUAL']].forEach(([key,titulo])=>{let p=planos[key];html+=`<div class="card"><h3>${titulo} - Editável - Salva no Firebase</h3><label>Preço</label><input id="admPreco_${key}" type="number" step="0.01" value="${p.preco}"><label>Texto do preço</label><input id="admPrecoTexto_${key}" value="${p.precoTexto}"><label>Período</label><input id="admPeriodo_${key}" value="${p.periodo}"><label>Descrição</label><input id="admDesc_${key}" value="${p.desc}"><label>Recursos</label><textarea id="admRec_${key}" rows="6">${p.recursos}</textarea><button class="btn btn-green" onclick="salvarPlanoADM('${key}')">✅ SALVAR ${titulo} NO FIREBASE</button></div>`;}); $('listaPlanosADM').innerHTML=html; }
+async function salvarPlanoADM(key){ let preco=parseFloat($('admPreco_'+key).value)||0; let dados={key,nome:key=='gratis'?'GRATIS':key=='mensal'?'MENSAL':'ANUAL',preco,precoTexto:$('admPrecoTexto_'+key).value,periodo:$('admPeriodo_'+key).value,desc:$('admDesc_'+key).value,recursos:$('admRec_'+key).value}; planos[key]=Object.assign(planos[key],dados);await setDoc(doc(db,'planos_config',key),dados,{merge:true});alert('✅ Plano '+dados.nome+' salvo no Firebase!');renderPlanosADM();renderPlanosBoleira(); }
 function filtroADM(f,btn){filtroAtual=f;document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoleirasADM();}
-function renderBoleirasADM(){
-  let busca=($('buscaBoleira').value||'').toLowerCase();
-  let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!((b.loja||'').toLowerCase().includes(busca)||b.email.toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;});
-  $('qtdMostra').innerText=lista.length;$('admTotal').innerText=boleiras.length;$('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length;
-  $('codigoBoleira').innerHTML='<option value="">Qualquer boleira - Código genérico</option>'+boleiras.map(b=>`<option value="${b.id}">${b.loja} - ${b.email}</option>`).join('');
-  let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+=`<div class="boleiraRow" onclick="verBoleira('${b.id}')"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200"><div class="info"><b>${b.loja}</b> <span class="tag ${tagCls}">${b.plano||'GRATIS'}</span> ${b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':''}<p>📧 ${b.email}<br>📱 ${b.zap||''} • 📍 ${b.cidade||''}<br>📅 ${b.dataCadastro||''}</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO('${b.id}','MENSAL')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO('${b.id}','ANUAL')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira('${b.id}')">${b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear'}</button><button class="btn btn-sm btn-outline" onclick="mandarZap('${b.id}')">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira('${b.id}')">🗑️ Excluir</button></div></div></div>`;});
-  if(!html)html='<div class="card"><p>Nenhuma boleira no Firebase ainda.</p></div>';$('listaBoleirasADM').innerHTML=html;
-}
+function renderBoleirasADM(){ let busca=($('buscaBoleira').value||'').toLowerCase(); let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!((b.loja||'').toLowerCase().includes(busca)||b.email.toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;}); $('qtdMostra').innerText=lista.length;$('admTotal').innerText=boleiras.length;$('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length; $('codigoBoleira').innerHTML='<option value="">Qualquer boleira - Código genérico</option>'+boleiras.map(b=>`<option value="${b.id}">${b.loja} - ${b.email}</option>`).join(''); let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+=`<div class="boleiraRow" onclick="verBoleira('${b.id}')"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200"><div class="info"><b>${b.loja}</b> <span class="tag ${tagCls}">${b.plano||'GRATIS'}</span> ${b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':''}<p>📧 ${b.email}<br>📱 ${b.zap||''} • 📍 ${b.cidade||''}<br>📅 ${b.dataCadastro||''}</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO('${b.id}','MENSAL')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO('${b.id}','ANUAL')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira('${b.id}')">${b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear'}</button><button class="btn btn-sm btn-outline" onclick="mandarZap('${b.id}')">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira('${b.id}')">🗑️ Excluir</button></div></div></div>`;}); if(!html)html='<div class="card"><p>Nenhuma boleira no Firebase ainda.</p></div>';$('listaBoleirasADM').innerHTML=html; }
 function verBoleira(id){let b=boleiras.find(x=>x.id==id);if(!b)return;$('verBoleiraTitulo').innerText='👩‍🍳 '+b.loja;$('verBoleiraConteudo').innerHTML=`<p><b>🏪 Loja:</b> ${b.loja}<br><b>📧 E-mail:</b> ${b.email}<br><b>📱 WhatsApp:</b> ${b.zap||'Não informado'}<br><b>📍 Cidade:</b> ${b.cidade||'Não informada'}<br><b>📝 Sobre:</b> ${b.sobre||''}<br><b>💎 Plano:</b> ${b.plano}<br><b>📌 Status:</b> ${b.status||'ATIVA'}<br><b>📅 Cadastro:</b> ${b.dataCadastro||''}<br><b>🆔 UID Firebase:</b> ${b.id}<br><b>🔗 Link:</b> ${window.location.origin+window.location.pathname}?uid=${b.id}</p><button class="btn btn-green" onclick="copiarTextoSeguro('${window.location.origin+window.location.pathname}?uid=${b.id}','✅ Link copiado!')">📋 Copiar Link da Loja</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verBoleira').classList.add('show');}
 async function virarPRO(id,tipo){await updateDoc(doc(db,'boleiras',id),{plano:tipo});let b=boleiras.find(x=>x.id==id);if(b)b.plano=tipo;if(usuarioAtual.uid==id)usuarioAtual.plano=tipo;alert(b.loja+' agora é '+tipo+' - salvo no Firebase');renderBoleirasADM();}
 async function bloquearBoleira(id){let b=boleiras.find(x=>x.id==id);let novo=b.status=='BLOQUEADA'?'ATIVA':'BLOQUEADA';await updateDoc(doc(db,'boleiras',id),{status:novo});b.status=novo;alert(b.loja+' está '+novo);renderBoleirasADM();}
@@ -520,84 +362,28 @@ function mandarZap(id){let b=boleiras.find(x=>x.id==id);window.open(`https://wa.
 async function excluirBoleira(id){if(confirm('Excluir essa boleira do Firebase?')){await deleteDoc(doc(db,'boleiras',id));boleiras=boleiras.filter(x=>x.id!=id);renderBoleirasADM();}}
 function toggleMenuTop(){$('menuTop').classList.toggle('show');$('overlay').classList.toggle('show');}
 function fecharTudo(){$('menuTop').classList.remove('show');$('overlay').classList.remove('show');}
-function abrirTela(nome){
-  if(nome=='kitEdit' && !planoPago()){alert('🎉 Kit Festa é exclusivo do Plano Pago!');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-plano').classList.add('show');renderPlanosBoleira();return;}
-  $('menuTop').classList.remove('show');$('overlay').classList.remove('show');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-'+nome).classList.add('show');if(nome=='catalogoEdit')renderCatalogoEdit();if(nome=='perfil')atualizarPerfilView();if(nome=='pedidos')renderPedidosCompleta();if(nome=='notificacoes')abrirNotificacoes();if(nome=='plano')renderPlanosBoleira();if(nome=='clientes')renderClientes();if(nome=='calendario')renderCalendarioTela();if(nome=='kitEdit')atualizarKitUI();window.scrollTo(0,0);}
+function abrirTela(nome){ if(nome=='kitEdit' && !planoPago()){alert('🎉 Kit Festa é exclusivo do Plano Pago!');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-plano').classList.add('show');renderPlanosBoleira();return;} $('menuTop').classList.remove('show');$('overlay').classList.remove('show');document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-'+nome).classList.add('show');if(nome=='catalogoEdit')renderCatalogoEdit();if(nome=='perfil')atualizarPerfilView();if(nome=='pedidos')renderPedidosCompleta();if(nome=='notificacoes')abrirNotificacoes();if(nome=='plano')renderPlanosBoleira();if(nome=='clientes')renderClientes();if(nome=='calendario')renderCalendarioTela();if(nome=='kitEdit')atualizarKitUI();window.scrollTo(0,0);}
 function fecharTela(){document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));}
-function atualizarPerfilView(){
-  $('perfilTitulo').innerText=usuarioAtual.loja;$('viewLoja').innerText=usuarioAtual.loja;$('viewEmail').innerText=usuarioAtual.email;$('viewZap').innerText=usuarioAtual.zap||'Não informado';$('viewCidade').innerText=usuarioAtual.cidade||'Não informada';$('viewSobre').innerText=usuarioAtual.sobre;$('viewPlano').innerText=usuarioAtual.plano;$('viewData').innerText=usuarioAtual.dataCadastro||new Date().toLocaleDateString('pt-BR');$('viewLink').innerText=linkLojaAtual;
-  $('perfilView').classList.remove('hidden');$('perfilEdit').classList.add('hidden');
-}
+function atualizarPerfilView(){ $('perfilTitulo').innerText=usuarioAtual.loja;$('viewLoja').innerText=usuarioAtual.loja;$('viewEmail').innerText=usuarioAtual.email;$('viewZap').innerText=usuarioAtual.zap||'Não informado';$('viewCidade').innerText=usuarioAtual.cidade||'Não informada';$('viewSobre').innerText=usuarioAtual.sobre;$('viewPlano').innerText=usuarioAtual.plano;$('viewData').innerText=usuarioAtual.dataCadastro||new Date().toLocaleDateString('pt-BR');$('viewLink').innerText=linkLojaAtual; $('perfilView').classList.remove('hidden');$('perfilEdit').classList.add('hidden'); }
 function editarPerfil(){$('perfilView').classList.add('hidden');$('perfilEdit').classList.remove('hidden');$('perfilLoja').value=usuarioAtual.loja;$('perfilEmail').value=usuarioAtual.email;$('perfilZap').value=usuarioAtual.zap;$('perfilCidade').value=usuarioAtual.cidade;$('perfilSobre').value=usuarioAtual.sobre;}
 function cancelarEditPerfil(){$('perfilView').classList.remove('hidden');$('perfilEdit').classList.add('hidden');}
-async function salvarPerfil(){
-  let n=$('perfilLoja').value.trim();if(!n){alert('Nome da loja é obrigatório!');return;}
-  usuarioAtual.loja=n;usuarioAtual.zap=$('perfilZap').value;usuarioAtual.cidade=$('perfilCidade').value;usuarioAtual.sobre=$('perfilSobre').value;
-  await salvarBoleiraNoBanco();$('nomeLojaPainel').innerText=n;$('tituloLoja').innerText=n;$('topNome').innerText=n;$('menuNome').innerText=n;
-  linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual;
-  alert('✅ Perfil salvo no Firebase!');atualizarPerfilView();renderHome();
-}
+async function salvarPerfil(){ let n=$('perfilLoja').value.trim();if(!n){alert('Nome da loja é obrigatório!');return;} usuarioAtual.loja=n;usuarioAtual.zap=$('perfilZap').value;usuarioAtual.cidade=$('perfilCidade').value;usuarioAtual.sobre=$('perfilSobre').value; await salvarBoleiraNoBanco();$('nomeLojaPainel').innerText=n;$('tituloLoja').innerText=n;$('topNome').innerText=n;$('menuNome').innerText=n; linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual; alert('✅ Perfil salvo no Firebase!');atualizarPerfilView();renderHome(); }
 async function enviarFeedback(){let categoria=$('feedCategoria').value;let texto=$('feedText').value;let indica=$('feedIndica').value;await salvarNoFirebase('feedbacks',{nota:notaFeedback,categoria,texto,indica,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja});alert('Obrigado! Feedback '+notaFeedback+'/5 salvo no Firebase! 💖');fecharTela();}
 async function enviarSuporte(){let cat=$('suporteCategoria').value;await salvarNoFirebase('suporte',{categoria:cat,duvida:$('duvidaSuporte').value,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja,status:'ABERTO'});alert('Chamado salvo no Firebase! Te respondemos no WhatsApp 15 99764-3116 em até 2h!');fecharTela();}
-function perguntarIA(){
-  let tipo=$('iaTipo').value;let desc=$('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r='';
-  if(tipo=='preco')r=`🤖 <b>Preço ideal para: ${desc}</b><br><br>💰 Custo: R$ 55<br>💰 Preço sugerido: <b>R$ 160</b><br>💰 Lucro: R$ 105`;
-  if(tipo=='descricao')r=`🤖 <b>Descrição:</b><br>"${desc} feito com massa fofinha, recheio cremoso e muito amor! 😍🎂"`;
-  if(tipo=='legenda')r=`🤖 <b>Legenda:</b><br>🎂 Olha esse ${desc} que acabou de sair do forno! 😍<br>Quem quer? Comenta EU QUERO! 👇`;
-  if(tipo=='nome')r=`🤖 <b>Nomes:</b><br>• ${desc} Supreme<br>• Delícia de ${desc}<br>• ${desc} da Casa`;
-  if(tipo=='kit')r=`🤖 <b>Kit:</b><br>🎉 Kit Festa 20 pessoas - Bolo ${desc} 2kg + 100 brigadeiros + 50 beijinhos - <b>R$ 299</b>`;
-  $('iaResposta').innerHTML=`<div class="iaBox">${r}<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById('iaResposta').innerText,'✅ Copiado!')">📋 Copiar</button></div>`;
-}
-function renderCatalogo(){
-  let html='';catalogo.forEach(c=>{if(c.ativo=='NAO')return;html+=`<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="${c.img}" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">${c.nome}</b><br><span style="font-size:12px;color:#FF4D8D">R$ ${c.preco}/kg • ${c.categoria||''}</span></div><button onclick="excluirBolo('${c.id}')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>`;});
-  $('catalogoPainel').innerHTML=html;$('qtdCatalogo').innerText=catalogo.length+' bolos';$('catalogoVazio').style.display=catalogo.length?'none':'block';
-  let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach(c=>{if(c.ativo=='NAO')return;h2+=`<div class="bolo" onclick="selBolo(this,'${c.id}')"><img src="${c.img}"><b>${c.nome}</b><br><span>R$ ${c.preco}/kg • ${c.categoria||''}</span></div>`;});$('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
+function perguntarIA(){ let tipo=$('iaTipo').value;let desc=$('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r=''; if(tipo=='preco')r=`🤖 <b>Preço ideal para: ${desc}</b><br><br>💰 Custo: R$ 55<br>💰 Preço sugerido: <b>R$ 160</b><br>💰 Lucro: R$ 105`; if(tipo=='descricao')r=`🤖 <b>Descrição:</b><br>"${desc} feito com massa fofinha, recheio cremoso e muito amor! 😍🎂"`; if(tipo=='legenda')r=`🤖 <b>Legenda:</b><br>🎂 Olha esse ${desc} que acabou de sair do forno! 😍<br>Quem quer? Comenta EU QUERO! 👇`; if(tipo=='nome')r=`🤖 <b>Nomes:</b><br>• ${desc} Supreme<br>• Delícia de ${desc}<br>• ${desc} da Casa`; if(tipo=='kit')r=`🤖 <b>Kit:</b><br>🎉 Kit Festa 20 pessoas - Bolo ${desc} 2kg + 100 brigadeiros + 50 beijinhos - <b>R$ 299</b>`; $('iaResposta').innerHTML=`<div class="iaBox">${r}<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById('iaResposta').innerText,'✅ Copiado!')">📋 Copiar</button></div>`; }
+function renderCatalogo(){ let html='';catalogo.forEach(c=>{if(c.ativo=='NAO')return;html+=`<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="${c.img}" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">${c.nome}</b><br><span style="font-size:12px;color:#FF4D8D">R$ ${c.preco}/kg • ${c.categoria||''}</span></div><button onclick="excluirBolo('${c.id}')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>`;}); $('catalogoPainel').innerHTML=html;$('qtdCatalogo').innerText=catalogo.length+' bolos';$('catalogoVazio').style.display=catalogo.length?'none':'block'; let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach(c=>{if(c.ativo=='NAO')return;h2+=`<div class="bolo" onclick="selBolo(this,'${c.id}')"><img src="${c.img}"><b>${c.nome}</b><br><span>R$ ${c.preco}/kg • ${c.categoria||''}</span></div>`;});$('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();} }
 function renderCatalogoEdit(){let h='';catalogo.forEach(c=>{h+=`<p style="font-size:13px">• ${c.nome} - R$ ${c.preco}/kg <button onclick="excluirBolo('${c.id}');renderCatalogoEdit()">Excluir</button></p>`;});$('listaCatalogoEdit').innerHTML=h||'<p>Nenhum bolo ainda.</p>';}
-async function salvarCatalogoCompleto(){
-  if(!usuarioAtual.uid){alert('Faça login primeiro!');return;}
-  let nome=$('catNome').value.trim();let preco=parseInt($('catPreco').value)||0;
-  if(!nome||!preco){alert('Preencha nome e preço por kg!');return;}
-  if(!planoPago() && catalogo.length>=planos.gratis.limiteBolos){alert('No Grátis o limite é 3 bolos! Assine para ilimitado.');abrirTela('plano');return;}
-  let tamanhos=[...document.querySelectorAll('#catTamanhos button.sel')].map(b=>b.innerText).join(', ');
-  let recheios=[...document.querySelectorAll('#catRecheios button.sel')].map(b=>b.innerText).join(', ');
-  let coberturas=[...document.querySelectorAll('#catCoberturas button.sel')].map(b=>b.innerText).join(', ');
-  let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,nome,preco,categoria:$('catCategoria').value,img:$('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:$('catDesc').value||'Delicioso!',tamanhos,recheios,coberturas,prazo:$('catPrazo').value,alerg:$('catAlerg').value||'Consulte',ativo:$('catAtivo').value,criadoEm:serverTimestamp()};
-  let id=await salvarNoFirebase('catalogos',novo);if(id)catalogo.unshift(Object.assign({id},novo));
-  alert('🎉 Bolo salvo no Firebase!');$('catNome').value='';$('catPreco').value='';$('catDesc').value='';$('catFoto').value='';fecharTela();renderCatalogo();renderHome();
-}
+async function salvarCatalogoCompleto(){ if(!usuarioAtual.uid){alert('Faça login primeiro!');return;} let nome=$('catNome').value.trim();let preco=parseInt($('catPreco').value)||0; if(!nome||!preco){alert('Preencha nome e preço por kg!');return;} if(!planoPago() && catalogo.length>=planos.gratis.limiteBolos){alert('No Grátis o limite é 3 bolos! Assine para ilimitado.');abrirTela('plano');return;} let tamanhos=[...document.querySelectorAll('#catTamanhos button.sel')].map(b=>b.innerText).join(', '); let recheios=[...document.querySelectorAll('#catRecheios button.sel')].map(b=>b.innerText).join(', '); let coberturas=[...document.querySelectorAll('#catCoberturas button.sel')].map(b=>b.innerText).join(', '); let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,nome,preco,categoria:$('catCategoria').value,img:$('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:$('catDesc').value||'Delicioso!',tamanhos,recheios,coberturas,prazo:$('catPrazo').value,alerg:$('catAlerg').value||'Consulte',ativo:$('catAtivo').value,criadoEm:serverTimestamp()}; let id=await salvarNoFirebase('catalogos',novo);if(id)catalogo.unshift(Object.assign({id},novo)); alert('🎉 Bolo salvo no Firebase!');$('catNome').value='';$('catPreco').value='';$('catDesc').value='';$('catFoto').value='';fecharTela();renderCatalogo();renderHome(); }
 async function excluirBolo(id){if(!confirm('Excluir esse bolo do Firebase?'))return;await deleteDoc(doc(db,'catalogos',id));catalogo=catalogo.filter(x=>x.id!=id);renderCatalogo();renderHome();}
-async function salvarKit(){
-  if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');abrirTela('plano');return;}
-  let nome=$('kitNome').value.trim();let itens=$('kitItens').value.trim();let preco=parseInt($('kitPreco').value)||0;
-  if(!nome||!preco){alert('Preencha nome e preço do kit!');return;}
-  kitGlobal={nome,itens:itens||'Bolo + docinhos',preco};kitSel=null;await salvarBoleiraNoBanco();
-  $('kitSalvoMsg').innerText='✅ Kit salvo no Firebase! Já aparece na loja da cliente.';atualizarKitUI();atualizarVisibilidadeKit();setTimeout(()=>{fecharTela();renderHome();},800);
-}
+async function salvarKit(){ if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');abrirTela('plano');return;} let nome=$('kitNome').value.trim();let itens=$('kitItens').value.trim();let preco=parseInt($('kitPreco').value)||0; if(!nome||!preco){alert('Preencha nome e preço do kit!');return;} kitGlobal={nome,itens:itens||'Bolo + docinhos',preco};kitSel=null;await salvarBoleiraNoBanco(); $('kitSalvoMsg').innerText='✅ Kit salvo no Firebase! Já aparece na loja da cliente.';atualizarKitUI();atualizarVisibilidadeKit();setTimeout(()=>{fecharTela();renderHome();},800); }
 function selKit(nome,preco){kitSel={nome,preco};$('resumo').innerText=nome;$('totalVal').innerText='R$ '+preco+',00';$('sinalVal').innerText='Sinal: R$ '+(preco/2)+',00';alert(nome+' selecionado!');}
 function selKitAtual(){if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');return;}selKit(kitGlobal.nome,kitGlobal.preco);}
-function renderPedidos(){
-  let total=0;pedidos.forEach(p=>total+=p.valor||0);
-  $('statHoje').innerText='R$ '+total;$('statMes').innerText='R$ '+(total*4);$('statPedidos').innerText=pedidos.length;$('listaPedidosResumo').innerHTML='';renderCalendario();renderHome();
-}
-function renderPedidosCompleta(){
-  if(!pedidos.length){$('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda no Firebase.</p></div>';return;}
-  let html='';pedidos.forEach(p=>{let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> <span class="badge ${cor}">${p.status}</span><p>🍰 ${p.bolo} - ${p.kg||''}kg - ${p.recheio||''}</p><p>📅 ${p.data} ${p.hora||''} • 🚚 ${p.entrega} • 💳 ${p.pagamento}</p><p><b>R$ ${p.valor},00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus('${p.id}')">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente('${p.id}')">💰 Cobrar</button></div></div>`;});
-  $('listaPedidosCompleta').innerHTML=html;
-}
+function renderPedidos(){ let total=0;pedidos.forEach(p=>total+=p.valor||0); $('statHoje').innerText='R$ '+total;$('statMes').innerText='R$ '+(total*4);$('statPedidos').innerText=pedidos.length;$('listaPedidosResumo').innerHTML='';renderCalendario();renderHome(); }
+function renderPedidosCompleta(){ if(!pedidos.length){$('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda no Firebase.</p></div>';return;} let html='';pedidos.forEach(p=>{let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+=`<div class="pedido" onclick="verPedido('${p.id}')"><b>${p.cliente}</b> <span class="badge ${cor}">${p.status}</span><p>🍰 ${p.bolo} - ${p.kg||''}kg - ${p.recheio||''}</p><p>📅 ${p.data} ${p.hora||''} • 🚚 ${p.entrega} • 💳 ${p.pagamento}</p><p><b>R$ ${p.valor},00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus('${p.id}')">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente('${p.id}')">💰 Cobrar</button></div></div>`;}); $('listaPedidosCompleta').innerHTML=html; }
 function verPedido(id){let p=pedidos.find(x=>x.id==id);if(!p)return;$('verPedidoConteudo').innerHTML=`<h3>📦 Pedido de ${p.cliente}</h3><p><b>👩 Cliente:</b> ${p.cliente}<br><b>📱 WhatsApp:</b> ${p.zap||''}<br><b>🍰 Bolo:</b> ${p.bolo}<br><b>⚖️ Kg:</b> ${p.kg||''}<br><b>🍫 Recheio:</b> ${p.recheio||''}<br><b>🎂 Cobertura:</b> ${p.cobertura||''}<br><b>🔲 Formato:</b> ${p.formato||''}<br><b>🎉 Tema:</b> ${p.tema||''}<br><b>💬 Frase:</b> ${p.frase||''}<br><b>📅 Data:</b> ${p.data} ${p.hora||''}<br><b>🚚 Entrega:</b> ${p.entrega}<br><b>📍 Endereço:</b> ${p.endereco||''}<br><b>🎂 Para quem:</b> ${p.paraQuem||''}<br><b>💳 Pagamento:</b> ${p.pagamento}<br><b>💰 Sinal:</b> ${p.sinal||''}<br><b>📝 Obs:</b> ${p.obs||''}<br><b>📣 Como conheceu:</b> ${p.como||''}<br><b>💵 Total:</b> R$ ${p.valor},00<br><b>📌 Status:</b> ${p.status}<br><b>🕐 Pedido às:</b> ${p.horaPedido||''}</p><button class="btn btn-green" onclick="mudarStatus('${p.id}');verPedido('${p.id}')">🔄 Mudar Status</button><button class="btn btn-outline" onclick="window.open('https://wa.me/55${p.zap||''}?text=Oi ${p.cliente}! Sobre seu pedido!','_blank')">💬 Chamar Cliente</button>`;document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verPedido').classList.add('show');}
 async function mudarStatus(id){let p=pedidos.find(x=>x.id==id);let s=p.status;let novo=s=='PAGO'?'PENDENTE':s=='PENDENTE'?'FAZENDO':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderPedidosCompleta();}
-function renderCalendario(){
-  let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();$('mesCal').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});
-  let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}});
-  let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';
-  for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;}
-  $('calGrid').innerHTML=h;
-}
-async function copiarLink(){
-  if(!usuarioAtual.uid){alert('Faça login para copiar seu link!');return;}
-  let link=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;linkLojaAtual=link;$('meuLink').innerText=link;
-  await copiarTextoSeguro(link,'✅ Link copiado! Manda pra cliente!');
-}
+function renderCalendario(){ let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();$('mesCal').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'}); let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}}); let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>'; for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+=`<div class="${cls}">${d}</div>`;} $('calGrid').innerHTML=h; }
+async function copiarLink(){ if(!usuarioAtual.uid){alert('Faça login para copiar seu link!');return;} let link=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;linkLojaAtual=link;$('meuLink').innerText=link; await copiarTextoSeguro(link,'✅ Link copiado! Manda pra cliente!'); }
 function verComoCliente(){$('painelPage').classList.add('hidden');$('clientePage').classList.remove('hidden');fecharTudo();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();window.scrollTo(0,0);}
 function voltarPainel(){$('clientePage').classList.add('hidden');$('painelPage').classList.remove('hidden');atualizarMarcaAgua();window.scrollTo(0,0);}
 async function sair(){try{await signOut(auth);}catch(e){}fecharTudo();fecharTela();$('painelPage').classList.add('hidden');$('clientePage').classList.add('hidden');$('topBar').classList.add('hidden');$('authPage').classList.remove('hidden');$('marcaAgua').classList.remove('show');$('marcaAguaCliente').classList.remove('show');usuarioAtual={uid:'',loja:'',email:'',zap:'',cidade:'',sobre:'Bolos artesanais feitos com amor!',plano:'GRATIS',dataCadastro:'',isAdmin:false};catalogo=[];pedidos=[];}
@@ -613,24 +399,9 @@ function atualiza(){if(kitSel)return;if(!boloAtual){$('resumo').innerText='Escol
 function atualizarSino(){let qtd=notificacoes.filter(n=>!n.lida).length;let sino=$('sinoNoti');if(sino){sino.innerText=qtd>0?'🔔 '+qtd:'🔔';sino.style.background=qtd>0?'#DC2626':'#fff';sino.style.color=qtd>0?'#fff':'#111';}}
 function mostrarPopupNotificacao(noti){let div=document.createElement('div');div.style.cssText='position:fixed;top:70px;left:12px;right:12px;background:#111;color:#fff;padding:14px;border-radius:14px;z-index:999;box-shadow:0 10px 30px rgba(0,0,0,.3)';div.innerHTML=`<b>${noti.titulo}</b><br><span style="font-size:13px">${noti.texto}</span><br><button onclick="this.parentElement.remove();abrirTela('pedidos')" style="background:#FF4D8D;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px;font-weight:800">VER PEDIDO →</button> <button onclick="this.parentElement.remove()" style="background:#333;color:#fff;border:none;padding:8px 12px;border-radius:999px;margin-top:8px">Fechar</button>`;document.body.appendChild(div);setTimeout(()=>div.remove(),8000);}
 function abrirNotificacoes(){let html=notificacoes.length?'':'<div class="card"><p>Nenhuma notificação ainda.</p></div>';notificacoes.forEach(n=>{html+=`<div style="background:#fff;padding:12px;border-radius:12px;margin-bottom:8px;border:1px solid #EFEFEF"><b>${n.titulo}</b><br><span style="font-size:13px">${n.texto}</span><br><small style="color:#888">${n.hora}</small></div>`;});$('listaNotificacoes').innerHTML=html;notificacoes.forEach(n=>n.lida=true);atualizarSino();}
-async function pedir(){
-  let nome=$('nomeCliente').value.trim();let zapC=$('zapCliente').value.trim();
-  if(!nome||!zapC){alert('Preencha seu Nome e WhatsApp!');return;}
-  if(!usuarioAtual.uid){alert('Loja não encontrada. Recarregue o link da boleira!');return;}
-  let dataInput=$('dataEntrega').value||'';let data=dataInput?new Date(dataInput+'T12:00:00').toLocaleDateString('pt-BR'):'A combinar';let hora=$('horaEntrega').value||'A combinar';let tema=$('tema').value||'Sem tema';let frase=$('frase').value||'Sem frase';let endereco=$('endereco').value||'Retirada na loja';let paraQuem=$('paraQuem').value||nome;let obs=$('obs').value||'Sem observação';let como=$('comoConheceu').value;
-  let total=kitSel?kitSel.preco:(boloAtual?boloAtual.preco*kg+(entrega.includes('Entrega')?15:0):0);
-  let horaPedido=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,cliente:nome,zap:zapC,bolo:kitSel?kitSel.nome:(boloAtual?boloAtual.nome:'Bolo'),kg,recheio,cobertura,formato,tema,frase,data,dataISO:dataInput,hora,entrega,endereco,paraQuem,pagamento,sinal,obs,como,valor:total,status:'PENDENTE',horaPedido,criadoEm:serverTimestamp()};
-  let id=await salvarNoFirebase('pedidos',novo);if(id)pedidos.unshift(Object.assign({id},novo));
-  let marca=(usuarioAtual.plano||'GRATIS')=='GRATIS'?'\n\n🎂 Feito com BoloPro - bolopro.com.br':'';
-  let msg=`🎂 *NOVO PEDIDO - ${usuarioAtual.loja}* 🎂\n━━━━━━━━━━━━━━━\n👩 *CLIENTE*\nNome: ${nome}\nWhatsApp: ${zapC}\n━━━━━━━━━━━━━━━\n📅 *DATA*\nData da entrega: ${data}\nHorário: ${hora}\nPedido feito às: ${horaPedido}\n━━━━━━━━━━━━━━━\n🍰 *RESUMO*\nBolo: ${novo.bolo}\nTamanho: ${kg}kg\nRecheio: ${recheio}\nCobertura: ${cobertura}\nFormato: ${formato}\nTema: ${tema}\nFrase: ${frase}\nPara quem: ${paraQuem}\n━━━━━━━━━━━━━━━\n🚚 *ENTREGA*\nTipo: ${entrega}\nEndereço: ${endereco}\n━━━━━━━━━━━━━━━\n💳 *PAGAMENTO*\nForma: ${pagamento}\nSinal: ${sinal}\n💰 *TOTAL: R$ ${total},00*\n━━━━━━━━━━━━━━━\n📝 *OBS*\n${obs}\n📣 Como conheceu: ${como}${marca}`;
-  let noti={titulo:'🎂 Novo Pedido!',texto:`${nome} pediu ${novo.bolo} - R$ ${total} - Entrega ${data} ${hora}`,hora:horaPedido,lida:false};
-  notificacoes.unshift(noti);atualizarSino();mostrarPopupNotificacao(noti);
-  window.open(`https://wa.me/55${usuarioAtual.zap}?text=${encodeURIComponent(msg)}`,'_blank');
-  alert('✅ Pedido salvo no Firebase e enviado!');voltarPainel();renderPedidos();
-}
-// Expor tudo pro HTML (onclick) - obrigatório com type=module
+async function pedir(){ let nome=$('nomeCliente').value.trim();let zapC=$('zapCliente').value.trim(); if(!nome||!zapC){alert('Preencha seu Nome e WhatsApp!');return;} if(!usuarioAtual.uid){alert('Loja não encontrada. Recarregue o link da boleira!');return;} let dataInput=$('dataEntrega').value||'';let data=dataInput?new Date(dataInput+'T12:00:00').toLocaleDateString('pt-BR'):'A combinar';let hora=$('horaEntrega').value||'A combinar';let tema=$('tema').value||'Sem tema';let frase=$('frase').value||'Sem frase';let endereco=$('endereco').value||'Retirada na loja';let paraQuem=$('paraQuem').value||nome;let obs=$('obs').value||'Sem observação';let como=$('comoConheceu').value; let total=kitSel?kitSel.preco:(boloAtual?boloAtual.preco*kg+(entrega.includes('Entrega')?15:0):0); let horaPedido=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,cliente:nome,zap:zapC,bolo:kitSel?kitSel.nome:(boloAtual?boloAtual.nome:'Bolo'),kg,recheio,cobertura,formato,tema,frase,data,dataISO:dataInput,hora,entrega,endereco,paraQuem,pagamento,sinal,obs,como,valor:total,status:'PENDENTE',horaPedido,criadoEm:serverTimestamp()}; let id=await salvarNoFirebase('pedidos',novo);if(id)pedidos.unshift(Object.assign({id},novo)); let marca=(usuarioAtual.plano||'GRATIS')=='GRATIS'?'\n\n🎂 Feito com BoloPro - bolopro.com.br':''; let msg=`🎂 *NOVO PEDIDO - ${usuarioAtual.loja}* 🎂\n━━━━━━━━━━━━━━━\n👩 *CLIENTE*\nNome: ${nome}\nWhatsApp: ${zapC}\n━━━━━━━━━━━━━━━\n📅 *DATA*\nData da entrega: ${data}\nHorário: ${hora}\nPedido feito às: ${horaPedido}\n━━━━━━━━━━━━━━━\n🍰 *RESUMO*\nBolo: ${novo.bolo}\nTamanho: ${kg}kg\nRecheio: ${recheio}\nCobertura: ${cobertura}\nFormato: ${formato}\nTema: ${tema}\nFrase: ${frase}\nPara quem: ${paraQuem}\n━━━━━━━━━━━━━━━\n🚚 *ENTREGA*\nTipo: ${entrega}\nEndereço: ${endereco}\n━━━━━━━━━━━━━━━\n💳 *PAGAMENTO*\nForma: ${pagamento}\nSinal: ${sinal}\n💰 *TOTAL: R$ ${total},00*\n━━━━━━━━━━━━━━━\n📝 *OBS*\n${obs}\n📣 Como conheceu: ${como}${marca}`; let noti={titulo:'🎂 Novo Pedido!',texto:`${nome} pediu ${novo.bolo} - R$ ${total} - Entrega ${data} ${hora}`,hora:horaPedido,lida:false}; notificacoes.unshift(noti);atualizarSino();mostrarPopupNotificacao(noti); window.open(`https://wa.me/55${usuarioAtual.zap}?text=${encodeURIComponent(msg)}`,'_blank'); alert('✅ Pedido salvo no Firebase e enviado!');voltarPainel();renderPedidos(); }
 Object.assign(window,{toggleOlho,mudaAba,recuperarSenha,fazerCadastro,fazerLogin,abrirLoginADM,voltarLoginBoleira,fazerLoginADM,sairADM,gerarCodigo,copiarCodigo,copiarCodigoEspecifico,alternarPago,cobrarCliente,excluirPedido,renderClientes,compartilharWhats,queroPlano,voltarPlanoGratis,usarCodigo,abrirPlanosADM,fecharTelaADMPlanos,salvarPlanoADM,filtroADM,verBoleira,virarPRO,bloquearBoleira,mandarZap,excluirBoleira,toggleMenuTop,fecharTudo,abrirTela,fecharTela,editarPerfil,cancelarEditPerfil,salvarPerfil,enviarFeedback,enviarSuporte,perguntarIA,salvarCatalogoCompleto,excluirBolo,salvarKit,selKit,selKitAtual,verPedido,mudarStatus,copiarLink,verComoCliente,voltarPainel,sair,selBolo,selTam,selRec,selCob,selForm,selEnt,selPag,selSinal,selecionarNota,pedir,abrirNotificacoes});
+setTimeout(()=>{let s=$('splash');if(s)s.classList.add('hide');setTimeout(()=>{if(s)s.remove()},600)},1400);
 carregarLojaPublica();
 renderCatalogo();renderPedidos();renderCalendario();renderPlanosBoleira();atualizarKitUI();atualizarVisibilidadeKit();
 </script>
