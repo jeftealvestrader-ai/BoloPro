@@ -30,6 +30,11 @@ label{font-weight:700;font-size:12px;color:#333;display:block;margin:12px 0 6px;
 .faixaGratis{background:#FFF3CD;border:1.5px dashed #F59E0B;border-radius:12px;padding:10px;text-align:center;font-size:13px;margin-bottom:12px}.faixaKitPago{background:#FFFBEB;border:1.5px dashed #FFB800;border-radius:12px;padding:12px;text-align:center;font-size:13px;margin-bottom:12px}.passo{background:#FFF5F8;border:1.5px solid #FFD0E2;border-radius:14px;padding:12px;margin-bottom:10px}.estrela{font-size:32px;cursor:pointer;background:none;border:none;filter:grayscale(1);opacity:.4}.estrela.sel{filter:grayscale(0);opacity:1}.check{display:flex;gap:8px;align-items:flex-start;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:10px;margin-bottom:8px;font-size:13px}.syncBadge{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16A34A;color:#fff;font-size:16px;font-weight:800;padding:16px 24px;border-radius:16px;z-index:9999;display:none}.syncBadge.show{display:block}.admBtn{background:#111;color:#fff;border:none;border-radius:14px;padding:16px 8px;cursor:pointer;text-align:center}.admBtn span{font-size:22px;display:block}.admBtn b{font-size:14px;display:block;margin-top:4px}.admBtn small{font-size:11px;opacity:.8}
 .fotoPreview{width:100%;height:150px;object-fit:cover;border-radius:12px;display:none;margin-top:8px;border:1.5px solid #EDEDEF}
 #nomeLojaPainel,#emailPainel{display:none!important}
+/* CORREÇÃO ÍCONES BRANCOS - Home */
+.homeBtn span{filter:brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,.35));font-size:26px !important}
+.homeBtn[style*="FFB800"] span{filter:none}
+.admBtn span{filter:brightness(0) invert(1)}
+.admBtn[style*="E5E7EB"] span{filter:none}
 </style></head><body>
 <div id="splash"><div style="font-size:64px">🎂</div><div class="logoSplash">Bolo<i>Pro</i></div><div class="subSplash">VENDA MAIS BOLOS</div><div class="loader"></div><p style="font-size:12px;margin-top:14px;opacity:.85">Carregando sua loja...</p></div>
 <div id="copyToast" class="copyToast">✅ Copiado!</div><div id="syncBadge" class="syncBadge">✅ Salvo com sucesso!</div>
@@ -82,6 +87,7 @@ label{font-weight:700;font-size:12px;color:#333;display:block;margin:12px 0 6px;
 <button class="homeBtn" onclick="abrirTela('pedidos')"><span>📦</span><b>Pedidos</b><small id="homeQtdPedidos">Ver todos</small></button>
 <button class="homeBtn" onclick="abrirTela('clientes')"><span>👥</span><b>Clientes</b><small id="homeQtdClientes">Ver todos</small></button>
 <button class="homeBtn" onclick="abrirTela('calendario')"><span>📅</span><b>Calendário</b><small>Entregas</small></button>
+<button class="homeBtn" style="background:#7C3AED" onclick="abrirTela('ia')"><span>🤖</span><b>BoloPro IA</b><small>Ajuda e ideias</small></button>
 <button class="homeBtn full" onclick="abrirTela('linkVendas')"><span>🔗</span><b>Link de Vendas</b><small>Copiar link da loja</small></button>
 </div><div class="ultPedTitle">📦 Últimos Pedidos</div><div id="ultimosPedidosHome"></div><div id="listaPedidosResumo"></div>
 <div class="card" style="margin:12px 0 0;box-shadow:none;border:1.5px solid #EFEFEF"><h3>📅 Calendário - <span id="mesCal"></span></h3><div class="calGrid" id="calGrid"></div><p class="small">👆 Clique num dia pra ver os pedidos daquele dia!</p></div>
@@ -168,6 +174,15 @@ let kitsLista=[{id:'kit1',nome:'Kit Festa 20 pessoas',itens:'Bolo 2kg + 100 brig
 let planos={ gratis:{nome:'GRATIS',preco:0,precoTexto:'R$ 0',periodo:'para sempre',limiteBolos:3,limitePedidos:10,desc:'Para começar a testar',recursos:'✅ Até 3 bolos\n✅ Até 10 pedidos/mês\n✅ Link da loja\n✅ Calendário\n❌ Sem IA\n❌ Sem Kit Festa\n💧 Com marca d\'água'}, mensal:{nome:'MENSAL',preco:19.90,precoTexto:'R$ 19,90',periodo:'por mês',limiteBolos:999,limitePedidos:999,desc:'O mais escolhido!',recursos:'✅ Bolos ilimitados\n✅ Pedidos ilimitados\n✅ BoloPro IA\n✅ Kit Festa liberado\n✅ SEM marca d\'água\n✅ Suporte prioritário'}, anual:{nome:'ANUAL',preco:199.00,precoTexto:'R$ 199,00',periodo:'por ano',limiteBolos:999,limitePedidos:999,desc:'2 meses grátis!',recursos:'✅ TUDO do Mensal\n✅ Kit Festa liberado\n✅ 2 meses GRÁTIS\n✅ Selo ⭐ Destaque\n✅ SEM marca d\'água'} };
 const planoPago=()=> usuarioAtual.plano && usuarioAtual.plano!=='GRATIS';
 const $=id=>document.getElementById(id);
+function plural(n,sing,plur){return n+' '+(n===1?sing:plur);}
+function dataDoPedido(p){
+  try{
+    if(p.dataISO){ let d=new Date(p.dataISO+'T12:00:00'); if(!isNaN(d)) return d; }
+    if(p.data && p.data.includes('/')){ let parts=p.data.split('/'); return new Date(parts[2],parts[1]-1,parts[0],12,0,0); }
+    if(p.criadoEm && p.criadoEm.seconds){ return new Date(p.criadoEm.seconds*1000); }
+  }catch(e){}
+  return null;
+}
 function mostrarToast(m){let t=$('copyToast');t.innerText=m;t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
 function setSync(t){let s=$('syncBadge');if(s){s.innerText='✅ Salvo com sucesso!';s.classList.add('show');setTimeout(()=>s.classList.remove('show'),2000);}}
 function scrollToAdm(id){let el=$(id);if(el)el.scrollIntoView({behavior:'smooth'});}
@@ -185,9 +200,9 @@ function escutarNotificacoes(){if(!usuarioAtual.uid)return;try{onSnapshot(query(
 async function salvarNotificacaoPedido(pedido){try{await addDoc(collection(db,'notificacoes'),{uid:usuarioAtual.uid,titulo:'🎂 Novo Pedido!',texto:pedido.cliente+' pediu '+pedido.bolo+' - R$ '+pedido.valor+' - Entrega '+pedido.data+' '+pedido.hora,hora:pedido.horaPedido,lida:false,pedidoId:pedido.id||'',criadoEm:serverTimestamp()});}catch(e){}}
 async function carregarDadosDaBoleira(){if(!usuarioAtual.uid)return;try{let d=await getDoc(doc(db,'boleiras',usuarioAtual.uid));if(d.exists()){let x=d.data();usuarioAtual.loja=x.loja||usuarioAtual.loja;usuarioAtual.zap=x.zap||'';usuarioAtual.cidade=x.cidade||'';usuarioAtual.sobre=x.sobre||usuarioAtual.sobre;usuarioAtual.plano=x.plano||'GRATIS';usuarioAtual.isAdmin=x.isAdmin||false;if(x.kit)kitGlobal=x.kit;if(x.kits && x.kits.length)kitsLista=x.kits;}let s1=await getDocs(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)));catalogo=[];s1.forEach(doc=>catalogo.push(Object.assign({id:doc.id},doc.data())));let s2=await getDocs(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)));pedidos=[];s2.forEach(doc=>pedidos.push(Object.assign({id:doc.id},doc.data())));pedidos.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));let s3=await getDocs(collection(db,'planos_config'));s3.forEach(doc=>{let x=doc.data();if(planos[x.key])planos[x.key]=Object.assign(planos[x.key],x);});onSnapshot(query(collection(db,'pedidos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));lista.sort((a,b)=>(b.criadoEm?.seconds||0)-(a.criadoEm?.seconds||0));pedidos=lista;renderPedidos();renderHome();});onSnapshot(query(collection(db,'catalogos'),where('uid','==',usuarioAtual.uid)),snap=>{let lista=[];snap.forEach(doc=>lista.push(Object.assign({id:doc.id},doc.data())));catalogo=lista;renderCatalogo();});escutarNotificacoes();}catch(e){}renderTudo();}
 function renderTudo(){renderCatalogo();renderPedidos();renderCalendario();atualizarSino();renderPlanosBoleira();renderHome();atualizarMarcaAgua();atualizarKitUI();atualizarVisibilidadeKit();renderKitsBoleira();renderKitsCliente();}
-function atualizarKitUI(){if($('homeKitTxt'))$('homeKitTxt').innerText=kitsLista.filter(k=>k.visivel).length+' kits visíveis';renderKitsCliente();renderKitsBoleira();}
+function atualizarKitUI(){if($('homeKitTxt'))$('homeKitTxt').innerText=plural(kitsLista.filter(k=>k.visivel).length,'kit visível','kits visíveis');renderKitsCliente();renderKitsBoleira();}
 function atualizarVisibilidadeKit(){let pago=planoPago();if($('cardKitCliente'))$('cardKitCliente').style.display=pago?'block':'none';if($('avisoKitGratis'))$('avisoKitGratis').style.display=pago?'none':'block';}
-function renderKitsBoleira(){if(!$('listaKitsBoleira'))return;if($('qtdKits'))$('qtdKits').innerText=kitsLista.length+' kits';let html='';if(!kitsLista.length)html='<div class="card"><p>Nenhum kit ainda.</p></div>';kitsLista.forEach(k=>{html+='<div class="kitItem '+(k.visivel?'':'oculto')+'"><div><b>🎉 '+k.nome+'</b><br><span style="font-size:13px;color:#666">'+k.itens+'</span><br><b style="color:#E91E7F">R$ '+k.preco+',00</b></div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-sm '+(k.visivel?'btn-outline':'btn-green')+'" onclick="toggleKitVisivel(\''+k.id+'\')">'+(k.visivel?'🙈 Ocultar':'👁️ Deixar Visível')+'</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirKit(\''+k.id+'\')">🗑️ Excluir</button></div></div>';});$('listaKitsBoleira').innerHTML=html;}
+function renderKitsBoleira(){if(!$('listaKitsBoleira'))return;if($('qtdKits'))$('qtdKits').innerText=plural(kitsLista.length,'kit','kits');let html='';if(!kitsLista.length)html='<div class="card"><p>Nenhum kit ainda.</p></div>';kitsLista.forEach(k=>{html+='<div class="kitItem '+(k.visivel?'':'oculto')+'"><div><b>🎉 '+k.nome+'</b><br><span style="font-size:13px;color:#666">'+k.itens+'</span><br><b style="color:#E91E7F">R$ '+k.preco+',00</b></div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-sm '+(k.visivel?'btn-outline':'btn-green')+'" onclick="toggleKitVisivel(\''+k.id+'\')">'+(k.visivel?'🙈 Ocultar':'👁️ Deixar Visível')+'</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirKit(\''+k.id+'\')">🗑️ Excluir</button></div></div>';});$('listaKitsBoleira').innerHTML=html;}
 function renderKitsCliente(){if(!$('listaKitsCliente'))return;let visiveis=kitsLista.filter(k=>k.visivel);let html='';if(!visiveis.length)html='<p style="font-size:13px;color:#888">Nenhum kit disponível no momento.</p>';visiveis.forEach(k=>{html+='<div class="kit"><b>'+k.nome+' - R$ '+k.preco+'</b><p>'+k.itens+'</p><button class="btn btn-gold" onclick="selKit(\''+k.nome+'\','+k.preco+')">ESCOLHER ESSE KIT</button></div>';});$('listaKitsCliente').innerHTML=html;}
 async function toggleKitVisivel(id){let k=kitsLista.find(x=>x.id==id);if(!k)return;k.visivel=!k.visivel;kitGlobal=k;await salvarBoleiraNoBanco();renderKitsBoleira();renderKitsCliente();atualizarKitUI();}
 async function excluirKit(id){if(!confirm('Excluir esse kit?'))return;kitsLista=kitsLista.filter(x=>x.id!=id);await salvarBoleiraNoBanco();renderKitsBoleira();renderKitsCliente();}
@@ -214,11 +229,11 @@ async function gerarCodigo(){let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let ra
 async function renderCodigos(){try{let snap=await getDocs(query(collection(db,'codigos_pro'),orderBy('criadoEm','desc'),limit(20)));let h='';snap.forEach(d=>{let c=d.data();h+='<div style="background:#F6F7FB;padding:10px;border-radius:10px;margin-top:8px;font-size:13px"><b>'+c.codigo+'</b> • '+c.tipoPlano+' • '+(c.para||'Genérico')+' • '+c.validade+' dias • '+(c.usado?'✅ USADO':'🟢 DISPONÍVEL')+' <button class="btn btn-sm btn-green" onclick="copiarCodigoEspecifico(\''+c.codigo+'\')">📋 Copiar</button></div>';});$('listaCodigos').innerHTML=h||'<p>Nenhum código ainda.</p>';}catch(e){}}
 async function copiarCodigo(){let cod=$('codigoGerado').innerText.trim();if(!cod||cod=='BOLOPRO-XXXX'){alert('Gere um código primeiro!');return;}await copiarTextoSeguro('Seu código PRO do BoloPro é: '+cod+' - Cole no app em Planos > Desbloquear!','✅ Código copiado!');}
 async function copiarCodigoEspecifico(cod){await copiarTextoSeguro('Seu código PRO do BoloPro é: '+cod+' - Cole no app em Planos > Desbloquear!','✅ Código copiado!');}
-function renderHome(){let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length;if($('homeQtdClientes'))$('homeQtdClientes').innerText=clientesUnicos+' clientes';if($('homeQtdPedidos'))$('homeQtdPedidos').innerText=pedidos.length+' pedidos';if($('homeQtdCatalogo'))$('homeQtdCatalogo').innerText=catalogo.length+' bolos';if($('homeKitTxt'))$('homeKitTxt').innerText=kitsLista.filter(k=>k.visivel).length+' kits visíveis';let html='';if(!pedidos.length)html='<div class="pedidoHome"><p>Nenhum pedido ainda. Manda seu link pra cliente!</p></div>';pedidos.slice(0,5).forEach(p=>{let pago=p.status=='PAGO';html+='<div class="pedidoHome"><b>👤 '+p.cliente+' - '+(pago?'✅ PAGO':'💸 DEVENDO')+'</b><p>🍰 '+p.bolo+' | 💰 R$ '+p.valor+',00 | 📅 '+p.data+'</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago(\''+p.id+'\')">'+(pago?'Marcar Devendo':'Marcar Pago')+'</button><button class="btnLaranja" onclick="cobrarCliente(\''+p.id+'\')">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido(\''+p.id+'\')">🗑️</button><button class="btnRosa" onclick="verPedido(\''+p.id+'\')">Ver</button></div></div>';});$('ultimosPedidosHome').innerHTML=html;atualizarVisibilidadeKit();}
+function renderHome(){let clientesUnicos=[...new Set(pedidos.map(p=>p.cliente))].length;if($('homeQtdClientes'))$('homeQtdClientes').innerText=plural(clientesUnicos,'cliente','clientes');if($('homeQtdPedidos'))$('homeQtdPedidos').innerText=plural(pedidos.length,'pedido','pedidos');if($('homeQtdCatalogo'))$('homeQtdCatalogo').innerText=plural(catalogo.length,'bolo','bolos');if($('homeKitTxt'))$('homeKitTxt').innerText=plural(kitsLista.filter(k=>k.visivel).length,'kit visível','kits visíveis');let html='';if(!pedidos.length)html='<div class="pedidoHome"><p>Nenhum pedido ainda. Manda seu link pra cliente!</p></div>';pedidos.slice(0,5).forEach(p=>{let pago=p.status=='PAGO';html+='<div class="pedidoHome"><b>👤 '+p.cliente+' - '+(pago?'✅ PAGO':'💸 DEVENDO')+'</b><p>🍰 '+p.bolo+' | 💰 R$ '+p.valor+',00 | 📅 '+p.data+'</p><div class="btnRowHome"><button class="btnVerde" onclick="alternarPago(\''+p.id+'\')">'+(pago?'Marcar Devendo':'Marcar Pago')+'</button><button class="btnLaranja" onclick="cobrarCliente(\''+p.id+'\')">💰 Cobrar</button><button class="btnVermelho" onclick="excluirPedido(\''+p.id+'\')">🗑️</button><button class="btnRosa" onclick="verPedido(\''+p.id+'\')">Ver</button></div></div>';});$('ultimosPedidosHome').innerHTML=html;atualizarVisibilidadeKit();}
 async function alternarPago(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let novo=p.status=='PAGO'?'PENDENTE':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderHome();renderPedidosCompleta();}
 function cobrarCliente(id){let p=pedidos.find(x=>x.id==id);if(!p)return;let msg='Oi '+p.cliente+'! Tudo bem? Aqui é da '+usuarioAtual.loja+'! Passando pra lembrar do seu pedido de '+p.bolo+' - R$ '+p.valor+',00 - Entrega '+p.data+'. Pode confirmar o pagamento? Obrigada!';window.open('https://wa.me/55'+p.zap+'?text='+encodeURIComponent(msg),'_blank');}
 async function excluirPedido(id){if(confirm('Excluir esse pedido?')){await deleteDoc(doc(db,'pedidos',id));pedidos=pedidos.filter(x=>x.id!=id);renderPedidos();renderHome();renderPedidosCompleta();}}
-function renderClientes(){let busca=($('buscaCliente')?.value||'').toLowerCase();let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';lista.forEach(c=>{html+='<div class="card"><b>👤 '+c.nome+'</b><p>📱 '+(c.zap||'')+'<br>📦 '+c.qtd+' pedidos • 💰 R$ '+c.total+',00 • Último: '+c.ultimo+'</p><button class="btn btn-green" onclick="window.open(\'https://wa.me/55'+c.zap+'?text=Oi '+c.nome+'! Aqui é da '+usuarioAtual.loja+'! Quer encomendar um bolo?\',\'_blank\')">💬 Chamar no WhatsApp</button></div>';});$('listaClientes').innerHTML=html;}
+function renderClientes(){let busca=($('buscaCliente')?.value||'').toLowerCase();let mapa={};pedidos.forEach(p=>{if(!mapa[p.cliente])mapa[p.cliente]={nome:p.cliente,zap:p.zap,qtd:0,total:0,ultimo:p.data};mapa[p.cliente].qtd++;mapa[p.cliente].total+=p.valor;});let lista=Object.values(mapa).filter(c=>!busca||c.nome.toLowerCase().includes(busca));let html='';if(!lista.length)html='<div class="card"><p>Nenhum cliente ainda.</p></div>';lista.forEach(c=>{html+='<div class="card"><b>👤 '+c.nome+'</b><p>📱 '+(c.zap||'')+'<br>📦 '+plural(c.qtd,'pedido','pedidos')+' • 💰 R$ '+c.total+',00 • Último: '+c.ultimo+'</p><button class="btn btn-green" onclick="window.open(\'https://wa.me/55'+c.zap+'?text=Oi '+c.nome+'! Aqui é da '+usuarioAtual.loja+'! Quer encomendar um bolo?\',\'_blank\')">💬 Chamar no WhatsApp</button></div>';});$('listaClientes').innerHTML=html;}
 function renderCalendarioTela(){let hoje=new Date();$('mesCal2').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});let diasNoMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();let dias=[];pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==hoje.getMonth())dias.push(d.getDate());}});let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+='<div class="'+cls+'" style="cursor:pointer" onclick="abrirDiaCalendario('+d+','+hoje.getMonth()+','+hoje.getFullYear()+')">'+d+'</div>';}$('calGrid2').innerHTML=h;let html='';pedidos.forEach(p=>{html+='<div class="pedido" onclick="verPedido(\''+p.id+'\')"><b>'+p.cliente+'</b> - '+p.bolo+'<p>📅 '+p.data+' '+(p.hora||'')+' • R$ '+p.valor+',00</p></div>';});$('listaCalendario').innerHTML=html||'<div class="card"><p>Nenhuma entrega marcada.</p></div>';}
 function compartilharWhats(){window.open('https://wa.me/?text='+encodeURIComponent('Oi! Conheça minha loja de bolos! '+linkLojaAtual),'_blank');}
 function renderPlanosBoleira(){let atual=usuarioAtual.plano||'GRATIS';let html='';let p=planos.gratis;html+='<div class="planoCard '+(atual=='GRATIS'?'atual':'')+'"><h3>🆓 '+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p>'+(atual=='GRATIS'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-outline" onclick="voltarPlanoGratis()">Voltar pro Grátis</button>')+'</div>';p=planos.mensal;html+='<div class="planoCard destaque"><div class="selo">⭐ MAIS ESCOLHIDO</div><h3>📅 '+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p>'+(atual=='MENSAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn" onclick="queroPlano(\'MENSAL\')">💎 QUERO O MENSAL</button>')+'</div>';p=planos.anual;html+='<div class="planoCard" style="border-color:#FFB800"><div class="selo seloAnual">🏆 MELHOR VALOR</div><h3>🏆 '+p.nome+'</h3><p>'+p.desc+'</p><div class="planoPreco">'+p.precoTexto+' <small>'+p.periodo+'</small></div><p style="text-align:left;white-space:pre-line">'+p.recursos+'</p>'+(atual=='ANUAL'?'<button class="btn btn-green">✅ SEU PLANO ATUAL</button>':'<button class="btn btn-gold" onclick="queroPlano(\'ANUAL\')">🏆 QUERO O ANUAL - R$ 199</button>')+'</div>';$('listaPlanosBoleira').innerHTML=html;$('planoAtualTexto').innerHTML='Você está no <b>Plano '+atual+'</b> '+(atual=='GRATIS'?'💧 Com marca d\'água':'✅ SEM marca d\'água');}
@@ -230,7 +245,7 @@ function fecharTelaADMPlanos(){document.querySelectorAll('.fullPage').forEach(m=
 function renderPlanosADM(){let html='';[['gratis','🆓 GRÁTIS'],['mensal','📅 MENSAL'],['anual','🏆 ANUAL']].forEach(([key,titulo])=>{let p=planos[key];html+='<div class="card"><h3>'+titulo+' - Editável</h3><label>Preço</label><input id="admPreco_'+key+'" type="number" step="0.01" value="'+p.preco+'"><label>Texto do preço</label><input id="admPrecoTexto_'+key+'" value="'+p.precoTexto+'"><label>Período</label><input id="admPeriodo_'+key+'" value="'+p.periodo+'"><label>Descrição</label><input id="admDesc_'+key+'" value="'+p.desc+'"><label>Recursos</label><textarea id="admRec_'+key+'" rows="6">'+p.recursos+'</textarea><button class="btn btn-green" onclick="salvarPlanoADM(\''+key+'\')">✅ SALVAR '+titulo+'</button></div>';});let el=$('listaPlanosADM');if(el)el.innerHTML=html;let el2=$('listaPlanosADM2');if(el2)el2.innerHTML=html;}
 async function salvarPlanoADM(key){let preco=parseFloat($('admPreco_'+key).value)||0;let dados={key,nome:key=='gratis'?'GRATIS':key=='mensal'?'MENSAL':'ANUAL',preco,precoTexto:$('admPrecoTexto_'+key).value,periodo:$('admPeriodo_'+key).value,desc:$('admDesc_'+key).value,recursos:$('admRec_'+key).value};planos[key]=Object.assign(planos[key],dados);await setDoc(doc(db,'planos_config',key),dados,{merge:true});alert('✅ Plano '+dados.nome+' salvo!');renderPlanosADM();renderPlanosBoleira();}
 function filtroADM(f,btn){filtroAtual=f;document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderBoleirasADM();renderBoleirasADM2();}
-function renderBoleirasADM(){let busca=($('buscaBoleira')?.value||'').toLowerCase();let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!((b.loja||'').toLowerCase().includes(busca)||(b.email||'').toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;});if($('qtdMostra'))$('qtdMostra').innerText=lista.length;if($('admTotal'))$('admTotal').innerText=boleiras.length;if($('admPro'))$('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length;if($('admQtdBoleirasTxt'))$('admQtdBoleirasTxt').innerText=boleiras.length+' boleiras';if($('codigoBoleira'))$('codigoBoleira').innerHTML='<option value="">Qualquer boleira - Código genérico</option>'+boleiras.map(b=>'<option value="'+b.id+'">'+b.loja+' - '+b.email+'</option>').join('');let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+='<div class="boleiraRow" onclick="verBoleira(\''+b.id+'\')"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200"><div class="info"><b>'+b.loja+'</b> <span class="tag '+tagCls+'">'+(b.plano||'GRATIS')+'</span> '+(b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':'')+'<p>📧 '+b.email+'<br>📱 '+(b.zap||'')+' • 📍 '+(b.cidade||'')+'<br>📅 '+(b.dataCadastro||'')+'</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO(\''+b.id+'\',\'MENSAL\')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO(\''+b.id+'\',\'ANUAL\')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira(\''+b.id+'\')">'+(b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear')+'</button><button class="btn btn-sm btn-outline" onclick="mandarZap(\''+b.id+'\')">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira(\''+b.id+'\')">🗑️ Excluir</button></div></div></div>';});if(!html)html='<div class="card"><p>Nenhuma boleira ainda.</p></div>';if($('listaBoleirasADM'))$('listaBoleirasADM').innerHTML=html;}
+function renderBoleirasADM(){let busca=($('buscaBoleira')?.value||'').toLowerCase();let lista=boleiras.filter(b=>{if(filtroAtual=='PRO'&&!['MENSAL','ANUAL','PRO'].includes(b.plano))return false;if(filtroAtual=='MENSAL'&&b.plano!=='MENSAL')return false;if(filtroAtual=='ANUAL'&&b.plano!=='ANUAL')return false;if(filtroAtual=='GRATIS'&&b.plano!=='GRATIS')return false;if(filtroAtual=='BLOQUEADA'&&b.status!=='BLOQUEADA')return false;if(busca&&!((b.loja||'').toLowerCase().includes(busca)||(b.email||'').toLowerCase().includes(busca)||(b.cidade||'').toLowerCase().includes(busca)))return false;return true;});if($('qtdMostra'))$('qtdMostra').innerText=lista.length;if($('admTotal'))$('admTotal').innerText=boleiras.length;if($('admPro'))$('admPro').innerText=boleiras.filter(b=>['MENSAL','ANUAL','PRO'].includes(b.plano)).length;if($('admQtdBoleirasTxt'))$('admQtdBoleirasTxt').innerText=plural(boleiras.length,'boleira','boleiras');if($('codigoBoleira'))$('codigoBoleira').innerHTML='<option value="">Qualquer boleira - Código genérico</option>'+boleiras.map(b=>'<option value="'+b.id+'">'+b.loja+' - '+b.email+'</option>').join('');let html='';lista.forEach(b=>{let tagCls=b.plano=='MENSAL'?'tag-mensal':b.plano=='ANUAL'?'tag-anual':b.plano=='GRATIS'?'tag-free':'tag-pro';html+='<div class="boleiraRow" onclick="verBoleira(\''+b.id+'\')"><img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=200"><div class="info"><b>'+b.loja+'</b> <span class="tag '+tagCls+'">'+(b.plano||'GRATIS')+'</span> '+(b.status=='BLOQUEADA'?'<span class="tag tag-block">BLOQUEADA</span>':'')+'<p>📧 '+b.email+'<br>📱 '+(b.zap||'')+' • 📍 '+(b.cidade||'')+'<br>📅 '+(b.dataCadastro||'')+'</p><div class="actions" onclick="event.stopPropagation()"><button class="btn btn-sm btn-green" onclick="virarPRO(\''+b.id+'\',\'MENSAL\')">📅 Mensal</button><button class="btn btn-sm btn-gold" onclick="virarPRO(\''+b.id+'\',\'ANUAL\')">🏆 Anual</button><button class="btn btn-sm" style="background:#FEF3C7" onclick="bloquearBoleira(\''+b.id+'\')">'+(b.status=='BLOQUEADA'?'✅ Desbloquear':'🚫 Bloquear')+'</button><button class="btn btn-sm btn-outline" onclick="mandarZap(\''+b.id+'\')">💬 WhatsApp</button><button class="btn btn-sm" style="background:#FEE2E2;color:#991B1B" onclick="excluirBoleira(\''+b.id+'\')">🗑️ Excluir</button></div></div></div>';});if(!html)html='<div class="card"><p>Nenhuma boleira ainda.</p></div>';if($('listaBoleirasADM'))$('listaBoleirasADM').innerHTML=html;}
 function verBoleira(id){let b=boleiras.find(x=>x.id==id);if(!b)return;$('verBoleiraTitulo').innerText='👩‍🍳 '+b.loja;$('verBoleiraConteudo').innerHTML='<p><b>🏪 Loja:</b> '+b.loja+'<br><b>📧 E-mail:</b> '+b.email+'<br><b>📱 WhatsApp:</b> '+(b.zap||'Não informado')+'<br><b>📍 Cidade:</b> '+(b.cidade||'Não informada')+'<br><b>📝 Sobre:</b> '+(b.sobre||'')+'<br><b>💎 Plano:</b> '+b.plano+'<br><b>📌 Status:</b> '+(b.status||'ATIVA')+'<br><b>📅 Cadastro:</b> '+(b.dataCadastro||'')+'</p><button class="btn btn-green" onclick="copiarTextoSeguro(\''+window.location.origin+window.location.pathname+'?uid='+b.id+'\',\'✅ Link copiado!\')">📋 Copiar Link da Loja</button>';document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verBoleira').classList.add('show');}
 async function virarPRO(id,tipo){await updateDoc(doc(db,'boleiras',id),{plano:tipo});let b=boleiras.find(x=>x.id==id);if(b)b.plano=tipo;alert(b.loja+' agora é '+tipo);renderBoleirasADM();renderBoleirasADM2();}
 async function bloquearBoleira(id){let b=boleiras.find(x=>x.id==id);let novo=b.status=='BLOQUEADA'?'ATIVA':'BLOQUEADA';await updateDoc(doc(db,'boleiras',id),{status:novo});b.status=novo;alert(b.loja+' está '+novo);renderBoleirasADM();renderBoleirasADM2();}
@@ -246,16 +261,168 @@ function cancelarEditPerfil(){$('perfilView').classList.remove('hidden');$('perf
 async function salvarPerfil(){let n=$('perfilLoja').value.trim();if(!n){alert('Nome da loja é obrigatório!');return;}usuarioAtual.loja=n;usuarioAtual.zap=$('perfilZap').value;usuarioAtual.cidade=$('perfilCidade').value;usuarioAtual.sobre=$('perfilSobre').value;await salvarBoleiraNoBanco();if($('nomeLojaPainel'))$('nomeLojaPainel').innerText=n;$('tituloLoja').innerText=n;$('topNome').innerText=n;$('menuNome').innerText=n;linkLojaAtual=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;$('meuLink').innerText=linkLojaAtual;alert('✅ Perfil salvo!');atualizarPerfilView();renderHome();}
 async function enviarFeedback(){let categoria=$('feedCategoria').value;let texto=$('feedText').value;let indica=$('feedIndica').value;await salvarNoFirebase('feedbacks',{nota:notaFeedback,categoria,texto,indica,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja});alert('Obrigado! Feedback '+notaFeedback+'/5 salvo! 💖');fecharTela();}
 async function enviarSuporte(){let cat=$('suporteCategoria').value;await salvarNoFirebase('suporte',{categoria:cat,duvida:$('duvidaSuporte').value,uid:usuarioAtual.uid,email:usuarioAtual.email,loja:usuarioAtual.loja,status:'ABERTO'});alert('Chamado salvo! Te respondemos no WhatsApp 15 93500-4144 em até 2h!');fecharTela();}
-function perguntarIA(){let tipo=$('iaTipo').value;let desc=$('iaPergunta').value||'Bolo de Chocolate 2kg com Ninho';let r='';if(tipo=='preco')r='🤖 <b>Preço ideal para: '+desc+'</b><br><br>💰 Custo: R$ 55<br>💰 Preço sugerido: <b>R$ 160</b><br>💰 Lucro: R$ 105';if(tipo=='descricao')r='🤖 <b>Descrição:</b><br>"'+desc+' feito com massa fofinha, recheio cremoso e muito amor!"';if(tipo=='legenda')r='🤖 <b>Legenda:</b><br>🎂 Olha esse '+desc+' que acabou de sair do forno! Quem quer? Comenta EU QUERO!';if(tipo=='nome')r='🤖 <b>Nomes:</b><br>• '+desc+' Supreme<br>• Delícia de '+desc+'<br>• '+desc+' da Casa';if(tipo=='kit')r='🤖 <b>Kit:</b><br>🎉 Kit Festa 20 pessoas - Bolo '+desc+' 2kg + 100 brigadeiros + 50 beijinhos - <b>R$ 299</b>';$('iaResposta').innerHTML='<div class="iaBox">'+r+'<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById(\'iaResposta\').innerText,\'✅ Copiado!\')">📋 Copiar</button></div>';}
-function renderCatalogo(){let html='';catalogo.forEach(c=>{if(c.ativo=='NAO')return;html+='<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="'+c.img+'" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">'+c.nome+'</b><br><span style="font-size:12px;color:#FF4D8D">R$ '+c.preco+'/kg • '+(c.categoria||'')+'</span></div><button onclick="excluirBolo(\''+c.id+'\')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>';});$('catalogoPainel').innerHTML=html;$('qtdCatalogo').innerText=catalogo.length+' bolos';$('catalogoVazio').style.display=catalogo.length?'none':'block';let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach(c=>{if(c.ativo=='NAO')return;h2+='<div class="bolo" onclick="selBolo(this,\''+c.id+'\')"><img src="'+c.img+'"><b>'+c.nome+'</b><br><span>R$ '+c.preco+'/kg • '+(c.categoria||'')+'</span></div>';});$('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
+function perguntarIA(){
+  let tipo=$('iaTipo').value;
+  let descOriginal=$('iaPergunta').value.trim()||'Bolo de Chocolate 2kg com Ninho';
+  let desc=descOriginal.toLowerCase();
+  let kgMatch=desc.match(/(\d+)\s*kg/);
+  let kgDetectado=kgMatch?parseInt(kgMatch[1]):2;
+  if(kgDetectado<=0) kgDetectado=2; if(kgDetectado>20) kgDetectado=20;
+  let sabor='Chocolate', custoKg=32, precoKg=80;
+  if(desc.includes('cenoura')){ sabor='Cenoura'; custoKg=22; precoKg=60; }
+  else if(desc.includes('ninho')||desc.includes('leite ninho')){ sabor='Ninho'; custoKg=38; precoKg=95; }
+  else if(desc.includes('morango')){ sabor='Morango'; custoKg=36; precoKg=90; }
+  else if(desc.includes('red velvet')||desc.includes('velvet')){ sabor='Red Velvet'; custoKg=40; precoKg=100; }
+  else if(desc.includes('doce de leite')){ sabor='Doce de Leite'; custoKg=30; precoKg=78; }
+  else if(desc.includes('prestigio')||desc.includes('prestígio')||desc.includes('coco')){ sabor='Prestígio'; custoKg=30; precoKg=78; }
+  else if(desc.includes('limão')||desc.includes('limao')){ sabor='Limão'; custoKg=26; precoKg=68; }
+  else if(desc.includes('chocolate')||desc.includes('brigadeiro')){ sabor='Chocolate'; custoKg=32; precoKg=80; }
+  else if(desc.includes('baunilha')||desc.includes('vanilla')){ sabor='Baunilha'; custoKg=28; precoKg=72; }
+  let custoTotal=custoKg*kgDetectado;
+  let precoTotal=precoKg*kgDetectado;
+  let lucro=precoTotal-custoTotal;
+  let sinalIA=precoTotal/2;
+  let r='';
+  if(tipo=='preco'){
+    r='🤖 <b>Preço ideal para: '+descOriginal+'</b><br><br>'+
+    '🍰 Sabor detectado: <b>'+sabor+'</b><br>'+
+    '⚖️ Tamanho: <b>'+kgDetectado+'kg</b><br><br>'+
+    '💰 Custo estimado: <b>R$ '+custoTotal+',00</b> (R$ '+custoKg+'/kg)<br>'+
+    '💰 Preço sugerido: <b>R$ '+precoTotal+',00</b> (R$ '+precoKg+'/kg)<br>'+
+    '💸 Lucro: <b>R$ '+lucro+',00</b><br>'+
+    '📌 Sinal 50%: <b>R$ '+sinalIA+',00</b><br><br>'+
+    '<small>💡 Dica: Se usar cobertura especial ou tema personalizado, some R$ 20 a R$ 40.</small>';
+  }
+  if(tipo=='descricao'){
+    r='🤖 <b>Descrição pronta pra copiar:</b><br><br>'+
+    '"'+sabor+' '+kgDetectado+'kg feito com massa fofinha, recheio cremoso e cobertura caprichada. Perfeito pra aniversário, festa e aquele momento especial. Feito com amor e ingredientes selecionados!"<br><br>'+
+    '<small>📝 Dica: Coloca essa descrição no seu bolo no Add Bolo.</small>';
+  }
+  if(tipo=='legenda'){
+    r='🤖 <b>Legenda pro Instagram:</b><br><br>'+
+    '🎂 Olha esse Bolo de '+sabor+' '+kgDetectado+'kg que acabou de sair do forno! 😍<br>'+
+    'Massa fofinha, recheio cremoso e muito amor! ❤️<br><br>'+
+    'Quem quer um assim? Comenta EU QUERO! 👇<br>'+
+    '📲 Pedido pelo link da bio!<br>'+
+    '#bolos #'+sabor.toLowerCase().replace(/ /g,'')+' #bolopro #confeitaria';
+  }
+  if(tipo=='nome'){
+    r='🤖 <b>Nomes pra esse bolo:</b><br><br>'+
+    '• '+sabor+' Supreme '+kgDetectado+'kg<br>'+
+    '• Delícia de '+sabor+' da Casa<br>'+
+    '• '+sabor+' dos Sonhos<br>'+
+    '• '+sabor+' Premium<br><br>'+
+    '<small>💡 Escolhe um e usa no nome do bolo no Add Bolo.</small>';
+  }
+  if(tipo=='kit'){
+    let precoKit=precoTotal+149;
+    let pessoas=kgDetectado*10;
+    r='🤖 <b>Kit montado:</b><br><br>'+
+    '🎉 <b>Kit Festa '+pessoas+' pessoas</b><br>'+
+    '• Bolo de '+sabor+' '+kgDetectado+'kg<br>'+
+    '• 100 brigadeiros<br>'+
+    '• 50 beijinhos<br><br>'+
+    '💰 Preço sugerido do Kit: <b>R$ '+precoKit+',00</b><br>'+
+    '<small>💡 Bolo (R$ '+precoTotal+') + Docinhos (R$ 149)</small>';
+  }
+  $('iaResposta').innerHTML='<div class="iaBox">'+r+'<br><button class="btn btn-sm btn-dark" onclick="copiarTextoSeguro(document.getElementById(\'iaResposta\').innerText,\'✅ Copiado!\')">📋 Copiar</button></div>';
+}
+function renderCatalogo(){let html='';catalogo.forEach(c=>{if(c.ativo=='NAO')return;html+='<div style="display:flex;gap:10px;align-items:center;background:#FFF9FB;padding:8px;border-radius:12px;margin-bottom:8px"><img src="'+c.img+'" style="width:50px;height:50px;object-fit:cover;border-radius:10px"><div style="flex:1"><b style="font-size:13px">'+c.nome+'</b><br><span style="font-size:12px;color:#FF4D8D">R$ '+c.preco+'/kg • '+(c.categoria||'')+'</span></div><button onclick="excluirBolo(\''+c.id+'\')" style="border:none;background:#FFE0EA;padding:8px;border-radius:10px;cursor:pointer">🗑️</button></div>';});$('catalogoPainel').innerHTML=html;$('qtdCatalogo').innerText=plural(catalogo.length,'bolo','bolos');$('catalogoVazio').style.display=catalogo.length?'none':'block';let h2='';if(!catalogo.length)h2='<p>Essa boleira ainda não cadastrou bolos.</p>';catalogo.forEach(c=>{if(c.ativo=='NAO')return;h2+='<div class="bolo" onclick="selBolo(this,\''+c.id+'\')"><img src="'+c.img+'"><b>'+c.nome+'</b><br><span>R$ '+c.preco+'/kg • '+(c.categoria||'')+'</span></div>';});$('bolosCliente').innerHTML=h2;if(catalogo.length){boloAtual=catalogo[0];atualiza();}}
 function renderCatalogoEdit(){let h='';catalogo.forEach(c=>{h+='<p style="font-size:13px">• '+c.nome+' - R$ '+c.preco+'/kg <button onclick="excluirBolo(\''+c.id+'\');renderCatalogoEdit()">Excluir</button></p>';});$('listaCatalogoEdit').innerHTML=h||'<p>Nenhum bolo ainda.</p>';}
 async function salvarCatalogoCompleto(){if(!usuarioAtual.uid){alert('Faça login primeiro!');return;}let nome=$('catNome').value.trim();let preco=parseInt($('catPreco').value)||0;if(!nome||!preco){alert('Preencha nome e preço por kg!');return;}if(!planoPago() && catalogo.length>=planos.gratis.limiteBolos){alert('No Grátis o limite é 3 bolos! Assine para ilimitado.');abrirTela('plano');return;}let tamanhos=[...document.querySelectorAll('#catTamanhos button.sel')].map(b=>b.innerText).join(', ');let recheios=[...document.querySelectorAll('#catRecheios button.sel')].map(b=>b.innerText).join(', ');let coberturas=[...document.querySelectorAll('#catCoberturas button.sel')].map(b=>b.innerText).join(', ');let novo={uid:usuarioAtual.uid,loja:usuarioAtual.loja,nome,preco,categoria:$('catCategoria').value,img:_fotoBoloData||$('catFoto').value||'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400',desc:$('catDesc').value||'Delicioso!',tamanhos,recheios,coberturas,prazo:$('catPrazo').value,alerg:$('catAlerg').value||'Consulte',ativo:$('catAtivo').value,criadoEm:serverTimestamp()};let id=await salvarNoFirebase('catalogos',novo);if(id)catalogo.unshift(Object.assign({id},novo));alert('🎉 Bolo salvo!');_fotoBoloData='';$('catNome').value='';$('catPreco').value='';$('catDesc').value='';$('catFoto').value='';let pv=$('previewFotoBolo');if(pv){pv.style.display='none';pv.src=''}let ff=$('catFotoFile');if(ff)ff.value='';fecharTela();renderCatalogo();renderHome();}
 async function excluirBolo(id){if(!confirm('Excluir esse bolo?'))return;await deleteDoc(doc(db,'catalogos',id));catalogo=catalogo.filter(x=>x.id!=id);renderCatalogo();renderHome();}
 async function salvarKit(){if(!planoPago()){alert('Kit Festa é exclusivo do Plano Pago!');abrirTela('plano');return;}let nome=$('kitNome').value.trim();let itens=$('kitItens').value.trim();let preco=parseInt($('kitPreco').value)||0;if(!nome||!preco){alert('Preencha nome e preço do kit!');return;}let novoKit={id:'kit'+Date.now(),nome,itens:itens||'Bolo + docinhos',preco,visivel:true};kitsLista.push(novoKit);kitGlobal=novoKit;await salvarBoleiraNoBanco();$('kitSalvoMsg').innerText='✅ Kit adicionado na lista! Já aparece para a cliente.';$('kitNome').value='';$('kitItens').value='';$('kitPreco').value='';renderKitsBoleira();renderKitsCliente();atualizarKitUI();}
 function selKit(nome,preco){kitSel={nome,preco};$('resumo').innerText=nome;$('totalVal').innerText='R$ '+preco+',00';let vSinal=sinal.includes('total')?preco:preco/2;$('sinalVal').innerText=(sinal.includes('total')?'Valor total: R$ ':'Sinal 50%: R$ ')+vSinal+',00';alert(nome+' selecionado!');}
-function renderPedidos(){let total=0;pedidos.forEach(p=>total+=p.valor||0);if($('statHoje'))$('statHoje').innerText='R$ '+total;if($('statMes'))$('statMes').innerText='R$ '+(total*4);if($('statPedidos'))$('statPedidos').innerText=pedidos.length;if($('listaPedidosResumo'))$('listaPedidosResumo').innerHTML='';renderCalendario();renderHome();}
+function renderPedidos(){
+  let hoje=new Date(); let hojeTotal=0; let mesTotal=0;
+  pedidos.forEach(p=>{
+    let d=dataDoPedido(p); if(!d) return;
+    let valor=Number(p.valor||0);
+    if(d.getFullYear()===hoje.getFullYear() && d.getMonth()===hoje.getMonth()){
+      mesTotal+=valor;
+      if(d.getDate()===hoje.getDate()) hojeTotal+=valor;
+    }
+  });
+  if($('statHoje'))$('statHoje').innerText='R$ '+hojeTotal;
+  if($('statMes'))$('statMes').innerText='R$ '+mesTotal;
+  if($('statPedidos'))$('statPedidos').innerText=pedidos.length;
+  if($('listaPedidosResumo'))$('listaPedidosResumo').innerHTML='';
+  renderCalendario();renderHome();
+}
 function renderPedidosCompleta(){if(!pedidos.length){$('listaPedidosCompleta').innerHTML='<div class="card"><p>Nenhum pedido ainda.</p></div>';return;}let html='';pedidos.forEach(p=>{let cor=p.status=='PAGO'?'pago':p.status=='FAZENDO'?'fazendo':'pendente';html+='<div class="pedido" onclick="verPedido(\''+p.id+'\')"><b>'+p.cliente+'</b> <span class="badge '+cor+'">'+p.status+'</span><p>🍰 '+p.bolo+' - '+(p.kg||'')+'kg - '+(p.recheio||'')+'</p><p>📅 '+p.data+' '+(p.hora||'')+' • 🚚 '+p.entrega+' • 💳 '+p.pagamento+'</p><p><b>R$ '+p.valor+',00</b></p><div style="margin-top:6px"><button class="btn btn-sm btn-green" onclick="event.stopPropagation();mudarStatus(\''+p.id+'\')">Mudar status</button> <button class="btn btn-sm" style="background:#F97316;color:#fff" onclick="event.stopPropagation();cobrarCliente(\''+p.id+'\')">💰 Cobrar</button></div></div>';});$('listaPedidosCompleta').innerHTML=html;}
-function verPedido(id){let p=pedidos.find(x=>x.id==id);if(!p)return;$('verPedidoConteudo').innerHTML='<h3>📦 Pedido de '+p.cliente+'</h3><div style="font-size:17px;line-height:1.9"><b>👩 Cliente:</b> '+p.cliente+'<br><b>📱 WhatsApp:</b> '+(p.zap||'')+'<br><b>🍰 Bolo:</b> '+p.bolo+'<br><b>⚖️ Kg:</b> '+(p.kg||'')+'<br><b>🍫 Recheio:</b> '+(p.recheio||'')+'<br><b>🎂 Cobertura:</b> '+(p.cobertura||'')+'<br><b>🔲 Formato:</b> '+(p.formato||'')+'<br><b>🎉 Tema:</b> '+(p.tema||'')+'<br><b>💬 Frase:</b> '+(p.frase||'')+'<br><b>📅 Data:</b> '+p.data+' '+(p.hora||'')+'<br><b>🚚 Entrega:</b> '+p.entrega+'<br><b>📍 Endereço:</b> '+(p.endereco||'')+'<br><b>🎂 Para quem:</b> '+(p.paraQuem||'')+'<br><b>💳 Pagamento:</b> '+p.pagamento+'<br><b>💰 Sinal:</b> '+(p.sinal||'')+'<br><b>📝 Obs:</b> '+(p.obs||'')+'<br><b>📣 Como conheceu:</b> '+(p.como||'')+'<br><div style="background:#F0FDF4;border:2px solid #16A34A;border-radius:12px;padding:12px;margin:12px 0;text-align:center;font-size:20px"><b>💵 Total: R$ '+p.valor+',00</b><br><span style="font-size:16px">📌 Status: '+p.status+'</span></div><b>🕐 Pedido às:</b> '+(p.horaPedido||'')+'</div><button class="btn btn-green" onclick="mudarStatus(\''+p.id+'\');verPedido(\''+p.id+'\')">🔄 Mudar Status</button><button class="btn btn-outline" onclick="window.open(\'https://wa.me/55'+(p.zap||'')+'?text=Oi '+p.cliente+'! Sobre seu pedido!\',\'_blank\')">💬 Chamar Cliente</button>';document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));$('tela-verPedido').classList.add('show');}
+function verPedido(id){
+  let p=pedidos.find(x=>x.id==id);
+  if(!p)return;
+  let statusTxt=p.status||'PENDENTE';
+  let statusCor=statusTxt=='PAGO'?'pago':statusTxt=='FAZENDO'?'fazendo':'pendente';
+  let statusLabel=statusTxt=='PAGO'?'✅ PAGO':statusTxt=='FAZENDO'?'👩‍🍳 FAZENDO':'💸 DEVENDO';
+  let total=Number(p.valor||0);
+  let sinalValor=0, sinalTxt='';
+  let sinalOriginal=(p.sinal||'').toLowerCase();
+  if(statusTxt=='PAGO'){
+    sinalValor=total; sinalTxt='Pago total';
+  } else if(p.pagamento && p.pagamento.includes('Cartão')){
+    sinalValor=0; sinalTxt='Pagamento no cartão - sem sinal';
+  } else if(sinalOriginal.includes('total')){
+    sinalValor=total; sinalTxt='Valor total - R$ '+total+',00';
+  } else if(sinalOriginal.includes('50%')||sinalOriginal.includes('pixar')||sinalOriginal.includes('sim')){
+    sinalValor=total/2; sinalTxt='Sinal 50% - R$ '+sinalValor+',00';
+  } else {
+    sinalValor=0; sinalTxt='Sem sinal';
+  }
+  let faltaReceber=statusTxt=='PAGO'?0:(total-sinalValor);
+  let ehKit=(p.bolo||'').toLowerCase().includes('kit');
+  let linhaKg=ehKit?'':'<b>⚖️ Kg:</b> '+(p.kg||'')+'<br>';
+  let tituloBolo=ehKit?'🎉 '+p.bolo:'🍰 '+p.bolo;
+  let obsTxt=(p.obs||'').trim();
+  let linhaObs=(obsTxt && obsTxt.toLowerCase()!=='sem observação' && obsTxt.toLowerCase()!=='sem obs')?'<b>📝 Obs:</b> '+obsTxt+'<br>':'';
+  let paraQuemTxt=p.paraQuem||'';
+  if(/ \d+$/.test(paraQuemTxt) && !paraQuemTxt.toLowerCase().includes('anos')) paraQuemTxt+=' anos';
+  $('verPedidoConteudo').innerHTML=
+  '<h3 style="text-align:center;margin-bottom:12px">📦 Pedido de '+p.cliente+'</h3>'+
+  '<div style="text-align:center;margin-bottom:12px"><span class="badge '+statusCor+'">'+statusLabel+'</span></div>'+
+  '<div class="card" style="border-left:4px solid #FF4D8D;margin-bottom:10px">'+
+    '<h3 style="color:#FF4D8D">👩 Dados da Cliente</h3>'+
+    '<div style="font-size:15px;line-height:1.9">'+
+      '<b>Nome:</b> '+p.cliente+'<br>'+
+      '<b>📱 WhatsApp:</b> '+(p.zap||'')+'<br>'+
+      '<b>🎂 Para quem:</b> '+paraQuemTxt+'<br>'+
+      '<b>📣 Como conheceu:</b> '+(p.como||'')+
+    '</div>'+
+  '</div>'+
+  '<div class="card" style="border-left:4px solid #FFB800;margin-bottom:10px">'+
+    '<h3 style="color:#92400E">🍰 Pedido</h3>'+
+    '<div style="font-size:15px;line-height:1.9">'+
+      '<b>Bolo:</b> '+tituloBolo+'<br>'+
+      linhaKg+
+      '<b>🍫 Recheio:</b> '+(p.recheio||'')+'<br>'+
+      '<b>🎂 Cobertura:</b> '+(p.cobertura||'')+'<br>'+
+      '<b>🔲 Formato:</b> '+(p.formato||'')+'<br>'+
+      '<b>🎉 Tema:</b> '+(p.tema||'')+'<br>'+
+      '<b>💬 Frase:</b> '+(p.frase||'')+'<br>'+
+      '<b>📅 Entrega:</b> '+p.data+' '+(p.hora||'')+'<br>'+
+      '<b>🚚 Tipo:</b> '+p.entrega+'<br>'+
+      '<b>📍 Endereço:</b> '+(p.endereco||'')+'<br>'+
+      linhaObs+
+      '<b>🕐 Pedido às:</b> '+(p.horaPedido||'')+
+    '</div>'+
+  '</div>'+
+  '<div class="card" style="border-left:4px solid #16A34A;margin-bottom:10px">'+
+    '<h3 style="color:#16A34A">💰 Pagamento</h3>'+
+    '<div style="font-size:15px;line-height:1.9">'+
+      '<b>💳 Forma:</b> '+p.pagamento+'<br>'+
+      '<b>💰 Sinal:</b> '+sinalTxt+'<br>'+
+      '<b>💸 Falta receber:</b> <span style="color:'+(faltaReceber>0?'#DC2626':'#16A34A')+';font-weight:800">R$ '+faltaReceber+',00</span><br>'+
+      '<div style="background:#F0FDF4;border:2px solid #16A34A;border-radius:12px;padding:12px;margin-top:10px;text-align:center;font-size:20px"><b>💵 Total: R$ '+total+',00</b></div>'+
+    '</div>'+
+  '</div>'+
+  '<button class="btn btn-green" onclick="alternarPago(\''+p.id+'\');verPedido(\''+p.id+'\')">'+(statusTxt=='PAGO'?'💸 Marcar como Devendo':'✅ Marcar como Pago')+'</button>'+
+  '<button class="btn" style="background:#F97316" onclick="cobrarCliente(\''+p.id+'\')">💰 Cobrar Cliente</button>'+
+  '<button class="btn btn-outline" onclick="window.open(\'https://wa.me/55'+(p.zap||'')+'?text=Oi '+p.cliente+'! Sobre seu pedido!\',\'_blank\')">💬 Chamar Cliente</button>'+
+  '<button class="btn btn-outline" onclick="mudarStatus(\''+p.id+'\');verPedido(\''+p.id+'\')">🔄 Mudar Status (Pendente / Fazendo / Pago)</button>';
+  document.querySelectorAll('.fullPage').forEach(m=>m.classList.remove('show'));
+  $('tela-verPedido').classList.add('show');
+}
 async function mudarStatus(id){let p=pedidos.find(x=>x.id==id);let s=p.status;let novo=s=='PAGO'?'PENDENTE':s=='PENDENTE'?'FAZENDO':'PAGO';await updateDoc(doc(db,'pedidos',id),{status:novo});p.status=novo;renderPedidos();renderPedidosCompleta();}
 function renderCalendario(){let hoje=new Date();let ano=hoje.getFullYear();let mes=hoje.getMonth();if($('mesCal'))$('mesCal').innerText=hoje.toLocaleString('pt-BR',{month:'long',year:'numeric'});let diasNoMes=new Date(ano,mes+1,0).getDate();let dias=[];pedidos.forEach(p=>{if(p.dataISO){let d=new Date(p.dataISO+'T12:00:00');if(d.getMonth()==mes)dias.push(d.getDate());}});let h='<div><b>D</b></div><div><b>S</b></div><div><b>T</b></div><div><b>Q</b></div><div><b>Q</b></div><div><b>S</b></div><div><b>S</b></div>';for(let d=1;d<=diasNoMes;d++){let cls='';if(dias.includes(d))cls='tem';if(d==hoje.getDate())cls+=' hoje';h+='<div class="'+cls+'" style="cursor:pointer" onclick="abrirDiaCalendario('+d+','+mes+','+ano+')">'+d+'</div>';}if($('calGrid'))$('calGrid').innerHTML=h;}
 async function copiarLink(){if(!usuarioAtual.uid){alert('Faça login para copiar seu link!');return;}let link=window.location.origin+window.location.pathname+'?uid='+usuarioAtual.uid;linkLojaAtual=link;$('meuLink').innerText=link;await copiarTextoSeguro(link,'✅ Link copiado! Manda pra cliente!');}
