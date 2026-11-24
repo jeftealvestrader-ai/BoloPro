@@ -44,7 +44,7 @@ label{font-weight:700;font-size:12px;color:#333;display:block;margin:12px 0 6px;
 <a href="#" onclick="abrirTela('ia');return false"><span>🤖</span><div>BoloPro IA<small>Sua assistente</small></div></a>
 <a href="#" onclick="abrirTela('comoUsar');return false"><span>📖</span><div>Como Usar<small>Guia passo a passo</small></div></a>
 <a href="#" onclick="abrirTela('suporte');return false"><span>💬</span><div>Suporte<small>Central de ajuda CodeWay</small></div></a>
-<a href="#" onclick="abrirTela('termos');return false"><span>📄</span><div>Termos<small>Termos e privacidade</small></div></a>
+<a href="#" onclick="abrirTela('termos');return false"><span>📜</span><div>Termos, Privacidade e Reembolso<small>Regras, LGPD e reembolso</small></div></a>
 <a href="#" onclick="abrirTela('quemSomos');return false"><span>💖</span><div>Quem Somos<small>Conheça a CodeWay e o BoloPro</small></div></a>
 <a href="#" onclick="sair();return false" class="danger"><span>🚪</span><div>Sair<small>Sair da conta</small></div></a>
 </div></div>
@@ -141,7 +141,72 @@ label{font-weight:700;font-size:12px;color:#333;display:block;margin:12px 0 6px;
 <div class="card" style="text-align:center"><h3>😕 Travou em alguma parte?</h3><p>Chama a gente que a gente resolve com você, sem enrolação.</p><button class="btn btn-green" onclick="chamarSuporte()">💬 CHAMAR NO WHATSAPP - 15 93500-4144</button><button class="btn btn-dark" onclick="mandarEmailSuporte()">📧 MANDAR E-MAIL</button></div>
 <button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-suporte" class="fullPage"><div class="fullHeader"><b>💬 Suporte</b></div><div class="wrap"><div class="card" style="text-align:center"><p style="font-size:40px">💬</p><h2>Central de Ajuda BoloPro</h2><p>Estamos aqui pra resolver rápido, sem enrolação.</p><p id="suporteInfoTxt">WhatsApp: 15 93500-4144<br>E-mail: suportecodewayapp@gmail.com<br>CodeWay - Cotia / SP</p><p style="font-size:12px;color:#666"><b>Horário:</b> Segunda a Sábado, 8h às 20h<br><b>Resposta média:</b> até 2h em horário comercial</p><button class="btn btn-green" onclick="chamarSuporte()">💬 CHAMAR NO WHATSAPP AGORA</button><button class="btn btn-dark" onclick="mandarEmailSuporte()">📧 MANDAR E-MAIL</button></div><div class="card"><h3>❓ Dúvidas frequentes</h3><p><b>1. Cliente não abre o link?</b><br>Abra no Chrome / Safari, não dentro do Instagram. Copie o link de novo em Link de Vendas.</p><p><b>2. Bolo não aparece pra cliente?</b><br>Veja se está Disponível = SIM e se está no limite do Grátis (3 bolos).</p><p><b>3. Kit não aparece?</b><br>Kit só aparece no Plano Pago e quando está como Deixar Visível.</p><p><b>4. Esqueci a senha?</b><br>Na tela de login, clique em "Esqueci minha senha".</p></div><div class="card"><h3>📝 Abrir um chamado</h3><label>Categoria</label><select id="suporteCategoria"><option>Problema no login</option><option>Link não abre</option><option>Pedido não chegou</option><option>Plano / Pagamento / Código</option><option>Kit Festa</option><option>Calendário</option><option>Sugestão</option><option>Outro</option></select><label>Descreva com detalhes</label><textarea rows="4" id="duvidaSuporte" placeholder="Ex: Tentei cadastrar um bolo com foto da galeria e..."></textarea><button class="btn" onclick="enviarSuporte()">ENVIAR DÚVIDA</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
-<div id="tela-termos" class="fullPage"><div class="fullHeader"><b>📄 Termos e Privacidade</b></div><div class="wrap"><div class="card"><h2>Termos de Uso - BoloPro</h2><p style="font-size:12px;color:#888">Última atualização: Novembro de 2026 • CodeWay • Cotia / SP</p><p><b>1. O que é o BoloPro?</b><br>App da CodeWay para boleiras organizarem catálogo, pedidos, clientes, calendário e link de vendas, e receberem pedidos pelo WhatsApp.</p><p><b>2. Sua conta</b><br>Você é responsável por manter e-mail, senha e WhatsApp atualizados. Não compartilhe sua senha. A CodeWay nunca vai pedir sua senha.</p><p><b>3. Planos</b><br><b>Grátis:</b> até 3 bolos, até 10 pedidos/mês, com marca d'água e Kit invisível.<br><b>Mensal R$ 19,90 / Anual R$ 199:</b> ilimitado, Kit liberado, IA e SEM marca. Liberado por código do ADM.</p><p><b>4. Seus dados</b><br>Dados da loja, bolos, pedidos e clientes são seus. Usamos só pra fazer o app funcionar e melhorar. Não vendemos seus dados.</p><p><b>5. Fotos</b><br>Fotos da galeria ficam no cadastro do bolo e aparecem no seu link. Envie só fotos suas ou com direito de uso.</p><p><b>6. Pagamentos</b><br>O BoloPro não processa o pagamento do bolo. O acerto (Pix, cartão, dinheiro, sinal) é direto entre você e sua cliente.</p><p><b>7. Uso correto</b><br>Não use para conteúdo ofensivo, enganoso ou ilegal. Contas que violarem podem ser bloqueadas.</p><p><b>8. Suporte</b><br>CodeWay • suportecodewayapp@gmail.com • WhatsApp 15 93500-4144 • Foro: Cotia / SP</p><button class="btn" onclick="fecharTela()">LI E CONCORDO</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
+<!-- ===== TELA TERMOS ATUALIZADA - TERMOS + PRIVACIDADE + REEMBOLSO ===== -->
+<div id="tela-termos" class="fullPage"><div class="fullHeader"><b>📜 Termos, Privacidade e Reembolso</b></div><div class="wrap">
+<div class="card"><h2>📜 Termos de Uso - BoloPro</h2><p style="font-size:12px;color:#888">Última atualização: 24/11/2026 • CodeWay • Cotia / SP</p><p style="white-space:pre-line"><b>1. O que é o BoloPro?</b>
+App da CodeWay para boleiras organizarem catálogo, pedidos, clientes, calendário e link de vendas, e receberem pedidos pelo WhatsApp.
+
+<b>2. Sua conta</b>
+Você é responsável por manter e-mail, senha e WhatsApp atualizados. Não compartilhe sua senha. A CodeWay nunca vai pedir sua senha.
+
+<b>3. Planos</b>
+Grátis: até 3 bolos, até 10 pedidos/mês, com marca d'água e Kit invisível.
+Mensal R$ 19,90 / Anual R$ 199: ilimitado, Kit liberado, IA e SEM marca. Liberado por código do ADM.
+
+<b>4. Vencimento</b>
+Quando o plano vence, a conta volta sozinha para o Grátis. O Kit some e a marca d'água volta. Avisamos 5 dias antes no app.
+
+<b>5. Pagamento do plano</b>
+Pagamento via Pix / WhatsApp. Após a confirmação, enviamos o código PRO. O código é pessoal, intransferível e só pode ser usado 1 vez.
+
+<b>6. Fotos</b>
+Fotos da galeria ficam no cadastro do bolo e aparecem no seu link. Envie só fotos suas ou com direito de uso.
+
+<b>7. Pagamentos do bolo</b>
+O BoloPro não processa o pagamento do bolo. O acerto (Pix, cartão, dinheiro, sinal) é direto entre você e sua cliente.
+
+<b>8. O que não pode</b>
+Não pode vender, repassar ou compartilhar seu código PRO. Não pode usar foto de outra boleira. Não pode usar o app para golpes ou conteúdo falso. Conta que descumprir pode ser bloqueada sem reembolso.
+
+<b>9. Suporte</b>
+CodeWay • suportecodewayapp@gmail.com • WhatsApp 15 93500-4144 • Foro: Cotia / SP</p></div>
+
+<div class="card"><h2>🔒 Política de Privacidade - LGPD</h2><p style="white-space:pre-line"><b>O que coletamos:</b>
+Nome da loja, e-mail, WhatsApp, cidade, sobre a loja, seus bolos, seus pedidos e seus clientes.
+
+<b>Pra que usamos:</b>
+Só para fazer o app funcionar: mostrar sua loja, salvar seus pedidos, liberar seu plano e te dar suporte.
+
+<b>O que NÃO fazemos:</b>
+Não vendemos seus dados. Não compartilhamos seus dados com terceiros, exceto o Firebase (Google) que guarda o banco de dados com segurança.
+
+<b>Seus direitos (LGPD - Lei 13.709/2018):</b>
+Você pode a qualquer momento pedir para ver, corrigir ou apagar seus dados. É só chamar no suporte: 15 93500-4144 ou suportecodewayapp@gmail.com
+
+<b>Clientes da boleira:</b>
+Quando um cliente faz um pedido na sua loja, os dados dele (nome, WhatsApp) ficam salvos só na sua conta, para você atender o pedido. A boleira é responsável por esses dados.
+
+<b>Cookies:</b>
+Usamos apenas o necessário para manter você logada no app.</p></div>
+
+<div class="card"><h2>💰 Política de Reembolso</h2><p style="white-space:pre-line"><b>7 dias para pedir reembolso</b> após a compra do Plano Mensal ou Anual.
+
+Para pedir, chame no WhatsApp 15 93500-4144 com seu e-mail e comprovante.
+
+<b>Não tem reembolso se:</b>
+- Você já usou o código PRO e usou o Kit / IA de forma abusiva
+- Você compartilhou seu código com outra pessoa
+- Passou dos 7 dias
+
+O reembolso é feito via Pix em até 5 dias úteis após a aprovação.
+
+<b>Cancelamento:</b>
+Você pode cancelar quando quiser. É só não renovar. Quando vencer, você volta para o Grátis automaticamente, sem cobrança.</p></div>
+
+<div class="card" style="text-align:center"><p style="font-size:12px;color:#888">BoloPro - CodeWay App<br>Última atualização: 24/11/2026<br>Ao continuar usando o app, você concorda com esses termos.</p><button class="btn btn-green" onclick="fecharTela()">✅ ENTENDI E CONCORDO</button></div>
+<button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
+
 <div id="tela-quemSomos" class="fullPage"><div class="fullHeader"><b>💖 Quem Somos</b></div><div class="wrap"><div class="card" style="text-align:center;border:2px solid #FF4D8D"><div style="font-size:48px">🎂</div><div style="font-family:Georgia,serif;font-size:38px;font-weight:700;color:#FF4D8D">Bolo<i style="color:#FF8FB8">Pro</i></div><p style="font-weight:800">Feito por quem entende a correria da boleira.</p><p>O BoloPro nasceu em Cotia / SP, dentro da CodeWay, pra tirar a boleira do caderno e da bagunça do WhatsApp, e colocar tudo num lugar só — bonito, organizado e fácil de vender.</p></div><div class="card"><h3>🎯 Nossa missão</h3><p>Ajudar boleiras a venderem mais bolos, sem perder pedido, sem esquecer entrega e sem gastar horas respondendo a mesma pergunta. A boleira cuida do bolo. O BoloPro cuida da organização.</p></div><div class="card"><h3>💡 O que acreditamos</h3><p>✅ <b>Simples primeiro:</b> se não entende em 1 minuto, está errado.<br>✅ <b>Feito pro celular:</b> tudo funciona no WhatsApp, na correria.<br>✅ <b>Preço justo:</b> começa grátis, e o pago custa menos que 1 bolo por mês.<br>✅ <b>Suporte de gente:</b> você fala com gente de verdade, não com robô.</p></div><div class="card"><h3>🏢 Quem faz</h3><p><b>CodeWay</b> — Cotia / SP<br>Desenvolvimento, suporte e evolução do BoloPro.<br><br>📧 suportecodewayapp@gmail.com<br>📱 WhatsApp: 15 93500-4144</p><button class="btn btn-green" onclick="chamarSuporte()">💬 FALAR COM A CODEWAY</button><button class="btn btn-dark" onclick="mandarEmailSuporte()">📧 MANDAR E-MAIL PRA CODEWAY</button></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-catalogoEdit" class="fullPage"><div class="fullHeader"><b>➕ Add Bolo</b></div><div class="wrap"><div class="card"><h3 style="text-align:center">Novo Bolo</h3><label>📸 Foto do Bolo - Tirar foto ou carregar da galeria</label><input id="catFotoFile" type="file" accept="image/*" onchange="previewFotoBolo(event)"><img id="previewFotoBolo" class="fotoPreview" alt="Prévia do bolo"><p style="font-size:11px;color:#888;margin-top:6px">Ou cole o link da foto abaixo, se preferir:</p><input id="catFoto" placeholder="Cole o link da foto ou use a foto acima"><label>🍰 Nome do Bolo *</label><input id="catNome" placeholder="Ex: Bolo de Chocolate com Ninho"><label>📂 Categoria *</label><select id="catCategoria"><option>🎂 Aniversário</option><option>💍 Casamento</option><option>🎉 Festa</option><option>🍫 Chocolate</option><option>🍓 Frutas</option><option>👶 Chá de Bebê</option><option>🏢 Corporativo</option><option>✨ Personalizado</option></select><label>💰 Preço por KG *</label><input id="catPreco" type="number" placeholder="Ex: 80"><label>⚖️ Tamanhos</label><div class="opt" id="catTamanhos"><button class="sel" onclick="this.classList.toggle('sel')">1kg</button><button class="sel" onclick="this.classList.toggle('sel')">2kg</button><button class="sel" onclick="this.classList.toggle('sel')">3kg</button><button class="sel" onclick="this.classList.toggle('sel')">5kg</button><button onclick="this.classList.toggle('sel')">10kg</button></div><label>🍫 Recheios</label><div class="opt" id="catRecheios"><button class="sel" onclick="this.classList.toggle('sel')">Ninho</button><button class="sel" onclick="this.classList.toggle('sel')">Brigadeiro</button><button onclick="this.classList.toggle('sel')">Morango</button><button onclick="this.classList.toggle('sel')">Doce de Leite</button><button onclick="this.classList.toggle('sel')">Prestígio</button><button onclick="this.classList.toggle('sel')">Oreo</button></div><label>🎂 Coberturas</label><div class="opt" id="catCoberturas"><button class="sel" onclick="this.classList.toggle('sel')">Chantilly</button><button onclick="this.classList.toggle('sel')">Chocolate</button><button onclick="this.classList.toggle('sel')">Pasta Americana</button><button onclick="this.classList.toggle('sel')">Glacê</button></div><label>⏰ Prazo</label><select id="catPrazo"><option>1 dia antes</option><option>2 dias antes</option><option>3 dias antes</option><option>1 semana antes</option></select><label>📝 Descrição</label><textarea id="catDesc" rows="3" placeholder="Ex: Massa de chocolate fofinha..."></textarea><label>⚠️ Alergênicos</label><input id="catAlerg" placeholder="Ex: Contém glúten, leite e ovo"><label>✅ Disponível?</label><select id="catAtivo"><option value="SIM">✅ SIM</option><option value="NAO">⏸️ NÃO - Pausado</option></select><button class="btn" onclick="salvarCatalogoCompleto()">✅ SALVAR BOLO</button><div id="listaCatalogoEdit" style="margin-top:12px"></div><h3 style="margin-top:16px">🍰 Seus Bolos - <span id="qtdCatalogo">0 bolos</span></h3><p id="catalogoVazio">Você ainda não tem bolos.</p><div id="catalogoPainel"></div></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
 <div id="tela-kitsLista" class="fullPage"><div class="fullHeader"><b>🎉 Kit Festa - Lista</b></div><div class="wrap"><div class="card" style="border:2px solid #FFB800"><h3>➕ Cadastrar Novo Kit</h3><label>Nome do Kit</label><input id="kitNome" placeholder="Ex: Kit Festa 20 pessoas"><label>O que vem?</label><textarea id="kitItens" rows="2" placeholder="Ex: Bolo 2kg + 100 brigadeiros + 50 beijinhos"></textarea><label>Preço</label><input id="kitPreco" type="number" placeholder="299"><button class="btn btn-gold" onclick="salvarKit()">➕ ADICIONAR KIT NA LISTA</button><p id="kitSalvoMsg" style="font-size:13px;color:#16A34A;font-weight:700;margin-top:8px"></p></div><div class="card"><h3>📋 Seus Kits - <span id="qtdKits">0 kits</span></h3><p style="font-size:12px;color:#666">Só aparece o botão pra trocar, sem aviso em cima.</p></div><div id="listaKitsBoleira"></div><button class="btn-back" onclick="fecharTela()">← VOLTAR</button></div></div>
@@ -633,4 +698,4 @@ setTimeout(function(){var s=document.getElementById('splash');if(s){s.style.opac
 window.addEventListener('error',function(){var s=document.getElementById('splash');if(s){s.style.opacity='0';s.style.pointerEvents='none';setTimeout(function(){s.remove();},600);}});
 </script>
 </body>
-</html>
+  </html>
