@@ -645,5 +645,47 @@ setTimeout(function(){
   }
 },4000);
 </script>
+<script>
+// CONSERTA TUDO - Menu + Home no celular
+window.fecharTudo = function(){
+  var m = document.getElementById('menuTop');
+  if(m) m.classList.remove('show');
+  var o = document.getElementById('overlay');
+  if(o){ o.classList.remove('show'); o.style.display='none'; o.style.pointerEvents='none'; }
+};
+window.abrirTela = function(nome){
+  window.fecharTudo();
+  // Fecha todas as telas
+  var todas = document.querySelectorAll('.fullPage');
+  for(var i=0;i<todas.length;i++){ todas[i].classList.remove('show'); }
+  // Kit só no Plano Pago - igual original
+  if((nome=='kitsLista'||nome=='kitEdit') && window.usuarioAtual && window.usuarioAtual.plano=='GRATIS'){
+    alert('🎉 Kit Festa é exclusivo do Plano Pago!');
+    var tp = document.getElementById('tela-plano');
+    if(tp) tp.classList.add('show');
+    return;
+  }
+  var tela = document.getElementById('tela-'+nome);
+  if(!tela){ alert('Tela '+nome+' não encontrada! Recarrega a página.'); return; }
+  tela.classList.add('show');
+  window.scrollTo(0,0);
+  // Chama as funções de render se existirem
+  try{
+    if(nome=='perfil' && window.atualizarPerfilView) window.atualizarPerfilView();
+    if(nome=='catalogoEdit' && window.renderCatalogoEdit) window.renderCatalogoEdit();
+    if(nome=='pedidos' && window.renderPedidosCompleta) window.renderPedidosCompleta();
+    if(nome=='clientes' && window.renderClientes) window.renderClientes();
+    if(nome=='calendario' && window.renderCalendarioTela) window.renderCalendarioTela();
+    if(nome=='plano' && window.renderPlanosBoleira) window.renderPlanosBoleira();
+    if(nome=='kitsLista' && window.renderKitsBoleira) window.renderKitsBoleira();
+  }catch(e){}
+};
+window.fecharTela = function(){
+  window.fecharTudo();
+  var todas = document.querySelectorAll('.fullPage');
+  for(var i=0;i<todas.length;i++){ todas[i].classList.remove('show'); }
+};
+console.log('CONSERTA TUDO APLICADO');
+</script>
 </body>
 </html>
